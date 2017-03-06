@@ -1,0 +1,23 @@
+Package: ACTman
+Type: Package
+Title: Actigraphy manager
+Version: 1.0-0
+Date: 2017-03-06
+Authors@R: c(person("Yoram","Kunkels",role = c("aut","cre"),
+    email = "y.k.kunkels@umcg.nl"),
+    person("Stefan","Knapen",role = c("ctb"),
+    email = "stefan.knapen@gmail.com"),
+    person("Ando","Emerencia",role = c("ctb"),
+    email = "ando.emerencia@gmail.com"))
+BugReports: https://github.com/compsy/ACTman/issues
+Maintainer: Yoram Kunkels <y.k.kunkels@umcg.nl>
+Description: Reads Actigraphy data
+License: MIT + file LICENSE
+Suggests:
+    testthat,
+    roxygen2
+Imports:
+    stats,
+    nparACT,
+    gridExtra
+RoxygenNote: 5.0.1
