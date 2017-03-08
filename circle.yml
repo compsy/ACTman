@@ -11,10 +11,10 @@ dependencies:
     - "~/docker"
   override:
     - if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
-    - docker build -t roqua/actman-test -f test.Dockerfile .
-    - mkdir -p ~/docker; docker save roqua/actman-test > ~/docker/image.tar
+    - docker build -t compsy/actman-test -f test.Dockerfile .
+    - mkdir -p ~/docker; docker save compsy/actman-test > ~/docker/image.tar
 
 test:
   override:
     - ./inst/bash/check_code_conventions.sh
-    -  docker run roqua/actman-test R CMD check /ACTman/ACTman_1.0-0.tar.gz --no-manual --no-build-vignettes
+    -  docker run compsy/actman-test R CMD check /ACTman/ACTman_1.0-0.tar.gz --no-manual --no-build-vignettes
