@@ -2,21 +2,19 @@ machine:
   environment:
     R_LIBS_USER: ~/lib/R/library
     _R_CHECK_FORCE_SUGGESTS_: FALSE
+    _R_CHECK_ASCII_DATA_: FALSE
+  services:
+    - docker
+
+dependencies:
+  cache_directories:
+    - "~/docker"
+  override:
+    - if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
+    - docker build -t roqua/actman-test -f test.Dockerfile .
+    - mkdir -p ~/docker; docker save roqua/actman-test > ~/docker/image.tar
+
 test:
   override:
     - ./inst/bash/check_code_conventions.sh
-    - R CMD INSTALL --no-multiarch --with-keep.source ~/ACTman
-    - R CMD build ~/ACTman
-    - R CMD check ~/ACTman/ACTman_1.0-0.tar.gz --no-manual --no-build-vignettes --as-cran
-  post:
-    - mv ACTman.Rcheck/tests/testthat.Rout* $CIRCLE_ARTIFACTS/.
-    - mv ACTman.Rcheck/*.log $CIRCLE_ARTIFACTS/.
-dependencies:
-  cache_directories:
-    - "~/lib/R"
-  pre:
-    - mkdir -p ~/lib/R/library
-    - sudo apt-get update
-    - sudo apt-get install r-base-core
-    - ./inst/bash/install-package-dependencies.sh
-    - echo "options(repos = c(CRAN='http://cran.r-project.org'))" >> ~/.Rprofile
+    -  docker run roqua/actman-test R CMD check /ACTman/ACTman_1.0-0.tar.gz --no-manual --no-build-vignettes
