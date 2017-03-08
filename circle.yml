@@ -1,6 +1,7 @@
 machine:
   environment:
     R_LIBS_USER: ~/lib/R/library
+    _R_CHECK_FORCE_SUGGESTS_: FALSE
 test:
   override:
     - ./inst/bash/check_code_conventions.sh
