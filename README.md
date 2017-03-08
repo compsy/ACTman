@@ -1,11 +1,11 @@
-[![Circle CI](https://circleci.com/gh/roqua/autovarCore.png?style=shield&circle-token=6934b57a8e350e98f46f7798cf9347dce3c0d74f)](https://circleci.com/gh/roqua/ACTman)
+[![CircleCI](https://circleci.com/gh/compsy/ACTman.svg?style=svg&circle-token=d4a53fd8f5a7813e4cacd9265bb5de8fe8b44336)](https://circleci.com/gh/compsy/ACTman)
 
 ACTman
 ======
 
 ACTman manages Actigraphy data.
 
-To install, type the following:
+To install, type the following (note that this doesn't actually work right now because the repo is private):
 
     install.packages('devtools')
     devtools::install_github('compsy/ACTman')
