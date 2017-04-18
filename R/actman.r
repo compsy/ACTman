@@ -6,7 +6,7 @@
 #' @return nothing
 #' @examples
 #' \dontrun{
-#' actman("C:/Users/Y. K. Kunkels/Desktop/loopscript/datatest2")
+#' actman("C:/Users/Y. K. Kunkels/Desktop/loopscript/datatest2") #eee
 #' }
 #' @export
 actman <- function(workdir) {
