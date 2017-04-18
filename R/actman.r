@@ -21,7 +21,7 @@ actman <- function(workdir) {
                                  "last5act.active" = NA)
   # Initiate loop parameters
   i <- 1 # set i
-  secshour <- 60*60 # Seconds per hour
+  secshour <- 60*60 # Seconds per hour #ECHTWAAR
   secsday <- 24*secshour # Seconds per day
   secs14day <- secsday*14 # Seconds in 14 days
 
