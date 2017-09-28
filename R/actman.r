@@ -324,7 +324,7 @@ for (i in 1:length(ACTdata.files)) {
   ## Use nparACT Package to calculate Experimental Variables
 
   # Calculate IS, etc. with nparACT
-  r <- nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
+  r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
 
   # Attach nparACT output to overview
   ACTdata.overview[i, "IS"] <- r$IS
@@ -391,19 +391,21 @@ colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M
 
 # Export Experimental variables to .pdf
 pdf("Experimental Variables - Table.pdf")
-grid.table(ACTdata.1.sub.expvars)
+gridExtra::grid.table(ACTdata.1.sub.expvars)
 dev.off()
 
-if (iwantsleepanalysis) {
-  View(sleepdata.overview)
-} else {
-  View(ACTdata.overview)
-}
-
+# Beep when done.
 if (tune) {
-  beep(3)
+  beepr::beep(3)
 }
 
+
+# Returned result.
+if (iwantsleepanalysis) {
+  sleepdata.overview
+} else {
+  ACTdata.overview
+}
 }
 
 ## END OF Step 3: After loop processing.------------------------------------------------------------------------
@@ -419,9 +421,9 @@ if (tune) {
 
 startperiod.dates <- c("2016-10-03 00:00:00")
 
-ACTman(iwantsleepanalysis = FALSE, plotactogram = FALSE,
+View(ACTman(iwantsleepanalysis = FALSE, plotactogram = FALSE,
        selectperiod = FALSE, startperiod = startperiod.dates, daysperiod = 14,
-       tune = FALSE)
+       tune = FALSE))
 
 
 
