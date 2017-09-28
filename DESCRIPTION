@@ -17,6 +17,7 @@ Suggests:
     testthat,
     roxygen2
 Imports:
+    dplyr,
     stats,
     nparACT,
     gridExtra,

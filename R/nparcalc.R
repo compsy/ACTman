@@ -1,16 +1,17 @@
+#! Zou je beschrijving van lastwhole24h.pos en ACTdata_file kunnen invullen hier onder?
 #' Nparcalc
 #'
 #' Calculate IS, etc. with IS Calculation Module
 #'
-#! Zou je beschrijvingen van de parameters en returnwaarden hieronder kunnen invullen?
-#! @param lastwhole24h.pos
-#! @param newdir
-#! @param myACTdevice
-#! @param ACTdata_file
+#' @param lastwhole24h.pos
+#' @param newdir Working directory
+#' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
+#' @param ACTdata_file
+#' @param plotactogram Boolean value indicating whether or not to plot an actogram.
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
 #' @export
-nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
+nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file, plotactogram) {
   ## Defined constants
   secshour <- 60*60 # Seconds per hour
   secsday <- 24*secshour # Seconds per day
@@ -227,6 +228,9 @@ nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
   RA <- Amp/(L5 + M10)
   result$RA <- RA
 
+  # Plot actogram
+  if (plotactogram)
+    plot_actogram()
 
   # Return the list with all result values.
   result
