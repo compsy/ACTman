@@ -27,7 +27,7 @@ sleepdata_overview <- function(workdir, actdata) {
 
   #! Ik snap niet waarom je hier keihard die nkdata sleeplog inleest. Is dat niet steeds dezelfde data voor alle personen?
   data.sleeplog <- read.csv("NKdata_sleeplog.csv")
-  data.sleeplog.sub <- data.sleeplog[, c(1,2,3)]
+  data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
 
   # Recreate data$Time var for this module
   data$Time <- strftime(data$Date, format = "%H:%M:%S")
@@ -48,7 +48,7 @@ sleepdata_overview <- function(workdir, actdata) {
     print(paste("data.sub.night", a, sep = ""))
 
     if (a == 1) {
-      aaa <- data[1:end.night.1,]
+      aaa <- data[1:end.night.1, ]
     } else {
       aaa <- data[(end.night.1 + (1 + (1440 * (a - 2)))):(end.night.1 + (1440 * (a - 1))), ]
     }
@@ -93,10 +93,10 @@ sleepdata_overview <- function(workdir, actdata) {
                                        aaa$epoch.sleep.chance
     )
 
-    aaa.bedtime <- aaa[rownr.bedtime:rownr.gotup,] # This includes only the time in which the subject is in bed handpicked in this sample based on lights out (00:17) / got up (7:59) data
+    aaa.bedtime <- aaa[rownr.bedtime:rownr.gotup, ] # This includes only the time in which the subject is in bed handpicked in this sample based on lights out (00:17) / got up (7:59) data
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
-    sleep.start. <- aaa.bedtime[which(aaa.bedtime$sleep.chance < 2),]
+    sleep.start. <- aaa.bedtime[which(aaa.bedtime$sleep.chance < 2), ]
     ## First row now contains the start of sleep.
     sleep.start <- as.character(sleep.start.$Time[1])
     rownr.sleep.start <- which(aaa$Time == sleep.start)
@@ -111,11 +111,11 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## !!Problem with day 4 sleep.end might originate here, as sleep.end (08:53:00) ligt buiten range rownr.gotup (<08:00:00)??
     ## !! Adding "+24" to rownr.gotup is a work-around. (24 seems to be minimum to switch 05:54:00 to 08:53:00)??
-    # aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup+24),] # This includes only the time in which the subject is in bed handpicked in this sample based on sleep.start (00:29) / got up (7:59) data
-    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup),]
+    # aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup+24), ] # This includes only the time in which the subject is in bed handpicked in this sample based on sleep.start (00:29) / got up (7:59) data
+    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup), ]
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
-    sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance == 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)),]
+    sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance == 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)), ]
     ## First row now contains the start of sleep.
     sleep.end <- as.character(sleep.end.$Time[nrow(sleep.end.)])
     rownr.sleep.end <- which(aaa$Time == sleep.end)
@@ -123,7 +123,7 @@ sleepdata_overview <- function(workdir, actdata) {
     ## END OF Step 2: Calculate sleep for night1.------------------------------------------------------------------------
 
     ## Step 3: Calculate sleep analysis data.----------------------------------------------------------------------------
-    aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1),] # Subframe the assumed sleep time, -1 is done otherwise it includes the first wake bout.
+    aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ] # Subframe the assumed sleep time, -1 is done otherwise it includes the first wake bout.
     TimeInBed <- (rownr.gotup - rownr.bedtime)/60 # The total elapsed time between the "Lights Out" and "Got Up" times
     AssumedSleep <- (rownr.sleep.end - rownr.sleep.start)/60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
@@ -154,16 +154,16 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## END OF Step 3: Calculate sleep analysis data.------------------------------------------------------------------
 
-    # print(aaa[1,])
+    # print(aaa[1, ])
 
     ## Step 4: Fill in the Sleep Overview
 
     # Attach Sleep Analysis output to overview
-    sleepdata.overview[a,"date"] <- as.character(data.sleeplog[a, "Date"])
-    sleepdata.overview[a,"sleep.start"] <- sleep.start
-    sleepdata.overview[a,"sleep.end"] <- sleep.end
-    sleepdata.overview[a,"sleep.efficiency"] <- SleepEfficiency
-    sleepdata.overview[a,"sleep.latency"] <- SleepLatency
+    sleepdata.overview[a, "date"] <- as.character(data.sleeplog[a, "Date"])
+    sleepdata.overview[a, "sleep.start"] <- sleep.start
+    sleepdata.overview[a, "sleep.end"] <- sleep.end
+    sleepdata.overview[a, "sleep.efficiency"] <- SleepEfficiency
+    sleepdata.overview[a, "sleep.latency"] <- SleepLatency
 
   }
 

@@ -70,7 +70,7 @@ plot_actogram <- function() {
 
   # # 24 hour plot
   # par(mfrow = c(14, 1)) # Set parameters for plots
-  # par(mar = c(1,4,1,4)) # Set margins so plots are closer together
+  # par(mar = c(1, 4, 1, 4)) # Set margins so plots are closer together
   # barplot(day1$Activity, ylim = ylimit)
   # abline(v = day2start+75, lty = 2) # Add start line (+75 = marge)
   # barplot(day2$Activity, ylim = ylimit)

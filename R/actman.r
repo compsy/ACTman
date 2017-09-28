@@ -200,7 +200,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     #!  mytimedatea = as.POSIXct(strptime('2017-03-06 11:19:03', format = '%Y-%m-%d %H:%M:%S'), tz = "Europe/Amsterdam")
     #!
     #! Or, if you have the values as numbers, you can use ISOdate:
-    #!  mytimedateb = ISOdate(2017, 3, 6, 11, 19, 3,tz = "Europe/Amsterdam")
+    #!  mytimedateb = ISOdate(2017, 3, 6, 11, 19, 3, tz = "Europe/Amsterdam")
     #!
     #! These two statements return identical objects.
     #!
