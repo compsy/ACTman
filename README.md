@@ -5,7 +5,7 @@ ACTman
 
 ACTman manages Actigraphy data.
 
-To install, type the following (note that this doesn't actually work right now because the repo is private):
+To install, type the following:
 
     install.packages('devtools')
     devtools::install_github('compsy/ACTman')
