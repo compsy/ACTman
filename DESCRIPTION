@@ -19,5 +19,6 @@ Suggests:
 Imports:
     stats,
     nparACT,
-    gridExtra
+    gridExtra,
+    beepr
 RoxygenNote: 5.0.1
