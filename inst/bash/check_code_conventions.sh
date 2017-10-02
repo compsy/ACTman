@@ -1,5 +1,5 @@
 #!/bin/bash
-matching_lines=$(grep --include "*.r" -nrE "[^ !=><]=|[,=][^ =]|[^ <]<-|<-[^ ]|[^ ](<=|==|!=|>=)|(<=|==|!=|>=)[^ ]" . 2>/dev/null)
+matching_lines=$(grep --include "*.[rR]" -nrE "[^ !=><]=|[,=][^ =]|[^ <]<-|<-[^ ]|[^ ](<=|==|!=|>=)|(<=|==|!=|>=)[^ ]" . 2>/dev/null)
 if [[ $matching_lines == '' ]]
 then
 	exit 0

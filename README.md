@@ -5,7 +5,23 @@ ACTman
 
 ACTman manages Actigraphy data.
 
-To install, type the following (note that this doesn't actually work right now because the repo is private):
+To install, type the following:
 
     install.packages('devtools')
     devtools::install_github('compsy/ACTman')
+
+
+### Example use
+
+To get the actdata overview:
+
+    View(ACTman::ACTman(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
+                        myACTdevice = "Actiwatch2",
+                        iwantsleepanalysis = FALSE,
+                        plotactogram = FALSE,
+                        selectperiod = FALSE,
+                        startperiod = "2016-10-03 00:00:00",
+                        daysperiod = 14,
+                        tune = FALSE))
+
+Type ?ACTman::ACTman for help.
