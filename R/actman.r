@@ -9,21 +9,20 @@
 ### > Runs sleep or CRV analyses                        ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 
-#! Zou je beschrijvingen van de andere parameters hieronder kunnen invullen?
-
-#' Loop script
+#' ACTman - Actigraphy Manager
 #'
-#' This script loops and does some stuff.
+#' ACTman manages actigraphy data whilst offering pre-processing and analyses options.
+#' This initial version supports the 'Actiwatch 2' and 'MotionWatch 8' actigraphy devices,
+#' whilst allowing for both sleep and circadian rhythm analyses.
 #'
 #' @param workdir The working directory of the script.
-#' @param sleepdatadir The directory with actogram and sleep analysis data.
-#' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
-#' @param iwantsleepanalysis
-#' @param plotactogram
-#' @param selectperiod
-#' @param startperiod
-#' @param daysperiod
-#' @param tune
+#' @param sleepdatadir An optional vector specifying the directory for actogram and sleep analysis data.
+#' @param myACTdevice Name of the input device used. Should be either 'Actiwatch2' or 'MW8'.
+#' @param iwantsleepanalysis  Boolean value indicating whether sleep analysis should be performed.
+#' @param plotactogram Boolean value indicating whether an actogram has to be plotted.
+#' @param selectperiod Boolean value indicating whether a specific period has to be selected.
+#' @param startperiod An optional vector specifying single or multiple period starts. Should be in the format "2016-10-03 00:00:00".
+#' @param daysperiod An optional vector specifying the length in days of the period.
 #'
 #' @return nothing
 #' @examples
@@ -34,31 +33,18 @@
 #'                     plotactogram = FALSE,
 #'                     selectperiod = FALSE,
 #'                     startperiod = "2016-10-03 00:00:00",
-#'                     daysperiod = 14,
-#'                     tune = FALSE))
+#'                     daysperiod = 14))
 #' }
 #' @export
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
-                   myACTdevice = "Actiwatch2", iwantsleepanalysis, plotactogram, selectperiod,
-                   startperiod, daysperiod, tune) {
+                   myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE, selectperiod = FALSE,
+                   startperiod, daysperiod) {
 
   ## Step 1: Basic Operations:
-  # Load and/or install required libraries
-  #! Dit is niet nodig als je de functie exporteert uit de package
-  #! Deze regels kun je dus weghalen.
-  #if(!require('nparACT')){install.packages('nparACT', dep = TRUE)};library('nparACT')
-  #if(!require('gridExtra')){install.packages('gridExtra', dep = TRUE)};library('gridExtra')
-  #if(!require('beepr')){install.packages('beepr', dep = TRUE)};library('beepr')
-
   # Set working directory
   # workdir <- "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata3" # mydata2 = Actiwatch2, mydata3 = MW8 sleep
   setwd(workdir)
-
-  #! De onderstaande regels kun je weghalen omdat ze worden meegegeven in de functieaanroep.
-  # Set ACTman function arguments
-  # myACTdevice <- "MW8" # Either Actiwatch2 or MW8
-  # iwantsleepanalysis <- TRUE # TRUE for mydata3, FALSE for others
 
   # List files and initiate overview file
   pattern_file <- ""
@@ -215,11 +201,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     summertime.start.2015 <- "2015-03-29 02:00:00" # Assign summertime start date for 2015
     summertime.start.2014 <- "2014-03-30 02:00:00" # Assign summertime start date for 2014
     summertime.start.indata <- summertime.start.2014 %in% ACTdata.1.sub$Date | summertime.start.2015 %in% ACTdata.1.sub$Date # Detect if summertime start is in dataset
-    #! De rest van deze summertime variabelen wordt niet gebruikt? (regels weghalen?)
-    # summertime.start.pos <- which(ACTdata.1.sub$Date == summertime.start) # Position of summertime start
-    # summertime.end <- "2015-10-25 02:00:00" # Assign summertime end date for 2015
-    # summertime.end.indata <- summertime.end %in% ACTdata.1.sub$Date # Detect if summertime end is in dataset
-    # summertime.end.pos <- which(ACTdata.1.sub$Date == summertime.end) # Position of summertime end
 
     ## Summertime start Detection and 14day length correction
     print("Task 1: Summertime Start Detection and Correction")
@@ -371,11 +352,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   pdf("Experimental Variables - Table.pdf")
   gridExtra::grid.table(ACTdata.1.sub.expvars)
   dev.off()
-
-  # Beep when done.
-  if (tune) {
-    beepr::beep(3)
-  }
 
   # Returned result.
   if (iwantsleepanalysis) {

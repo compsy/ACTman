@@ -1,12 +1,11 @@
-#! Zou je beschrijving van lastwhole24h.pos en ACTdata_file kunnen invullen hier onder?
 #' Nparcalc
 #'
-#' Calculate IS, etc. with IS Calculation Module
+#' Calculate non-parametrical circadian rhythm variables, such as: IS, IV, L5, and M10.
 #'
-#' @param lastwhole24h.pos
-#' @param newdir Working directory
+#' @param lastwhole24h.pos Position in the data of the last whole 24 hour block.
+#' @param newdir Working directory.
 #' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
-#' @param ACTdata_file
+#' @param ACTdata_file List of the actigraphy data files.
 #' @param plotactogram Boolean value indicating whether or not to plot an actogram.
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
@@ -229,9 +228,9 @@ nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file, plotac
   result$RA <- RA
 
   # Plot actogram
-  if (plotactogram)
+  if (plotactogram){
     plot_actogram()
-
+  }
   # Return the list with all result values.
   result
 }

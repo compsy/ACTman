@@ -1,9 +1,3 @@
-###########################################################
-### ACTman Sleep Analysis Module                        ###
-### Script authors: Yoram Kunkels & Stefan Knapen       ###
-### Edited on: 23/06/2017                               ###
-### > Now uses Managed data (ACTdata.1.sub)             ###
-###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 #' sleepdata_overview
 #'
 #' Calculate sleep data
