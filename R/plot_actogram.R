@@ -27,7 +27,7 @@ plot_actogram <- function() {
   day2.start <- day2_start[1] # To remove all other midnight startingpoints.
   day2start <- day2.start - 1
 
-  day1 <- slice(act_data, 1:(day2start))
+  day1 <- dplyr::slice(act_data, 1:(day2start))
   day1.rest <- 1440 - day2start
 
   # Use this starting point as a way to calculate days, make every day a seperate variable, and then plot everything after each other.
