@@ -1,13 +1,12 @@
-###########################################################
-### ACTman package                                      ###
-### Script authors: Yoram Kunkels & Stefan Knapen       ###
-### Contributors: Ando Emerencia                        ###
-### Date: 28-09-2017                                    ###
-### Supported devices: Actiwatch 2 Respironics          ###
-###                    & MW8                            ###
-### > Made ACTman function & added arguments            ###
-### > Runs sleep or CRV analyses                        ###
-###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
+#############################################################################
+### ACTman package                                                        ###
+### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
+### Most recent Update: 12-10-2017                                        ###
+### Supported devices: Actiwatch 2 Respironics & MW8                      ###
+### > Runs sleep or CRV analyses                                          ###
+### > Added Sourcing from Github, various minor fixes                     ###
+###     - plot_actogram not yet working                                   ###
+###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 
 #' ACTman - Actigraphy Manager
 #'
@@ -35,16 +34,18 @@
 #'                     startperiod = "2016-10-03 00:00:00",
 #'                     daysperiod = 14))
 #' }
-#' @export
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE, selectperiod = FALSE,
                    startperiod, daysperiod) {
 
   ## Step 1: Basic Operations:
-  # Set working directory
+  # Set current working directory and set back to old working directory on exit
   # workdir <- "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata3" # mydata2 = Actiwatch2, mydata3 = MW8 sleep
+  # oldworkdir <- getwd()
   setwd(workdir)
+  # on.exit(setwd(oldworkdir), add = TRUE)
+
 
   # List files and initiate overview file
   pattern_file <- ""
@@ -82,7 +83,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ## Step 2: Loop:
   ## Loop Description: for each of the files listed in working directory, ...
   #! Waarom is deze onderstaande stap nodig? (initializing the pdf plot)
-  pdf("Actigraphy Data - Plot.pdf") # Initialise .pdf plotting
+  # pdf("Actigraphy Data - Plot.pdf") # Initialise .pdf plotting
   for (i in 1:length(ACTdata.files)) {
 
     print(paste("*** Start of Dataset", i, "***"))
@@ -92,18 +93,23 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Read and manage data:
     if (myACTdevice == "Actiwatch2") { # Device-specific Data Management
+
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE)
       ACTdata.1.sub <- ACTdata.1[, c(4, 5, 6)]
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
+
     } else if (myACTdevice == "MW8") { # Device-specific Data Management
+
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
       # ACTdata.1 <- read.csv2(paste(ACTdata.files[i]), header = TRUE, stringsAsFactors = FALSE)
 
+      #! YKK: Error in plot_actogram stems here
       ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
 
       ACTdata.1.sub <- ACTdata.1
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
       ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
+
     } else {
       stop(paste("Unknown value for myACTdevice (should be Actiwatch2 or MW8):", myACTdevice))
     }
@@ -279,8 +285,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.overview[i, "end3"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
 
     ## Use nparACT Package to calculate Experimental Variables
-    ## Pre-process!!
-
+    ## Pre-process
     dir.create(file.path(workdir, "Managed Datasets"))
     setwd(file.path(workdir, "Managed Datasets"))
 
@@ -293,8 +298,15 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     write.table(ACTdata.1.sub, row.names = FALSE, col.names = FALSE,
                 file = paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt"))
 
-    # Calculate IS, etc. with IS Calculation Module (Check version for correct operation!)
+
+    ## Calculate IS, etc. with IS Calculation Module (Check version for correct operation!)
     #! Dit staat nu in een ander bestand.
+    #! YKK: nu gesourced vanaf github: 'script.nparcalc'
+
+    # Read managed dataset for CRV analysis
+    CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
+
+
     r2 <- nparcalc(lastwhole24h.pos = ACTdata.1.sub.lastwhole24h.pos,
                    newdir = newdir,
                    myACTdevice = myACTdevice,
@@ -310,9 +322,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
     ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
 
+    # Set wd back to main workdir
+    setwd(workdir)
 
     ## Use nparACT Package to calculate Experimental Variables
-
     # Calculate IS, etc. with nparACT
     r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
 
@@ -334,7 +347,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     print(paste("--------------------------------------", "END OF DATASET", i, "---", "@", round(i*(100/length(ACTdata.files))), "% DONE",  "--------------------------------------"))
   }
-  dev.off()
+  # dev.off()
 
   ## END OF Step 2: Loop.----------------------------------------------------------------------------------------
 
@@ -349,9 +362,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time", "No. of Days")
 
   # Export Experimental variables to .pdf
-  pdf("Experimental Variables - Table.pdf")
+  pdf("Table - Experimental Variables.pdf")
   gridExtra::grid.table(ACTdata.1.sub.expvars)
   dev.off()
+
+  # Export ACTdata.overview to .pdf
+  pdf("Table - ACTdata.overview.pdf")
+  gridExtra::grid.table(ACTdata.overview)
+  dev.off()
+
+  # Plot actogram
+  if(plotactogram == TRUE){
+    plot_actogram()
+  }
 
   # Returned result.
   if (iwantsleepanalysis) {

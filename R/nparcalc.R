@@ -9,7 +9,6 @@
 #' @param plotactogram Boolean value indicating whether or not to plot an actogram.
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
-#' @export
 nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file, plotactogram) {
   ## Defined constants
   secshour <- 60*60 # Seconds per hour

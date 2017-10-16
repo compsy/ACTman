@@ -15,7 +15,6 @@
 #'
 #' Plots the actograms.
 #'
-#' @export
 plot_actogram <- function() {
   # Load data
   act_data <- CRV.data

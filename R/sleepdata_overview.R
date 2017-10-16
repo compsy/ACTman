@@ -6,7 +6,6 @@
 #' @param actdata The activity data.
 #'
 #' @return Returns a sleepdata overview.
-#' @export
 sleepdata_overview <- function(workdir, actdata) {
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
 
