@@ -4,7 +4,10 @@
 \alias{plot_actogram}
 \title{plot_actogram}
 \usage{
-plot_actogram()
+plot_actogram(CRV_data)
+}
+\arguments{
+\item{CRV_data}{is the CRV.data object.}
 }
 \description{
 Plots the actograms.

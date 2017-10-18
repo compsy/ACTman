@@ -15,9 +15,12 @@
 #'
 #' Plots the actograms.
 #'
-plot_actogram <- function() {
+#' @param CRV_data is the CRV.data object.
+#'
+plot_actogram <- function(CRV_data) {
+  pdf("Actigraphy Data - Plot.pdf")
   # Load data
-  act_data <- CRV.data
+  act_data <- CRV_data
   #! Deze variabele wordt nergens gebruikt? (Heb m gecomment)
   #Days_count <- length(unique(substr(act_data$Date, start = 1, stop = 10))) # Return number of days
 
@@ -168,4 +171,5 @@ plot_actogram <- function() {
   barplot(day.12.13$Activity, ylim = ylimit, ylab = "Day 12")
   barplot(day.13.14$Activity, ylim = ylimit, ylab = "Day 13")
 
+  dev.off()
 }

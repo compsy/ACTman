@@ -6,10 +6,9 @@
 #' @param newdir Working directory.
 #' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
 #' @param ACTdata_file List of the actigraphy data files.
-#' @param plotactogram Boolean value indicating whether or not to plot an actogram.
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
-nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file, plotactogram) {
+nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
   ## Defined constants
   secshour <- 60*60 # Seconds per hour
   secsday <- 24*secshour # Seconds per day
@@ -226,10 +225,9 @@ nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file, plotac
   RA <- Amp/(L5 + M10)
   result$RA <- RA
 
-  # Plot actogram
-  if (plotactogram){
-    plot_actogram()
-  }
+  # return actogram data
+  result$CRV_data <- CRV.data
+
   # Return the list with all result values.
   result
 }

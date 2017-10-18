@@ -82,8 +82,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   ## Step 2: Loop:
   ## Loop Description: for each of the files listed in working directory, ...
-  #! Waarom is deze onderstaande stap nodig? (initializing the pdf plot)
-  # pdf("Actigraphy Data - Plot.pdf") # Initialise .pdf plotting
   for (i in 1:length(ACTdata.files)) {
 
     print(paste("*** Start of Dataset", i, "***"))
@@ -304,14 +302,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     #! YKK: nu gesourced vanaf github: 'script.nparcalc'
 
     # Read managed dataset for CRV analysis
+    ando <<- file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt"))
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
 
 
     r2 <- nparcalc(lastwhole24h.pos = ACTdata.1.sub.lastwhole24h.pos,
                    newdir = newdir,
                    myACTdevice = myACTdevice,
-                   ACTdata_file = ACTdata.files[i],
-                   plotactogram = plotactogram)
+                   ACTdata_file = ACTdata.files[i])
+
+    # Plot actogram
+    if(plotactogram == TRUE){
+      plot_actogram(CRV_data = r2$CRV_data)
+    }
 
     # Attach r2 output to overview
     ACTdata.overview[i, "r2.IS"] <- r2$IS
@@ -325,7 +328,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # Set wd back to main workdir
     setwd(workdir)
 
-    ## Use nparACT Package to calculate Experimental Variables
+    # Use nparACT Package to calculate Experimental Variables
     # Calculate IS, etc. with nparACT
     r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
 
@@ -370,11 +373,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   pdf("Table - ACTdata.overview.pdf")
   gridExtra::grid.table(ACTdata.overview)
   dev.off()
-
-  # Plot actogram
-  if(plotactogram == TRUE){
-    plot_actogram()
-  }
 
   # Returned result.
   if (iwantsleepanalysis) {
