@@ -1,7 +1,7 @@
 Package: ACTman
 Type: Package
 Title: Actigraphy manager
-Version: 1.0-1
+Version: 1.0-2
 Date: 2017-09-28
 Authors@R: c(person("Yoram","Kunkels",role = c("aut","cre"),
     email = "y.k.kunkels@umcg.nl"),
@@ -21,5 +21,4 @@ Imports:
     stats,
     nparACT,
     gridExtra,
-    beepr
 RoxygenNote: 6.0.1
