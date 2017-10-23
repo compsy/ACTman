@@ -63,10 +63,10 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## Now calculate sleep start from a certain point in the data (based on sleep log)
     bedtime <- paste((as.character(data.sleeplog.sub$BedTime[a])), ":00", sep = "")
-    rownr.bedtime <- which(aaa$Time == bedtime)
+    rownr.bedtime <- which(aaa$Time == bedtime)[1]
 
     gotup <- paste((as.character(data.sleeplog.sub$GotUp[a])), ":00", sep = "")
-    rownr.gotup <- which(aaa$Time == gotup)
+    rownr.gotup <- which(aaa$Time == gotup)[1]
 
     ## Calculation should indicate the moment of sleep start and 10 consecutive non-active epochs. 1 epoch can have activity.
 
@@ -92,7 +92,7 @@ sleepdata_overview <- function(workdir, actdata) {
     sleep.start. <- aaa.bedtime[which(aaa.bedtime$sleep.chance < 2), ]
     ## First row now contains the start of sleep.
     sleep.start <- as.character(sleep.start.$Time[1])
-    rownr.sleep.start <- which(aaa$Time == sleep.start)
+    rownr.sleep.start <- which(aaa$Time == sleep.start)[1]
 
     ## Calculate wake up time
     aaa$wakeup.chance <- (lag(aaa$epoch.sleep.chance, n = 1L) +
@@ -108,10 +108,11 @@ sleepdata_overview <- function(workdir, actdata) {
     aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup), ]
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
-    sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance == 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)), ]
+    #! Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
+    sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance >= 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)), ]
     ## First row now contains the start of sleep.
     sleep.end <- as.character(sleep.end.$Time[nrow(sleep.end.)])
-    rownr.sleep.end <- which(aaa$Time == sleep.end)
+    rownr.sleep.end <- which(aaa$Time == sleep.end)[1]
 
     ## END OF Step 2: Calculate sleep for night1.------------------------------------------------------------------------
 
@@ -121,12 +122,14 @@ sleepdata_overview <- function(workdir, actdata) {
     AssumedSleep <- (rownr.sleep.end - rownr.sleep.start)/60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
     ActualSleep <- ((AssumedSleep * 60) - WakeEpochs)/60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
-    #ActualSleepPerc <- (ActualSleep / AssumedSleep)*100 # Actual sleep time expressed as a percentage of the assumed sleep time
-    #
-    #ActualWakeTime <- WakeEpochs/60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
-    #ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
+    ActualSleepPerc <- (ActualSleep / AssumedSleep)*100 # Actual sleep time expressed as a percentage of the assumed sleep time
+
+    ActualWakeTime <- WakeEpochs/60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
+    ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
     SleepEfficiency <- (ActualSleep/TimeInBed)*100 # Actual sleep time expressed as a percentage of time in bed.
     SleepLatency <- (rownr.sleep.start - rownr.bedtime)/60 # The time between "Lights Out" and "Fell Asleep"
+
+
     # To add:
     #SleepBouts # The number of contiguous sections categorised as sleep in the epoch-by-epoch wake/sleep categorisation
     #WakeBouts # The number of contiguous sections categorised as wake in the epoch-by-epoch wake/sleep categorisation

@@ -18,6 +18,10 @@
 #' @param CRV_data is the CRV.data object.
 #'
 plot_actogram <- function(CRV_data) {
+
+  workdir.save <- getwd()
+  setwd(ACTman.formals$workdir)
+
   pdf("Actigraphy Data - Plot.pdf")
   # Load data
   act_data <- CRV_data
@@ -172,4 +176,5 @@ plot_actogram <- function(CRV_data) {
   barplot(day.13.14$Activity, ylim = ylimit, ylab = "Day 13")
 
   dev.off()
+  setwd(workdir.save)
 }

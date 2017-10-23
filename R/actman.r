@@ -39,6 +39,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE, selectperiod = FALSE,
                    startperiod, daysperiod) {
 
+  ACTman.formals <<- formals(ACTman)
+
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
   # workdir <- "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata3" # mydata2 = Actiwatch2, mydata3 = MW8 sleep
@@ -84,6 +86,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ## Loop Description: for each of the files listed in working directory, ...
   for (i in 1:length(ACTdata.files)) {
 
+    # Test for user-defined arguments
+    if (myACTdevice != "MW8" && myACTdevice != "Actiwatch2" ) {
+      stop(paste("Unknown value for myACTdevice (should be Actiwatch2 or MW8):", myACTdevice))
+    }
+
     print(paste("*** Start of Dataset", i, "***"))
     print("")
     print(paste("Dataset Name:", ACTdata.overview[i, "filename"]))
@@ -96,21 +103,29 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.1.sub <- ACTdata.1[, c(4, 5, 6)]
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
 
+      iwantCRVanalysis <- TRUE
+
     } else if (myACTdevice == "MW8") { # Device-specific Data Management
 
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
       # ACTdata.1 <- read.csv2(paste(ACTdata.files[i]), header = TRUE, stringsAsFactors = FALSE)
 
-      #! YKK: Error in plot_actogram stems here
-      ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
+      if (any(ACTdata.1[,1] == "Raw data:")){
+          ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
+      } else {
+        ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = TRUE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
+      }
 
       ACTdata.1.sub <- ACTdata.1
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
       ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
 
-    } else {
-      stop(paste("Unknown value for myACTdevice (should be Actiwatch2 or MW8):", myACTdevice))
+      iwantCRVanalysis <- TRUE
+
     }
+
+
+
 
 
     ## Step 2.1: Managing the Data
@@ -302,7 +317,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     #! YKK: nu gesourced vanaf github: 'script.nparcalc'
 
     # Read managed dataset for CRV analysis
-    ando <<- file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt"))
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
 
 
