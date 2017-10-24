@@ -1,11 +1,10 @@
 #############################################################################
 ### ACTman package                                                        ###
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
-### Most recent Update: 12-10-2017                                        ###
+### Most recent Update: 24-10-2017                                        ###
 ### Supported devices: Actiwatch 2 Respironics & MW8                      ###
 ### > Runs sleep or CRV analyses                                          ###
-### > Added Sourcing from Github, various minor fixes                     ###
-###     - plot_actogram not yet working                                   ###
+### > Plotting now works                                                  ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 
 #' ACTman - Actigraphy Manager
@@ -22,6 +21,7 @@
 #' @param selectperiod Boolean value indicating whether a specific period has to be selected.
 #' @param startperiod An optional vector specifying single or multiple period starts. Should be in the format "2016-10-03 00:00:00".
 #' @param daysperiod An optional vector specifying the length in days of the period.
+#' @param movingwindow Boolean value indicating whether a moving window should be utilised.
 #'
 #' @return nothing
 #' @examples
@@ -32,12 +32,12 @@
 #'                     plotactogram = FALSE,
 #'                     selectperiod = FALSE,
 #'                     startperiod = "2016-10-03 00:00:00",
-#'                     daysperiod = 14))
+#'                     daysperiod = 14, movingwindow = FALSE))
 #' }
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE, selectperiod = FALSE,
-                   startperiod, daysperiod) {
+                   startperiod, daysperiod, movingwindow = FALSE) {
 
   ACTman.formals <<- formals(ACTman)
 
@@ -312,32 +312,35 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                 file = paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt"))
 
 
-    ## Calculate IS, etc. with IS Calculation Module (Check version for correct operation!)
-    #! Dit staat nu in een ander bestand.
-    #! YKK: nu gesourced vanaf github: 'script.nparcalc'
+    ## Calculate IS, etc. with Circadian Rhythm Variables (CRV) Calculation Module (nparcalc)
 
     # Read managed dataset for CRV analysis
-    CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
+    CRV.data <<- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
 
+    if(movingwindow == TRUE){
 
-    r2 <- nparcalc(lastwhole24h.pos = ACTdata.1.sub.lastwhole24h.pos,
-                   newdir = newdir,
-                   myACTdevice = myACTdevice,
-                   ACTdata_file = ACTdata.files[i])
+    } else{
+
+       r2 <- nparcalc(lastwhole24h.pos = ACTdata.1.sub.lastwhole24h.pos,
+                       newdir = newdir,
+                       myACTdevice = myACTdevice,
+                       ACTdata_file = ACTdata.files[i])
+
+        # Attach r2 output to overview
+        ACTdata.overview[i, "r2.IS"] <- r2$IS
+        ACTdata.overview[i, "r2.IV"] <- r2$IV
+        ACTdata.overview[i, "r2.RA"] <- round(r2$RA, 2)
+        ACTdata.overview[i, "r2.L5"] <- round(r2$L5, 2)
+        ACTdata.overview[i, "r2.L5_starttime"] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
+        ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
+        ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
+
+    }
 
     # Plot actogram
     if(plotactogram == TRUE){
       plot_actogram(CRV_data = r2$CRV_data)
     }
-
-    # Attach r2 output to overview
-    ACTdata.overview[i, "r2.IS"] <- r2$IS
-    ACTdata.overview[i, "r2.IV"] <- r2$IV
-    ACTdata.overview[i, "r2.RA"] <- round(r2$RA, 2)
-    ACTdata.overview[i, "r2.L5"] <- round(r2$L5, 2)
-    ACTdata.overview[i, "r2.L5_starttime"] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
-    ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
-    ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
 
     # Set wd back to main workdir
     setwd(workdir)

@@ -16,7 +16,7 @@ nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
   result = list()
 
   ## Read Data
-  CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
+  # CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
 
   if (ncol(CRV.data) > 2) {
     CRV.data$Date <- paste(CRV.data$V1, " ", CRV.data$V2)
