@@ -2,13 +2,16 @@
 #'
 #' Calculate non-parametrical circadian rhythm variables, such as: IS, IV, L5, and M10.
 #'
-#' @param lastwhole24h.pos Position in the data of the last whole 24 hour block.
-#' @param newdir Working directory.
+#' @param lastwhole24h.pos Position in the data of the last whole 24 hour block.!!!(UNUSED???)!!!
+#' @param newdir Working directory. !!!(UNUSED???)!!!
 #' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
-#' @param ACTdata_file List of the actigraphy data files.
+#' @param ACTdata_file List of the actigraphy data files. !!!(UNUSED???)!!!
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
-nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
+
+# nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
+
+nparcalc <- function(myACTdevice) {
   ## Defined constants
   secshour <- 60*60 # Seconds per hour
   secsday <- 24*secshour # Seconds per day
@@ -33,7 +36,8 @@ nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
   CRV.data.start <- which(CRV.data$Date == CRV.data.wholehours[1, "Date"])
 
   if (myACTdevice == "MW8") {
-    CRV.data.end <- lastwhole24h.pos
+    # CRV.data.end <- lastwhole24h.pos
+    CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]
   } else {# Actiwatch2 assumed
     CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))
   }
@@ -56,7 +60,14 @@ nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
                   list(hour = cut(as.POSIXct(CRV.data[, "Date"]), breaks = "hour")),
                   mean)
 
-  xi <- xi[1:(nrow(xi) - 1), ]
+
+  if (ACTman.formals$movingwindow == FALSE){
+      xi <- xi[1:(nrow(xi) - 1), ]
+  } else {
+      xi <- xi[1:(nrow(xi)), ]
+  }
+
+
   xi <- xi$x
 
   # X

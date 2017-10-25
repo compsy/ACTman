@@ -316,15 +316,58 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Read managed dataset for CRV analysis
     CRV.data <<- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
+    CRV.data.original <<- CRV.data
+
 
     if(movingwindow == TRUE){
 
+      rollingwindow <- function(x, window){
+
+        out <- data.frame()
+        n <- nrow(x)
+
+        for(i in 1:(floor(n/window))){
+
+          if(i == 1){
+            out <- x[i:window,]
+          } else {
+            # out <- x[(i+(window-(i)+1)):(i*window),]
+
+            out <- x[((i-1) * 1440):(((i-1) * 1440) + window),]
+          }
+
+          out <<- out
+          CRV.data <<- out
+          r2 <- ACTman:::nparcalc(myACTdevice = "MW8")
+
+          print("---------------------------------------------------------------------------------")
+          print(paste("Roling window CRV analysis output - Window step:", (i-1)))
+          print(paste("Begin time:", CRV.data[1, "V1"], CRV.data[1, "V2"]))
+          print(paste("End time:", CRV.data[nrow(CRV.data), "V1"], CRV.data[nrow(CRV.data), "V2"]))
+          print(paste("nOBS:", nrow(CRV.data)))
+          print("")
+          print(paste("IS: ", r2$IS))
+          print(paste("IV: ", r2$IV))
+          print(paste("RA: ", round(r2$RA, 2)))
+          print(paste("L5: ", round(r2$L5, 2)))
+          print(paste("L5_starttime: ", as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))))
+          print(paste("M10: ", round(r2$M10, 2)))
+          print(paste("M10_starttime: ", as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))))
+          print("---------------------------------------------------------------------------------")
+        }
+
+      }
+
+      rollingwindow(x = CRV.data.original, window = (1440*3))
+
     } else{
 
-       r2 <- nparcalc(lastwhole24h.pos = ACTdata.1.sub.lastwhole24h.pos,
-                       newdir = newdir,
-                       myACTdevice = myACTdevice,
-                       ACTdata_file = ACTdata.files[i])
+       # r2 <- nparcalc(lastwhole24h.pos = ACTdata.1.sub.lastwhole24h.pos,
+       #                 newdir = newdir,
+       #                 myACTdevice = myACTdevice,
+       #                 ACTdata_file = ACTdata.files[i])
+
+        r2 <- nparcalc(myACTdevice = myACTdevice)
 
         # Attach r2 output to overview
         ACTdata.overview[i, "r2.IS"] <- r2$IS
