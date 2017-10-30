@@ -2,7 +2,6 @@
 
 export(ACTman)
 importFrom(nparACT, nparACT_base_loop)
-importFrom(beepr, beep)
 importFrom(gridExtra, grid.table)
 importFrom(dplyr, mutate)
 importFrom(dplyr, lead)
