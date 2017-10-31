@@ -16,11 +16,12 @@
 #' Plots the actograms.
 #'
 #' @param CRV_data is the CRV.data object.
+#' @param workdir the working directory as supplied to ACTman.
 #'
-plot_actogram <- function(CRV_data) {
+plot_actogram <- function(CRV_data, workdir) {
 
   workdir.save <- getwd()
-  setwd(ACTman.formals$workdir)
+  setwd(workdir)
 
   pdf("Actigraphy Data - Plot.pdf")
   # Load data

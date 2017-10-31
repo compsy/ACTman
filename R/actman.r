@@ -39,8 +39,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE, selectperiod = FALSE,
                    startperiod, daysperiod, movingwindow = FALSE) {
 
-  ACTman.formals <<- formals(ACTman)
-
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
   # workdir <- "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata3" # mydata2 = Actiwatch2, mydata3 = MW8 sleep
@@ -110,7 +108,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
       # ACTdata.1 <- read.csv2(paste(ACTdata.files[i]), header = TRUE, stringsAsFactors = FALSE)
 
-      if (any(ACTdata.1[, 1] == "Raw data:")){
+      if (any(ACTdata.1[, 1] == "Raw data:")) {
           ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
       } else {
         ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = TRUE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
@@ -190,7 +188,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # ACTdata.1.sub.lastwhole24h <- as.POSIXct(ACTdata.overview[i, "start"]) + secs14day - secsday # Last whole 24 hour component
 
     # ACTdata.1.sub.lastwhole24h.pos <<- which(ACTdata.1.sub$Date == as.character(ACTdata.1.sub.lastwhole24h))
-    ACTdata.1.sub.lastwhole24h.pos <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]
+    # ACTdata.1.sub.lastwhole24h.pos <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]
     # ACTdata.1.sub.lastwhole24h.pos <- tail(which((grepl(substr(ACTdata.1.sub.lastwhole24h, 12, 19), ACTdata.1.sub$Date)) == TRUE), n = 1) # Position of Last whole 24 hour component
 
     # ACTdata.1.sub.lastwhole24h.pos <- which(ACTdata.1.sub$Date == ACTdata.1.sub.lastwhole24h) # Position of Last whole 24 hour component
@@ -315,33 +313,33 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Calculate IS, etc. with Circadian Rhythm Variables (CRV) Calculation Module (nparcalc)
 
     # Read managed dataset for CRV analysis
-    CRV.data <<- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
-    CRV.data.original <<- CRV.data
+    CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
+    CRV.data.original <- CRV.data
 
 
-    if(movingwindow == TRUE){
+    if (movingwindow) {
 
       rollingwindow <- function(x, window){
 
         out <- data.frame()
         n <- nrow(x)
 
-        for(i in 1:(floor(n/window))){
+        for (i in 1:(floor(n/window))) {
 
-          if(i == 1){
+          if (i == 1) {
             out <- x[i:window,]
           } else {
             # out <- x[(i+(window-(i)+1)):(i*window),]
 
-            out <- x[((i-1) * 1440):(((i-1) * 1440) + window),]
+            out <- x[((i - 1) * 1440):(((i - 1) * 1440) + window),]
           }
 
           out <<- out
           CRV.data <<- out
-          r2 <- ACTman:::nparcalc(myACTdevice = "MW8")
+          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
 
           print("---------------------------------------------------------------------------------")
-          print(paste("Roling window CRV analysis output - Window step:", (i-1)))
+          print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
           print(paste("Begin time:", CRV.data[1, "V1"], CRV.data[1, "V2"]))
           print(paste("End time:", CRV.data[nrow(CRV.data), "V1"], CRV.data[nrow(CRV.data), "V2"]))
           print(paste("nOBS:", nrow(CRV.data)))
@@ -367,7 +365,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
        #                 myACTdevice = myACTdevice,
        #                 ACTdata_file = ACTdata.files[i])
 
-        r2 <- nparcalc(myACTdevice = myACTdevice)
+        r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
 
         # Attach r2 output to overview
         ACTdata.overview[i, "r2.IS"] <- r2$IS
@@ -381,8 +379,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
 
     # Plot actogram
-    if(plotactogram == TRUE){
-      plot_actogram(CRV_data = r2$CRV_data)
+    if (plotactogram) {
+      plot_actogram(CRV_data = r2$CRV_data, workdir = workdir)
     }
 
     # Set wd back to main workdir
