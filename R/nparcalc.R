@@ -2,16 +2,12 @@
 #'
 #' Calculate non-parametrical circadian rhythm variables, such as: IS, IV, L5, and M10.
 #'
-#' @param lastwhole24h.pos Position in the data of the last whole 24 hour block.!!!(UNUSED???)!!!
-#' @param newdir Working directory. !!!(UNUSED???)!!!
 #' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
-#' @param ACTdata_file List of the actigraphy data files. !!!(UNUSED???)!!!
+#' @param movingwindow A boolean indicating whether moving window is used.
+#' @param CRV.data CRV data
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
-
-# nparcalc <- function(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file) {
-
-nparcalc <- function(myACTdevice) {
+nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   ## Defined constants
   secshour <- 60*60 # Seconds per hour
   secsday <- 24*secshour # Seconds per day
@@ -61,7 +57,7 @@ nparcalc <- function(myACTdevice) {
                   mean)
 
 
-  if (ACTman.formals$movingwindow == FALSE){
+  if (movingwindow == FALSE){
       xi <- xi[1:(nrow(xi) - 1), ]
   } else {
       xi <- xi[1:(nrow(xi)), ]
