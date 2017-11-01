@@ -17,7 +17,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   ## Read Data
   # CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
 
-  if (ncol(CRV.data) > 2&& movingwindow == FALSE) {
+  if (ncol(CRV.data) > 2 && movingwindow == FALSE) {
     CRV.data$Date <- paste(CRV.data$V1, " ", CRV.data$V2)
     CRV.data$Date <- as.POSIXct(CRV.data$Date)
     CRV.data$Activity <- CRV.data$V3
@@ -41,7 +41,10 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
     # CRV.data.end <- lastwhole24h.pos
     CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]
   } else {# Actiwatch2 assumed
-    CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))
+    # CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))
+
+    CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
+
   }
 
   CRV.data <- CRV.data[CRV.data.start:CRV.data.end, ]

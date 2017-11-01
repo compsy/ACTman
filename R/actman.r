@@ -123,9 +123,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
 
 
-
-
-
     ## Step 2.1: Managing the Data
     # Reformat dates and times into required format for further processing:
     ACTdata.1.sub$Date <- gsub(pattern = "/20", replacement = "/", x = ACTdata.1.sub$Date) # Take only last two year digits
@@ -335,17 +332,22 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           }
 
           out <<- out
-          CRV.data <<- out
-          colnames(CRV.data) <-c("Date", "Time", "Activity")
+          CRV.data <- out
+          colnames(CRV.data) <- c("Date", "Time", "Activity")
 
           #! Dit geeft een error wanneer myACTdevice = "Actiwatch2"
-          r2 <- ACTman:::nparcalc(myACTdevice = "MW8", movingwindow = movingwindow, CRV.data = CRV.data)
-          # r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
+          # r2 <- nparcalc(myACTdevice = "MW8", movingwindow = movingwindow, CRV.data = CRV.data)
+          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
 
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
-          print(paste("Begin time:", CRV.data[1, "V1"], CRV.data[1, "V2"]))
-          print(paste("End time:", CRV.data[nrow(CRV.data), "V1"], CRV.data[nrow(CRV.data), "V2"]))
+
+          # print(paste("Begin time:", CRV.data[1, "V1"], CRV.data[1, "V2"]))
+          # print(paste("End time:", CRV.data[nrow(CRV.data), "V1"], CRV.data[nrow(CRV.data), "V2"]))
+
+          print(paste("Begin time:", CRV.data[1, "Date"]))
+          print(paste("End time:", CRV.data[nrow(CRV.data), "Date"]))
+
           print(paste("nOBS:", nrow(CRV.data)))
           print("")
           print(paste("IS: ", r2$IS))
@@ -381,6 +383,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
 
     }
+
+    # CRV.data <- CRV.data.original
 
     # Plot actogram
     if (plotactogram) {
