@@ -17,11 +17,17 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   ## Read Data
   # CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
 
-  if (ncol(CRV.data) > 2) {
+  if (ncol(CRV.data) > 2&& movingwindow == FALSE) {
     CRV.data$Date <- paste(CRV.data$V1, " ", CRV.data$V2)
     CRV.data$Date <- as.POSIXct(CRV.data$Date)
     CRV.data$Activity <- CRV.data$V3
     CRV.data <- CRV.data[, c("Date", "Activity")]
+  } else if(ncol(CRV.data) > 2 && movingwindow == TRUE){
+    CRV.data$Date <- paste(CRV.data$Date, " ", CRV.data$Time)
+    CRV.data$Date <- as.POSIXct(CRV.data$Date)
+    # CRV.data$Activity <- CRV.data$V3
+    CRV.data <- CRV.data[, c("Date", "Activity")]
+
   } else {
     colnames(CRV.data) <- c("Date", "Activity")
   }
