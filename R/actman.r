@@ -336,7 +336,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
           out <<- out
           CRV.data <<- out
-          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
+          colnames(CRV.data) <-c("Date", "Time", "Activity")
+
+          #! Dit geeft een error wanneer myACTdevice = "Actiwatch2"
+          r2 <- ACTman:::nparcalc(myACTdevice = "MW8", movingwindow = movingwindow, CRV.data = CRV.data)
+          # r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
 
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
@@ -386,18 +390,18 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # Set wd back to main workdir
     setwd(workdir)
 
-    # Use nparACT Package to calculate Experimental Variables
-    # Calculate IS, etc. with nparACT
-    r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
-
-    # Attach nparACT output to overview
-    ACTdata.overview[i, "IS"] <- r$IS
-    ACTdata.overview[i, "IV"] <- r$IV
-    ACTdata.overview[i, "RA"] <- r$RA
-    ACTdata.overview[i, "L5"] <- r$L5
-    ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
-    ACTdata.overview[i, "M10"] <- r$M10
-    ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
+    # # Use nparACT Package to calculate Experimental Variables
+    # # Calculate IS, etc. with nparACT
+    # r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
+    #
+    # # Attach nparACT output to overview
+    # ACTdata.overview[i, "IS"] <- r$IS
+    # ACTdata.overview[i, "IV"] <- r$IV
+    # ACTdata.overview[i, "RA"] <- r$RA
+    # ACTdata.overview[i, "L5"] <- r$L5
+    # ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
+    # ACTdata.overview[i, "M10"] <- r$M10
+    # ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
 
     ## Sleep Analysis Source
     ## Loop for sleep_calc
