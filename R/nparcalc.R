@@ -43,8 +43,9 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   } else {# Actiwatch2 assumed
     # CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))
 
-    CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
-
+    if(movingwindow == TRUE){
+      CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
+    } else {CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))}
   }
 
   CRV.data <- CRV.data[CRV.data.start:CRV.data.end, ]
