@@ -311,8 +311,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Read managed dataset for CRV analysis
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
-    CRV.data.original <- CRV.data
-
 
     if (movingwindow) {
 
@@ -333,7 +331,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
           out <<- out
           CRV.data <- out
-          colnames(CRV.data) <- c("Date", "Time", "Activity")
+          if(ncol(CRV.data) > 2){
+            colnames(CRV.data) <- c("Date", "Time", "Activity")
+          }
 
           #! Dit geeft een error wanneer myACTdevice = "Actiwatch2"
           # r2 <- nparcalc(myACTdevice = "MW8", movingwindow = movingwindow, CRV.data = CRV.data)
@@ -362,7 +362,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       }
 
-      rollingwindow(x = CRV.data.original, window = (1440*3))
+      rollingwindow(x = CRV.data, window = (1440*3))
 
     } else{
 
@@ -384,28 +384,31 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     }
 
-    # CRV.data <- CRV.data.original
+
+    # Use nparACT Package to calculate Experimental Variables
+    # Calculate IS, etc. with nparACT
+    r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
+
+    # Attach nparACT output to overview
+    ACTdata.overview[i, "IS"] <- r$IS
+    ACTdata.overview[i, "IV"] <- r$IV
+    ACTdata.overview[i, "RA"] <- r$RA
+    ACTdata.overview[i, "L5"] <- r$L5
+    ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
+    ACTdata.overview[i, "M10"] <- r$M10
+    ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
+
+    # Set wd back to main workdir
+    setwd(workdir)
 
     # Plot actogram
     if (plotactogram) {
       plot_actogram(CRV_data = r2$CRV_data, workdir = workdir)
     }
 
-    # Set wd back to main workdir
-    setwd(workdir)
 
-    # # Use nparACT Package to calculate Experimental Variables
-    # # Calculate IS, etc. with nparACT
-    # r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
-    #
-    # # Attach nparACT output to overview
-    # ACTdata.overview[i, "IS"] <- r$IS
-    # ACTdata.overview[i, "IV"] <- r$IV
-    # ACTdata.overview[i, "RA"] <- r$RA
-    # ACTdata.overview[i, "L5"] <- r$L5
-    # ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
-    # ACTdata.overview[i, "M10"] <- r$M10
-    # ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
+
+
 
     ## Sleep Analysis Source
     ## Loop for sleep_calc
