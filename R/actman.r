@@ -318,6 +318,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
         out <- data.frame()
         n <- nrow(x)
+        rollingwindow.results <<- as.data.frame(matrix(nrow = (floor(n/window)), ncol = 7))
 
         for (i in 1:(floor(n/window))) {
 
@@ -335,9 +336,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
             colnames(CRV.data) <- c("Date", "Time", "Activity")
           }
 
-          #! Dit geeft een error wanneer myACTdevice = "Actiwatch2"
           # r2 <- nparcalc(myACTdevice = "MW8", movingwindow = movingwindow, CRV.data = CRV.data)
           r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
+
+          # assign(rollingwindow.results[i,1], r2$IS)
+          rollingwindow.results[i,1] <<- r2$IS
 
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
@@ -358,6 +361,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print(paste("M10: ", round(r2$M10, 2)))
           print(paste("M10_starttime: ", as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))))
           print("---------------------------------------------------------------------------------")
+
         }
 
       }
