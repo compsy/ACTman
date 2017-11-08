@@ -4,18 +4,14 @@
 \alias{nparcalc}
 \title{Nparcalc}
 \usage{
-nparcalc(lastwhole24h.pos, newdir, myACTdevice, ACTdata_file, plotactogram)
+nparcalc(myACTdevice, movingwindow, CRV.data)
 }
 \arguments{
-\item{lastwhole24h.pos}{Position in the data of the last whole 24 hour block.}
-
-\item{newdir}{Working directory.}
-
 \item{myACTdevice}{Name of the input device used. Should be either Actiwatch2 or MW8.}
 
-\item{ACTdata_file}{List of the actigraphy data files.}
+\item{movingwindow}{A boolean indicating whether moving window is used.}
 
-\item{plotactogram}{Boolean value indicating whether or not to plot an actogram.}
+\item{CRV.data}{CRV data}
 }
 \value{
 A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.

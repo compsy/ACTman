@@ -4,10 +4,12 @@
 \alias{plot_actogram}
 \title{plot_actogram}
 \usage{
-plot_actogram(CRV_data)
+plot_actogram(CRV_data, workdir)
 }
 \arguments{
 \item{CRV_data}{is the CRV.data object.}
+
+\item{workdir}{the working directory as supplied to ACTman.}
 }
 \description{
 Plots the actograms.
