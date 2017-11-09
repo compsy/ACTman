@@ -323,11 +323,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         for (i in 1:(floor(n/window))) {
 
           if (i == 1) {
-            out <- x[i:window,]
+            out <- x[i:window, ]
           } else {
-            # out <- x[(i+(window-(i)+1)):(i*window),]
+            # out <- x[(i+(window-(i)+1)):(i*window), ]
 
-            out <- x[((i - 1) * 1440):(((i - 1) * 1440) + window),]
+            out <- x[((i - 1) * 1440):(((i - 1) * 1440) + window), ]
           }
 
           out <<- out
@@ -339,8 +339,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           # r2 <- nparcalc(myACTdevice = "MW8", movingwindow = movingwindow, CRV.data = CRV.data)
           r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
 
-          # assign(rollingwindow.results[i,1], r2$IS)
-          rollingwindow.results[i,1] <<- r2$IS
+          # assign(rollingwindow.results[i, 1], r2$IS)
+          rollingwindow.results[i, 1] <<- r2$IS
 
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
