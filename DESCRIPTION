@@ -3,11 +3,11 @@ Type: Package
 Title: Actigraphy manager
 Version: 1.0-2
 Date: 2017-09-28
-Authors@R: c(person("Yoram","Kunkels",role = c("aut","cre"),
+Authors@R: c(person("Kunkels,","Y. K.",role = c("aut","cre"),
     email = "y.k.kunkels@umcg.nl"),
-    person("Stefan","Knapen",role = c("ctb"),
+    person("Knapen,","S.,",role = c("aut","ctb"),
     email = "stefan.knapen@gmail.com"),
-    person("Ando","Emerencia",role = c("ctb"),
+    person("Emerencia,","A. C.",role = c("aut","ctb"),
     email = "ando.emerencia@gmail.com"))
 BugReports: https://github.com/compsy/ACTman/issues
 Maintainer: Yoram Kunkels <y.k.kunkels@umcg.nl>

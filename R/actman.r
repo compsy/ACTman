@@ -3,8 +3,6 @@
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
 ### Most recent Update: 24-10-2017                                        ###
 ### Supported devices: Actiwatch 2 Respironics & MW8                      ###
-### > Runs sleep or CRV analyses                                          ###
-### > Plotting now works                                                  ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 
 #' ACTman - Actigraphy Manager
@@ -23,6 +21,7 @@
 #' @param daysperiod An optional vector specifying the length in days of the period.
 #' @param movingwindow Boolean value indicating whether a moving window should be utilised.
 #' @param lengthcheck Boolean value indicating whether data recorded after 14 days should be included.
+#' @param na_omit Boolean value indicating whether NA's should be omitted.
 #'
 #' @return nothing
 #' @examples
@@ -38,15 +37,13 @@
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
-                   selectperiod = FALSE, startperiod, daysperiod, movingwindow = FALSE, lengthcheck = FALSE) {
+                   selectperiod = FALSE, startperiod, daysperiod, movingwindow = FALSE, lengthcheck = FALSE,
+                   na_omit = TRUE) {
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
   # workdir <- "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata3" # mydata2 = Actiwatch2, mydata3 = MW8 sleep
-  # oldworkdir <- getwd()
   setwd(workdir)
-  # on.exit(setwd(oldworkdir), add = TRUE)
-
 
   # List files and initiate overview file
   pattern_file <- ""
@@ -67,6 +64,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                                  "L5_starttime" = NA, "M10" = NA, "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA,
                                  "r2.RA" = NA, "r2.L5" = NA, "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA,
                                  "lengthcheck" = NA, "last5act.active" = NA)
+
   # Initiate loop parameters
   i <- 1 # set i
   secshour <- 60*60 # Seconds per hour
@@ -107,7 +105,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     } else if (myACTdevice == "MW8") { # Device-specific Data Management
 
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
-      # ACTdata.1 <- read.csv2(paste(ACTdata.files[i]), header = TRUE, stringsAsFactors = FALSE)
 
       if (any(ACTdata.1[, 1] == "Raw data:")) {
           ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
@@ -132,14 +129,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.1.sub$Date <- paste(ACTdata.1.sub$Date, ACTdata.1.sub$Time) # Merge Date Time, format: "2016-01-04 20:00:00"
 
     if (grepl("-", ACTdata.1.sub$Date[1])) {
-      # ACTdata.1.sub$Date <- strptime(ACTdata.1.sub$Date[1], "%d%m/%y %H:%M:%S") # Reformat Date
       #! Moet je deze waarde niet weer in ACTdata.1.sub$Date opslaan?
       format(as.POSIXct(ACTdata.1.sub$Date), "%d-%m-%y %H:%M:%S")
     } else {
       ACTdata.1.sub$Date <- strptime(ACTdata.1.sub$Date, "%d/%m/%y %H:%M:%S") # Reformat Date
     }
-
-    # ACTdata.1.sub$Date <- as.POSIXct(ACTdata.1.sub$Date)
 
     ACTdata.1.sub$Time <- NULL # Remove empty Time variable
 
@@ -149,7 +143,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # Add Period Selection
     # Custom enddates should be added
     if (selectperiod) {
-      # startperiod <- ACTdata.1.sub$Date[1]+secsday # Test startperiod
       startperiod.loc <- which(ACTdata.1.sub$Date == startperiod[i])
 
       if (daysperiod != FALSE) {
@@ -173,23 +166,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # Write starting number of obs. to overview file:
     ACTdata.overview[i, "numberofobs"] <- nr_obs
 
-    # Check for Activity in Last 5 observations:
-    #! Deze twee variabelen wordt nergens gebruikt? (heb ze gecomment)
-    #ACTdata.1.sub.last <- ACTdata.1.sub$Activity[(nr_obs - 4):nr_obs]
-    # Check if Activity in Last 5 observations contain substantial activity (on average, 5 activity counts per obs.)
-    #ACTdata.1.sub.done <- sum(ACTdata.1.sub.last) > 5*length(ACTdata.1.sub.last)
-
     # Identify Last Whole 24 Hour component and its Position: (EDITED for NK_data)
     #! Aan mezelf: als we data hebben dit doorlopen of het wel allemaal klopt.
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub[tail(grep("00:00:00", ACTdata.1.sub$Date), 2), "Date"]
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub.lastwhole24h[1]
-    # ACTdata.1.sub.lastwhole24h <- as.POSIXct(ACTdata.overview[i, "start"]) + secs14day - secsday # Last whole 24 hour component
-
-    # ACTdata.1.sub.lastwhole24h.pos <<- which(ACTdata.1.sub$Date == as.character(ACTdata.1.sub.lastwhole24h))
-    # ACTdata.1.sub.lastwhole24h.pos <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]
-    # ACTdata.1.sub.lastwhole24h.pos <- tail(which((grepl(substr(ACTdata.1.sub.lastwhole24h, 12, 19), ACTdata.1.sub$Date)) == TRUE), n = 1) # Position of Last whole 24 hour component
-
-    # ACTdata.1.sub.lastwhole24h.pos <- which(ACTdata.1.sub$Date == ACTdata.1.sub.lastwhole24h) # Position of Last whole 24 hour component
 
     #! De deze detectie van zomer- en/of wintertijd is niet generiek. R kan deze detectie gewoon zelf prima voor je doen,
     #! zolang je al je date/time objecten als POSIXct objecten opslaat. Hieronder een paar regels die ik hierover eerder
@@ -234,14 +214,12 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
 
 
-
     if(lengthcheck){
         ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
         print("Task 2: Detecting if Dataset is longer than Start Date plus 14 full days")
         if (ACTdata.1.sub[nrow(ACTdata.1.sub), "Date"] > ACTdata.1.sub.14day) {
           print("Warning: Dataset is longer than Start Date plus 14 full days!")
 
-          # ACTdata.1.sub <- ACTdata.1.sub[1:which(ACTdata.1.sub$Date == ACTdata.1.sub.14day), ]
           ACTdata.1.sub <- ACTdata.1.sub[1:((secs14day/60) + 1), ]
 
           print("Action: Observations recorded after Start Date plus 14 full days were removed.")
@@ -253,7 +231,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print("")
         }
 
-
         # Update overview after removal
         ACTdata.overview[i, "numberofobs2"] <- nrow(ACTdata.1.sub)
         ACTdata.overview[i, "recordingtime2"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
@@ -264,7 +241,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Remove NA's
     print("Task 6: Reporting NA's")
     ACTdata.overview[i, "missings"] <- table(is.na(ACTdata.1.sub))["TRUE"]  # write missings to overview
-    ACTdata.1.sub <- na.omit(ACTdata.1.sub)
+    if(na_omit){
+        ACTdata.1.sub <- na.omit(ACTdata.1.sub)
+    }
     print(paste("Number of NA's in this Dataset:", ACTdata.overview[i, "missings"]))
     print("")
 
@@ -318,6 +297,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # Read managed dataset for CRV analysis
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
 
+    ## Moving Window
     if (movingwindow) {
 
       rollingwindow <- function(x, window){
@@ -331,8 +311,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           if (i == 1) {
             out <- x[i:window, ]
           } else {
-            # out <- x[(i+(window-(i)+1)):(i*window), ]
-
             out <- x[((i - 1) * 1440):(((i - 1) * 1440) + window), ]
           }
 
@@ -342,17 +320,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
             colnames(CRV.data) <- c("Date", "Time", "Activity")
           }
 
-          # r2 <- nparcalc(myACTdevice = "MW8", movingwindow = movingwindow, CRV.data = CRV.data)
           r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
-
-          # assign(rollingwindow.results[i, 1], r2$IS)
           rollingwindow.results[i, 1] <<- r2$IS
 
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
-
-          # print(paste("Begin time:", CRV.data[1, "V1"], CRV.data[1, "V2"]))
-          # print(paste("End time:", CRV.data[nrow(CRV.data), "V1"], CRV.data[nrow(CRV.data), "V2"]))
 
           print(paste("Begin time:", CRV.data[1, "Date"]))
           print(paste("End time:", CRV.data[nrow(CRV.data), "Date"]))
@@ -376,11 +348,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     } else{
 
-       # r2 <- nparcalc(lastwhole24h.pos = ACTdata.1.sub.lastwhole24h.pos,
-       #                 newdir = newdir,
-       #                 myACTdevice = myACTdevice,
-       #                 ACTdata_file = ACTdata.files[i])
-
         r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
 
         # Attach r2 output to overview
@@ -393,7 +360,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
 
     }
-
 
     # Use nparACT Package to calculate Experimental Variables
     # Calculate IS, etc. with nparACT
@@ -416,10 +382,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       plot_actogram(CRV_data = r2$CRV_data, workdir = workdir)
     }
 
-
-
-
-
     ## Sleep Analysis Source
     ## Loop for sleep_calc
     ## (!!) "Sleep_calculation_functional v1" still has to be made dynamic, now only woks for NK_data (!!)
@@ -429,7 +391,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     print(paste("--------------------------------------", "END OF DATASET", i, "---", "@", round(i*(100/length(ACTdata.files))), "% DONE",  "--------------------------------------"))
   }
-  # dev.off()
 
   ## END OF Step 2: Loop.----------------------------------------------------------------------------------------
 
