@@ -22,6 +22,7 @@
 #' @param startperiod An optional vector specifying single or multiple period starts. Should be in the format "2016-10-03 00:00:00".
 #' @param daysperiod An optional vector specifying the length in days of the period.
 #' @param movingwindow Boolean value indicating whether a moving window should be utilised.
+#' @param lengthcheck Boolean value indicating whether data recorded after 14 days should be included.
 #'
 #' @return nothing
 #' @examples
@@ -32,12 +33,12 @@
 #'                     plotactogram = FALSE,
 #'                     selectperiod = FALSE,
 #'                     startperiod = "2016-10-03 00:00:00",
-#'                     daysperiod = 14, movingwindow = FALSE))
+#'                     daysperiod = 14, movingwindow = FALSE, lengthcheck = TRUE))
 #' }
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
-                   myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE, selectperiod = FALSE,
-                   startperiod, daysperiod, movingwindow = FALSE) {
+                   myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
+                   selectperiod = FALSE, startperiod, daysperiod, movingwindow = FALSE, lengthcheck = FALSE) {
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
@@ -232,28 +233,33 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       print("")
     }
 
-    ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
-    print("Task 2: Detecting if Dataset is longer than Start Date plus 14 full days")
-    if (ACTdata.1.sub[nrow(ACTdata.1.sub), "Date"] > ACTdata.1.sub.14day) {
-      print("Warning: Dataset is longer than Start Date plus 14 full days!")
 
-      # ACTdata.1.sub <- ACTdata.1.sub[1:which(ACTdata.1.sub$Date == ACTdata.1.sub.14day), ]
-      ACTdata.1.sub <- ACTdata.1.sub[1:((secs14day/60) + 1), ]
 
-      print("Action: Observations recorded after Start Date plus 14 full days were removed.")
-      print("Task 2 DONE: Dataset shortened to Start Date plus 14 days. Tasks 3, 4, and 5 also OK")
-      print("")
-      ACTdata.overview$lengthcheck[i] <- TRUE
-    } else {
-      print("Task 2 OK: Dataset not longer than Start Date plus 14 days.")
-      print("")
+    if(lengthcheck){
+        ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
+        print("Task 2: Detecting if Dataset is longer than Start Date plus 14 full days")
+        if (ACTdata.1.sub[nrow(ACTdata.1.sub), "Date"] > ACTdata.1.sub.14day) {
+          print("Warning: Dataset is longer than Start Date plus 14 full days!")
+
+          # ACTdata.1.sub <- ACTdata.1.sub[1:which(ACTdata.1.sub$Date == ACTdata.1.sub.14day), ]
+          ACTdata.1.sub <- ACTdata.1.sub[1:((secs14day/60) + 1), ]
+
+          print("Action: Observations recorded after Start Date plus 14 full days were removed.")
+          print("Task 2 DONE: Dataset shortened to Start Date plus 14 days. Tasks 3, 4, and 5 also OK")
+          print("")
+          ACTdata.overview$lengthcheck[i] <- TRUE
+        } else {
+          print("Task 2 OK: Dataset not longer than Start Date plus 14 days.")
+          print("")
+        }
+
+
+        # Update overview after removal
+        ACTdata.overview[i, "numberofobs2"] <- nrow(ACTdata.1.sub)
+        ACTdata.overview[i, "recordingtime2"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
+        ACTdata.overview[i, "end2"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
     }
 
-
-    # Update overview after removal
-    ACTdata.overview[i, "numberofobs2"] <- nrow(ACTdata.1.sub)
-    ACTdata.overview[i, "recordingtime2"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
-    ACTdata.overview[i, "end2"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
 
     ## Remove NA's
     print("Task 6: Reporting NA's")
