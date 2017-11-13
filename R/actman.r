@@ -20,6 +20,7 @@
 #' @param startperiod An optional vector specifying single or multiple period starts. Should be in the format "2016-10-03 00:00:00".
 #' @param daysperiod An optional vector specifying the length in days of the period.
 #' @param movingwindow Boolean value indicating whether a moving window should be utilised.
+#' @param movingwindow.size An optional vector specifying the length in days of the moving window. Default is 14 days.
 #' @param lengthcheck Boolean value indicating whether data recorded after 14 days should be included.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
 #'
@@ -37,8 +38,8 @@
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
-                   selectperiod = FALSE, startperiod, daysperiod, movingwindow = FALSE, lengthcheck = FALSE,
-                   na_omit = TRUE) {
+                   selectperiod = FALSE, startperiod, daysperiod, movingwindow = FALSE, movingwindow.size = 14,
+                   lengthcheck = FALSE, na_omit = TRUE) {
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
@@ -304,9 +305,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <<- as.data.frame(matrix(nrow = (floor(n/window)), ncol = 7))
+        rollingwindow.results <<- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 7))
 
-        for (i in 1:(floor(n/window))) {
+
+        for (i in 1:(floor(((n - window) / 1440)))) {
 
           if (i == 1) {
             out <- x[i:window, ]
@@ -318,10 +320,21 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           CRV.data <- out
           if(ncol(CRV.data) > 2){
             colnames(CRV.data) <- c("Date", "Time", "Activity")
+          } else if(ncol(CRV.data) == 2){
+            colnames(CRV.data) <- c("Date", "Activity")
           }
 
           r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
-          rollingwindow.results[i, 1] <<- r2$IS
+          rollingwindow.results[i, 1] <- r2$IS
+          rollingwindow.results[i, 2] <- r2$IV
+          rollingwindow.results[i, 3] <- round(r2$RA, 2)
+          rollingwindow.results[i, 4] <- round(r2$L5, 2)
+          rollingwindow.results[i, 5] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
+          rollingwindow.results[i, 6] <- round(r2$M10, 2)
+          rollingwindow.results[i, 7] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
+          colnames(rollingwindow.results) <- c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")
+
+          rollingwindow.results <<- rollingwindow.results
 
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
@@ -344,7 +357,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       }
 
-      rollingwindow(x = CRV.data, window = (1440*3))
+      rollingwindow(x = CRV.data, window = (1440*(movingwindow.size)))
 
     } else{
 
@@ -403,6 +416,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # Subset experimental variables
   ACTdata.1.sub.expvars <- ACTdata.overview[c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime", "recordingtime2")]
   colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time", "No. of Days")
+
+  ACTdata.overview <<- ACTdata.overview
 
   # Export Experimental variables to .pdf
   pdf("Table - Experimental Variables.pdf")

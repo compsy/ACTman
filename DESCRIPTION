@@ -1,8 +1,8 @@
 Package: ACTman
 Type: Package
 Title: Actigraphy manager
-Version: 1.0-2
-Date: 2017-09-28
+Version: 1.0-3
+Date: 2017-11-13
 Authors@R: c(person("Kunkels,","Y. K.",role = c("aut","cre"),
     email = "y.k.kunkels@umcg.nl"),
     person("Knapen,","S.,",role = c("aut","ctb"),

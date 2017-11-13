@@ -9,7 +9,8 @@
   sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
   myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE,
   plotactogram = FALSE, selectperiod = FALSE, startperiod, daysperiod,
-  movingwindow = FALSE, lengthcheck = FALSE, na_omit = TRUE)
+  movingwindow = FALSE, movingwindow.size = 14, lengthcheck = FALSE,
+  na_omit = TRUE)
 }
 \arguments{
 \item{workdir}{The working directory of the script.}
@@ -29,6 +30,8 @@
 \item{daysperiod}{An optional vector specifying the length in days of the period.}
 
 \item{movingwindow}{Boolean value indicating whether a moving window should be utilised.}
+
+\item{movingwindow.size}{An optional vector specifying the length in days of the moving window. Default is 14 days.}
 
 \item{lengthcheck}{Boolean value indicating whether data recorded after 14 days should be included.}
 
