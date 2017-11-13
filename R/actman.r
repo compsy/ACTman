@@ -297,6 +297,14 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Read managed dataset for CRV analysis
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
+    colnames(CRV.data) <- c("Date", "Activity")
+
+
+    # Plot actogram
+    if (plotactogram) {
+      plot_actogram(CRV_data = CRV.data, workdir = workdir)
+    }
+
 
     ## Moving Window
     if (movingwindow) {
@@ -305,7 +313,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <<- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 7))
+        rollingwindow.results <<- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 9))
 
 
         for (i in 1:(floor(((n - window) / 1440)))) {
@@ -325,14 +333,16 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           }
 
           r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
-          rollingwindow.results[i, 1] <- r2$IS
-          rollingwindow.results[i, 2] <- r2$IV
-          rollingwindow.results[i, 3] <- round(r2$RA, 2)
-          rollingwindow.results[i, 4] <- round(r2$L5, 2)
-          rollingwindow.results[i, 5] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
-          rollingwindow.results[i, 6] <- round(r2$M10, 2)
-          rollingwindow.results[i, 7] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
-          colnames(rollingwindow.results) <- c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")
+          rollingwindow.results[i, 1] <- as.character(strftime(CRV.data[1, "Date"], format = "%Y-%m-%d %H:%M:%S"))
+          rollingwindow.results[i, 2] <- as.character(strftime(CRV.data[nrow(CRV.data), "Date"], format = "%Y-%m-%d %H:%M:%S"))
+          rollingwindow.results[i, 3] <- r2$IS
+          rollingwindow.results[i, 4] <- r2$IV
+          rollingwindow.results[i, 5] <- round(r2$RA, 2)
+          rollingwindow.results[i, 6] <- round(r2$L5, 2)
+          rollingwindow.results[i, 7] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
+          rollingwindow.results[i, 8] <- round(r2$M10, 2)
+          rollingwindow.results[i, 9] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
+          colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")
 
           rollingwindow.results <<- rollingwindow.results
 
@@ -390,10 +400,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # Set wd back to main workdir
     setwd(workdir)
 
-    # Plot actogram
-    if (plotactogram) {
-      plot_actogram(CRV_data = r2$CRV_data, workdir = workdir)
-    }
 
     ## Sleep Analysis Source
     ## Loop for sleep_calc
