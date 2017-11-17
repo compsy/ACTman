@@ -41,11 +41,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    selectperiod = FALSE, startperiod, daysperiod = FALSE, endperiod, movingwindow = FALSE, movingwindow.size = 14,
                    lengthcheck = FALSE, na_omit = TRUE) {
 
-  #! Error in non-SWITCH datasets: does not compute IS correctly
-  #!    > Probably caused by sampling rate of non-SWITCH being 30 sec. instead of 1 min.
-  #!    > Proposed Solution: bin together both 30 sec. obs. from within the same minute
-  #!    > Use: any(grepl(pattern = ":30", x = ACTdata.1$B[1:2])) for 30 sec. bins detection!
-
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
   # workdir <- "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata3" # mydata2 = Actiwatch2, mydata3 = MW8 sleep
@@ -128,8 +123,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print("Action: Binning 30 sec. Epochs in 60 sec. Epochs")
           print("")
 
-          ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)),]
-          ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)),]$C)
+          ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
+          ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
 
           ACTdata.1.sub <- ACTdata.TEMP
           colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
