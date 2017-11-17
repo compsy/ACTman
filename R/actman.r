@@ -38,8 +38,13 @@
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
-                   selectperiod = FALSE, startperiod, daysperiod, movingwindow = FALSE, movingwindow.size = 14,
+                   selectperiod = FALSE, startperiod, daysperiod = FALSE, endperiod, movingwindow = FALSE, movingwindow.size = 14,
                    lengthcheck = FALSE, na_omit = TRUE) {
+
+  #! Error in non-SWITCH datasets: does not compute IS correctly
+  #!    > Probably caused by sampling rate of non-SWITCH being 30 sec. instead of 1 min.
+  #!    > Proposed Solution: bin together both 30 sec. obs. from within the same minute
+  #!    > Use: any(grepl(pattern = ":30", x = ACTdata.1$B[1:2])) for 30 sec. bins detection!
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
@@ -101,7 +106,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.1.sub <- ACTdata.1[, c(4, 5, 6)]
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
 
-      iwantCRVanalysis <- TRUE
 
     } else if (myACTdevice == "MW8") { # Device-specific Data Management
 
@@ -117,7 +121,28 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
       ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
 
-      iwantCRVanalysis <- TRUE
+      # Test for 30 sec. bins!
+      if(any(grepl(pattern = ":30", x = ACTdata.1$B[1:2]))){
+          print("Detecting Epoch Length.......")
+          print("Warning: 30 sec. Epoch's Detected!")
+          print("Action: Binning 30 sec. Epochs in 60 sec. Epochs")
+          print("")
+
+          ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)),]
+          ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)),]$C)
+
+          ACTdata.1.sub <- ACTdata.TEMP
+          colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
+          ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
+
+          rm(ACTdata.TEMP)
+
+      } else {
+        print("Detecting Epoch Length.......")
+        print("Normal 60 sec. Epochs detected")
+        print("No changes made")
+        print("")
+        }
 
     }
 
@@ -146,9 +171,12 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     if (selectperiod) {
       startperiod.loc <- which(ACTdata.1.sub$Date == startperiod[i])
 
-      if (daysperiod != FALSE) {
+      if (daysperiod) {
         ACTdata.1.sub <- ACTdata.1.sub[(startperiod.loc:(startperiod.loc + (daysperiod*minsaday))), ]
-      } else {
+      } else if(endperiod %in% ACTdata.1.sub$Date){
+        endperiod.loc <- which(ACTdata.1.sub$Date == endperiod)
+        ACTdata.1.sub <- ACTdata.1.sub[(startperiod.loc:endperiod.loc), ]
+      }else {
         ACTdata.1.sub <- ACTdata.1.sub[(startperiod.loc:(nrow(ACTdata.1.sub))), ]
       }
     }
