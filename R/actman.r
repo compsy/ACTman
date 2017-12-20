@@ -1,7 +1,7 @@
 #############################################################################
 ### ACTman package                                                        ###
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
-### Most recent Update: 24-10-2017                                        ###
+### Most recent Update: 30-11-2017                                        ###
 ### Supported devices: Actiwatch 2 Respironics & MW8                      ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 
@@ -38,7 +38,7 @@
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
-                   selectperiod = FALSE, startperiod, daysperiod = FALSE, endperiod, movingwindow = FALSE, movingwindow.size = 14,
+                   selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL, movingwindow = FALSE, movingwindow.size = 14,
                    lengthcheck = FALSE, na_omit = TRUE) {
 
   ## Step 1: Basic Operations:
@@ -117,13 +117,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
 
       # Test for 30 sec. bins!
-      if(any(grepl(pattern = ":30", x = ACTdata.1$B[1:2]))){
+      if (any(grepl(pattern = ":30", x = ACTdata.1$B[1:2]))) {
           print("Detecting Epoch Length.......")
           print("Warning: 30 sec. Epoch's Detected!")
           print("Action: Binning 30 sec. Epochs in 60 sec. Epochs")
           print("")
 
+
+
           ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
+          #! Deze regel geeft een warning:
+          #! In as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30",  :
+          #!   longer object length is not a multiple of shorter object length
+          #! Dit komt omdat er 1 tijd meer is die eindigt op :00 dan op :30
           ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
 
           ACTdata.1.sub <- ACTdata.TEMP
@@ -145,16 +151,14 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Step 2.1: Managing the Data
     # Reformat dates and times into required format for further processing:
     ACTdata.1.sub$Date <- gsub(pattern = "/20", replacement = "/", x = ACTdata.1.sub$Date) # Take only last two year digits
-    #! Klopt dit formaat wel? In de vorige stap zocht je namelijk naar slashes en houd je een jaar over van twee cijfers.
-    #! Ik snap deze onderstaande stap dus niet helemaal.
-    ACTdata.1.sub$Date <- paste(ACTdata.1.sub$Date, ACTdata.1.sub$Time) # Merge Date Time, format: "2016-01-04 20:00:00"
+    ACTdata.1.sub$Date <- paste(ACTdata.1.sub$Date, ACTdata.1.sub$Time) # Merge Date Time
 
-    if (grepl("-", ACTdata.1.sub$Date[1])) {
-      #! Moet je deze waarde niet weer in ACTdata.1.sub$Date opslaan?
-      format(as.POSIXct(ACTdata.1.sub$Date), "%d-%m-%y %H:%M:%S")
+    if (grepl("-", ACTdata.1.sub$Date[1])) { # Reformat Date
+      ACTdata.1.sub$Date <- strptime(ACTdata.1.sub$Date, "%Y-%m-%d %H:%M:%S")
     } else {
-      ACTdata.1.sub$Date <- strptime(ACTdata.1.sub$Date, "%d/%m/%y %H:%M:%S") # Reformat Date
+      ACTdata.1.sub$Date <- strptime(ACTdata.1.sub$Date, "%d/%m/%y %H:%M:%S")
     }
+
 
     ACTdata.1.sub$Time <- NULL # Remove empty Time variable
 
@@ -168,10 +172,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       if (daysperiod) {
         ACTdata.1.sub <- ACTdata.1.sub[(startperiod.loc:(startperiod.loc + (daysperiod*minsaday))), ]
-      } else if(endperiod %in% ACTdata.1.sub$Date){
+      } else if (endperiod %in% ACTdata.1.sub$Date) {
         endperiod.loc <- which(ACTdata.1.sub$Date == endperiod)
         ACTdata.1.sub <- ACTdata.1.sub[(startperiod.loc:endperiod.loc), ]
-      }else {
+      } else {
         ACTdata.1.sub <- ACTdata.1.sub[(startperiod.loc:(nrow(ACTdata.1.sub))), ]
       }
     }
@@ -238,7 +242,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
 
 
-    if(lengthcheck){
+    if (lengthcheck) {
         ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
         print("Task 2: Detecting if Dataset is longer than Start Date plus 14 full days")
         if (ACTdata.1.sub[nrow(ACTdata.1.sub), "Date"] > ACTdata.1.sub.14day) {
@@ -265,7 +269,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Remove NA's
     print("Task 6: Reporting NA's")
     ACTdata.overview[i, "missings"] <- table(is.na(ACTdata.1.sub))["TRUE"]  # write missings to overview
-    if(na_omit){
+    if (na_omit) {
         ACTdata.1.sub <- na.omit(ACTdata.1.sub)
     }
     print(paste("Number of NA's in this Dataset:", ACTdata.overview[i, "missings"]))
@@ -303,13 +307,13 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     ## Use nparACT Package to calculate Experimental Variables
     ## Pre-process
-    dir.create(file.path(workdir, "Managed Datasets"))
+    dir.create(file.path(workdir, "Managed Datasets"), showWarnings = FALSE)
     setwd(file.path(workdir, "Managed Datasets"))
 
     wd <- getwd()
     name <- paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]))
     newdir <- paste(wd, name, sep = "/")
-    dir.create(newdir)
+    dir.create(newdir, showWarnings = FALSE)
     setwd(newdir)
 
     write.table(ACTdata.1.sub, row.names = FALSE, col.names = FALSE,
@@ -319,8 +323,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Calculate IS, etc. with Circadian Rhythm Variables (CRV) Calculation Module (nparcalc)
 
     # Read managed dataset for CRV analysis
-    CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")))
-    colnames(CRV.data) <- c("Date", "Activity")
+    CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")),
+                          stringsAsFactors = FALSE)
+    colnames(CRV.data) <- c("Date", "Time", "Activity")
 
 
     # Plot actogram
@@ -349,9 +354,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
           out <<- out
           CRV.data <- out
-          if(ncol(CRV.data) > 2){
+          if (ncol(CRV.data) > 2) {
             colnames(CRV.data) <- c("Date", "Time", "Activity")
-          } else if(ncol(CRV.data) == 2){
+          } else if (ncol(CRV.data) == 2) {
             colnames(CRV.data) <- c("Date", "Activity")
           }
 
@@ -392,8 +397,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       rollingwindow(x = CRV.data, window = (1440*(movingwindow.size)))
 
-    } else{
-
+    } else {
         r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
 
         # Attach r2 output to overview
