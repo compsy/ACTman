@@ -330,7 +330,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Plot actogram
     if (plotactogram) {
-      plot_actogram(CRV_data = CRV.data, workdir = workdir)
+      plot_actogram(workdir = workdir)
     }
 
 
