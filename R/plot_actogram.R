@@ -37,7 +37,7 @@ plot_actogram <- function(workdir) {
   day2start <- ((which(substr(act_data$Date, start = 12, stop = 19) == "00:00:00")[1]) - 1) # Start of day2 at midnight.
 
   ## 1st Day selection
-  day1 <- act_data[1:day2start,]
+  day1 <- act_data[1:day2start, ]
   day1.rest <- 1440 - day2start
 
   ## Filling in period before 1st day selection to get full 24h in 1st day
