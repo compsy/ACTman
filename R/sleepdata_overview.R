@@ -6,6 +6,8 @@
 #' @param actdata The activity data.
 #'
 #' @return Returns a sleepdata overview.
+#'
+# Voeg fragmentation index toe!
 sleepdata_overview <- function(workdir, actdata) {
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
 
@@ -50,10 +52,10 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## Formula to create a score value per epoch
     aaa <- dplyr::mutate(aaa, score = (
-      (dplyr::lag(Activity..MW.counts., n = 1L, default = 0)/5) +
-        (dplyr::lag(Activity..MW.counts., n = 2L, default = 0)/25) +
-        (dplyr::lead(Activity..MW.counts., n = 1L, default = 0)/5) +
-        (dplyr::lead(Activity..MW.counts., n = 2L, default = 0)/25) +
+      (dplyr::lag(Activity..MW.counts., n = 1L, default = 0) / 5) +
+        (dplyr::lag(Activity..MW.counts., n = 2L, default = 0) / 25) +
+        (dplyr::lead(Activity..MW.counts., n = 1L, default = 0) / 5) +
+        (dplyr::lead(Activity..MW.counts., n = 2L, default = 0) / 25) +
         Activity..MW.counts.))
 
     ## Calculate whether score indicates awake or not
@@ -83,7 +85,7 @@ sleepdata_overview <- function(workdir, actdata) {
                            dplyr::lead(aaa$epoch.sleep.chance, n = 7L) +
                            dplyr::lead(aaa$epoch.sleep.chance, n = 8L) +
                            dplyr::lead(aaa$epoch.sleep.chance, n = 9L) +
-                                       aaa$epoch.sleep.chance
+                           aaa$epoch.sleep.chance
     )
 
     aaa.bedtime <- aaa[rownr.bedtime:rownr.gotup, ] # This includes only the time in which the subject is in bed handpicked in this sample based on lights out (00:17) / got up (7:59) data
@@ -96,10 +98,10 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## Calculate wake up time
     aaa$wakeup.chance <- (lag(aaa$epoch.sleep.chance, n = 1L) +
-                                        lag(aaa$epoch.sleep.chance, n = 2L) +
-                                        lag(aaa$epoch.sleep.chance, n = 3L) +
-                                        lag(aaa$epoch.sleep.chance, n = 4L) +
-                                        aaa$epoch.sleep.chance
+                            lag(aaa$epoch.sleep.chance, n = 2L) +
+                            lag(aaa$epoch.sleep.chance, n = 3L) +
+                            lag(aaa$epoch.sleep.chance, n = 4L) +
+                            aaa$epoch.sleep.chance
     )
 
     ## !!Problem with day 4 sleep.end might originate here, as sleep.end (08:53:00) ligt buiten range rownr.gotup (<08:00:00)??
@@ -118,16 +120,16 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## Step 3: Calculate sleep analysis data.----------------------------------------------------------------------------
     aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ] # Subframe the assumed sleep time, -1 is done otherwise it includes the first wake bout.
-    TimeInBed <- (rownr.gotup - rownr.bedtime)/60 # The total elapsed time between the "Lights Out" and "Got Up" times
-    AssumedSleep <- (rownr.sleep.end - rownr.sleep.start)/60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
+    TimeInBed <- (rownr.gotup - rownr.bedtime) / 60 # The total elapsed time between the "Lights Out" and "Got Up" times
+    AssumedSleep <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
-    ActualSleep <- ((AssumedSleep * 60) - WakeEpochs)/60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
-    ActualSleepPerc <- (ActualSleep / AssumedSleep)*100 # Actual sleep time expressed as a percentage of the assumed sleep time
+    ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
+    ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
 
-    ActualWakeTime <- WakeEpochs/60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
+    ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
     ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
-    SleepEfficiency <- (ActualSleep/TimeInBed)*100 # Actual sleep time expressed as a percentage of time in bed.
-    SleepLatency <- (rownr.sleep.start - rownr.bedtime)/60 # The time between "Lights Out" and "Fell Asleep"
+    SleepEfficiency <- (ActualSleep/TimeInBed) * 100 # Actual sleep time expressed as a percentage of time in bed.
+    SleepLatency <- (rownr.sleep.start - rownr.bedtime) / 60 # The time between "Lights Out" and "Fell Asleep"
 
 
     # To add:
@@ -169,4 +171,3 @@ sleepdata_overview <- function(workdir, actdata) {
   # Return the sleepdata overview
   sleepdata.overview
 }
-
