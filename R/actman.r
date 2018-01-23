@@ -58,7 +58,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   #! Misschien wil je deze files eerst nog even sorteren op bestandsnaam? Anders kan de volgorde verschillen
   #! op verschillende platforms geloof ik.
 
-  ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA , "end3" = NA,
+  ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
                                  "numberofobs" = NA, "numberofobs2" = NA, "numberofobs3" = NA, "recordingtime" = NA,
                                  "recordingtime2" = NA, "recordingtime3" = NA, "summertime.start" = NA,
                                  "summertime.end" = NA, "missings" = NA, "IS" = NA, "IV" = NA, "RA" = NA, "L5" = NA,
@@ -68,10 +68,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   # Initiate loop parameters
   i <- 1 # set i
-  secshour <- 60*60 # Seconds per hour
-  secsday <- 24*secshour # Seconds per day
-  secs14day <- secsday*14 # Seconds in 14 days
-  minsaday <- (secsday/60) # Minutes per day
+  secshour <- 60 * 60 # Seconds per hour
+  secsday <- 24 * secshour # Seconds per day
+  secs14day <- secsday * 14 # Seconds in 14 days
+  minsaday <- (secsday / 60) # Minutes per day
 
   # Semantic checks
   if (selectperiod && length(startperiod) != length(ACTdata.files)) {
@@ -395,7 +395,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       }
 
-      rollingwindow(x = CRV.data, window = (1440*(movingwindow.size)))
+      rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
 
     } else {
         r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
@@ -411,18 +411,18 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     }
 
-    # Use nparACT Package to calculate Experimental Variables
-    # Calculate IS, etc. with nparACT
-    r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
-
-    # Attach nparACT output to overview
-    ACTdata.overview[i, "IS"] <- r$IS
-    ACTdata.overview[i, "IV"] <- r$IV
-    ACTdata.overview[i, "RA"] <- r$RA
-    ACTdata.overview[i, "L5"] <- r$L5
-    ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
-    ACTdata.overview[i, "M10"] <- r$M10
-    ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
+    # # Use nparACT Package to calculate Experimental Variables
+    # # Calculate IS, etc. with nparACT
+    # r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
+    #
+    # # Attach nparACT output to overview
+    # ACTdata.overview[i, "IS"] <- r$IS
+    # ACTdata.overview[i, "IV"] <- r$IV
+    # ACTdata.overview[i, "RA"] <- r$RA
+    # ACTdata.overview[i, "L5"] <- r$L5
+    # ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
+    # ACTdata.overview[i, "M10"] <- r$M10
+    # ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
 
     # Set wd back to main workdir
     setwd(workdir)
@@ -435,15 +435,15 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub)
     }
 
-    print(paste("--------------------------------------", "END OF DATASET", i, "---", "@", round(i*(100/length(ACTdata.files))), "% DONE",  "--------------------------------------"))
+    print(paste("--------------------------------------", "END OF DATASET", i, "---", "@", round(i * (100 / length(ACTdata.files))), "% DONE",  "--------------------------------------"))
   }
 
   ## END OF Step 2: Loop.----------------------------------------------------------------------------------------
 
   ## Step 3: After loop processing:
   # Transform negative recordingtime to positive
-  ACTdata.overview$recordingtime <- ((ACTdata.overview$recordingtime)^2)^(1/2)
-  ACTdata.overview$recordingtime2 <- ((ACTdata.overview$recordingtime2)^2)^(1/2)
+  ACTdata.overview$recordingtime <- ((ACTdata.overview$recordingtime) ^ 2) ^ (1 / 2)
+  ACTdata.overview$recordingtime2 <- ((ACTdata.overview$recordingtime2) ^ 2) ^ (1 / 2)
   # Assign zero to missings without missings
   ACTdata.overview[is.na(ACTdata.overview[, "missings"]), "missings"] <- 0
   # Subset experimental variables
