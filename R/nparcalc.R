@@ -9,10 +9,10 @@
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
 nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   ## Defined constants
-  secshour <- 60*60 # Seconds per hour
-  secsday <- 24*secshour # Seconds per day
+  secshour <- 60 * 60 # Seconds per hour
+  secsday <- 24 * secshour # Seconds per day
 
-  result = list()
+  result <- list()
 
   ## Read Data
   # CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
@@ -37,7 +37,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
 
     if(movingwindow == TRUE) {
       CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
-    } else {CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))}
+    } else {CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday * 13))}
   }
 
   CRV.data <- CRV.data[CRV.data.start:CRV.data.end, ]
@@ -72,20 +72,20 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   X <- mean(xi, na.rm = T)
 
   xi_X <- xi - X # difference consecutive hourly means and overall mean
-  sq.xi_X <- xi_X^2 # square of differences
+  sq.xi_X <- xi_X  ^2 # square of differences
   sum.sq.xi_X <- sum(sq.xi_X, na.rm = T) # sum of squares
   n <- sum(!is.na(xi)) # get number og hours (should be 168 for 7 day intervals (7*24))
-  sum.sq.xi_X.perhour <- sum.sq.xi_X/n # sum of squares per hour
+  sum.sq.xi_X.perhour <- sum.sq.xi_X / n # sum of squares per hour
 
 
   Xh <- rowMeans(matrix(xi, nrow = 24), na.rm = T)
   Xh_X <- Xh - X # difference 24 hour means and overall mean
   #! #! Deze variabele wordt verder niet gebruikt? (Ik heb m gecomment)
   #sq.Xh_X <- Xh_X^2 # square of difference
-  sum.sq.Xh_X <- sum(Xh_X^2, na.rm = T) # sum of squares
-  sum.sq.Xh_X.perhour <- sum.sq.Xh_X/24 # sum of squares per hour
+  sum.sq.Xh_X <- sum(Xh_X ^ 2, na.rm = T) # sum of squares
+  sum.sq.Xh_X.perhour <- sum.sq.Xh_X / 24 # sum of squares per hour
 
-  IS <- sum.sq.Xh_X.perhour/sum.sq.xi_X.perhour # hourly variance divided by overall variance
+  IS <- sum.sq.Xh_X.perhour / sum.sq.xi_X.perhour # hourly variance divided by overall variance
   IS <- round(x = IS, digits = 2)
   result$IS <- IS
 
@@ -93,14 +93,14 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
 
   ## IV: Interdaily Variability
   Xi_diffXi <- diff(xi) # difference Xi and previous Xi (the difference between all successive hours) (!!! Warning because no previous hour for 1st obs.)
-  sum.sq.Xi_diffXi <- sum(Xi_diffXi^2, na.rm = T) # sum of squares
-  sum.sq.Xi_diffXi.perhour <- sum.sq.Xi_diffXi/n # sum of squares per hour
+  sum.sq.Xi_diffXi <- sum(Xi_diffXi ^ 2, na.rm = T) # sum of squares
+  sum.sq.Xi_diffXi.perhour <- sum.sq.Xi_diffXi / n # sum of squares per hour
 
   Xi_X <- xi - X # difference Xi and overall mean
   #! #! Deze variabele wordt verder niet gebruikt? (Ik heb m gecomment)
   #sq.Xi_X <- Xi_X^2 # square of difference
-  sum.sq.Xi_X <- sum(Xi_X^2, na.rm = T) # sum of squares
-  sum.sq.Xi_X.perhour <- sum.sq.Xi_X/(n - 1) # sum of squares per hour minus 1
+  sum.sq.Xi_X <- sum(Xi_X ^ 2, na.rm = T) # sum of squares
+  sum.sq.Xi_X.perhour <- sum.sq.Xi_X / (n - 1) # sum of squares per hour minus 1
 
   IV <- sum.sq.Xi_diffXi.perhour / sum.sq.Xi_X.perhour
   IV <- round(x = IV, digits = 2)
@@ -139,7 +139,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
 
     L5M10frame <- data.frame(CRV.data.loc.L5 = CRV.data.loc.L5) #, CRV.data.loc.M10 = CRV.data.loc.M10)
 
-    L5onset <- which(L5M10frame$CRV.data.loc.L5 == L5)[1]/60 # locating the first value that equals L5 and get the number of hours from start
+    L5onset <- which(L5M10frame$CRV.data.loc.L5 == L5)[1] / 60 # locating the first value that equals L5 and get the number of hours from start
 
 
 
@@ -206,7 +206,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
     L5M10frame <- data.frame(CRV.data.loc.M10 = CRV.data.loc.M10)
 
     # L5onset <- which(L5M10frame$CRV.data.loc.L5 == L5)[1]/60 # locating the first value that equals L5 and get the number of hours from start
-    M10onset <- which(L5M10frame$CRV.data.loc.M10 == M10)[1]/60 # locating the first value that equals M10 and get the number of hours from start
+    M10onset <- which(L5M10frame$CRV.data.loc.M10 == M10)[1] / 60 # locating the first value that equals M10 and get the number of hours from start
 
     # L5_starttime <- CRV.data[CRV.data.locmidnight[f], "Date"] + (L5onset*secshour)
     # print(CRV.data[CRV.data.locmidnight[f], "Date"] + (L5onset*secshour))
@@ -231,7 +231,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   result$M10_starttime <- M10_starttime
 
   Amp <- M10 - L5 # self explanatory
-  RA <- Amp/(L5 + M10)
+  RA <- Amp / (L5 + M10)
   result$RA <- RA
 
   # return actogram data
