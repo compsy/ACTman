@@ -5,9 +5,12 @@
 #' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
 #' @param movingwindow A boolean indicating whether moving window is used.
 #' @param CRV.data CRV data
+#' @param ACTdata.1.sub Managed data set
+#' @param out Optional. When movingwindow is TRUE, this is the current window of data.
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
-nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
+#'
+nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = NULL) {
   ## Defined constants
   secshour <- 60 * 60 # Seconds per hour
   secsday <- 24 * secshour # Seconds per day
@@ -35,7 +38,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   } else {# Actiwatch2 assumed
     # CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))
 
-    if(movingwindow == TRUE) {
+    if (movingwindow) {
       CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
     } else {CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday * 13))}
   }
@@ -59,7 +62,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
                   mean)
 
 
-  if (movingwindow == FALSE){
+  if (!movingwindow) {
       xi <- xi[1:(nrow(xi) - 1), ]
   } else {
       xi <- xi[1:(nrow(xi)), ]
@@ -72,16 +75,18 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   X <- mean(xi, na.rm = T)
 
   xi_X <- xi - X # difference consecutive hourly means and overall mean
-  sq.xi_X <- xi_X  ^2 # square of differences
+  sq.xi_X <- xi_X ^ 2 # square of differences
   sum.sq.xi_X <- sum(sq.xi_X, na.rm = T) # sum of squares
   n <- sum(!is.na(xi)) # get number og hours (should be 168 for 7 day intervals (7*24))
   sum.sq.xi_X.perhour <- sum.sq.xi_X / n # sum of squares per hour
 
 
+  #! Deze regel geeft een waarschuwing:
+  #! In matrix(xi, nrow = 24) :
+  #!  data length [749] is not a sub-multiple or multiple of the number of rows [24]
+  #! Maakt dit wat uit voor jullie berekening? Of kunnen we dit negeren?
   Xh <- rowMeans(matrix(xi, nrow = 24), na.rm = T)
   Xh_X <- Xh - X # difference 24 hour means and overall mean
-  #! #! Deze variabele wordt verder niet gebruikt? (Ik heb m gecomment)
-  #sq.Xh_X <- Xh_X^2 # square of difference
   sum.sq.Xh_X <- sum(Xh_X ^ 2, na.rm = T) # sum of squares
   sum.sq.Xh_X.perhour <- sum.sq.Xh_X / 24 # sum of squares per hour
 
@@ -97,8 +102,6 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
   sum.sq.Xi_diffXi.perhour <- sum.sq.Xi_diffXi / n # sum of squares per hour
 
   Xi_X <- xi - X # difference Xi and overall mean
-  #! #! Deze variabele wordt verder niet gebruikt? (Ik heb m gecomment)
-  #sq.Xi_X <- Xi_X^2 # square of difference
   sum.sq.Xi_X <- sum(Xi_X ^ 2, na.rm = T) # sum of squares
   sum.sq.Xi_X.perhour <- sum.sq.Xi_X / (n - 1) # sum of squares per hour minus 1
 

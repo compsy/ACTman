@@ -110,7 +110,7 @@ sleepdata_overview <- function(workdir, actdata) {
     aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup), ]
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
-    #! Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
+    #  Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
     sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance >= 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)), ]
     ## First row now contains the start of sleep.
     sleep.end <- as.character(sleep.end.$Time[nrow(sleep.end.)])
@@ -124,10 +124,10 @@ sleepdata_overview <- function(workdir, actdata) {
     AssumedSleep <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
     ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
-    ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
-
-    ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
-    ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
+    # Commented out because not used:
+    # ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
+    # ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
+    # ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
     SleepEfficiency <- (ActualSleep/TimeInBed) * 100 # Actual sleep time expressed as a percentage of time in bed.
     SleepLatency <- (rownr.sleep.start - rownr.bedtime) / 60 # The time between "Lights Out" and "Fell Asleep"
 
