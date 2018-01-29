@@ -400,8 +400,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ACTdata.1.sub.expvars <- ACTdata.overview[c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime", "recordingtime2")]
   colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time", "No. of Days")
 
-  ACTdata.overview <<- ACTdata.overview
-
   # Export Experimental variables to .pdf
   pdf("Table - Experimental Variables.pdf")
   gridExtra::grid.table(ACTdata.1.sub.expvars)
