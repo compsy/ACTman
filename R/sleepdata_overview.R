@@ -110,7 +110,7 @@ sleepdata_overview <- function(workdir, actdata) {
     aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup), ]
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
-    #! Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
+    #  Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
     sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance >= 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)), ]
     ## First row now contains the start of sleep.
     sleep.end <- as.character(sleep.end.$Time[nrow(sleep.end.)])
