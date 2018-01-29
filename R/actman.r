@@ -24,7 +24,7 @@
 #' @param lengthcheck Boolean value indicating whether data recorded after 14 days should be included.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
 #'
-#' @return nothing
+#' @return if iwantsleepanalysis, this returns the sleepdata overview, else it returns the actdata overview.
 #' @examples
 #' \dontrun{
 #' View(ACTman::ACTman(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
@@ -99,7 +99,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE)
       ACTdata.1.sub <- ACTdata.1[, c(4, 5, 6)]
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
-
 
     } else if (myACTdevice == "MW8") { # Device-specific Data Management
 
@@ -296,7 +295,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <<- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 9))
+        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 9))
 
 
         for (i in 1:(floor(((n - window) / 1440)))) {
@@ -307,7 +306,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
             out <- x[((i - 1) * 1440):(((i - 1) * 1440) + window), ]
           }
 
-          out <<- out
           CRV.data <- out
           if (ncol(CRV.data) > 2) {
             colnames(CRV.data) <- c("Date", "Time", "Activity")
@@ -315,7 +313,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
             colnames(CRV.data) <- c("Date", "Activity")
           }
 
-          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
+          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub, out = out)
           rollingwindow.results[i, 1] <- as.character(strftime(CRV.data[1, "Date"], format = "%Y-%m-%d %H:%M:%S"))
           rollingwindow.results[i, 2] <- as.character(strftime(CRV.data[nrow(CRV.data), "Date"], format = "%Y-%m-%d %H:%M:%S"))
           rollingwindow.results[i, 3] <- r2$IS

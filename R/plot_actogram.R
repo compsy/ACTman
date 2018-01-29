@@ -7,6 +7,7 @@
 ### To add: Grey part before start, Hour variables underneath, Title,      ###
 ### Export to PDF function, Days more clearly written                      ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@###
+
 #' plot_actogram
 #'
 #' Function to plot 48 hour Actograms.
@@ -57,6 +58,8 @@ plot_actogram <- function(workdir, ACTdata.1.sub) {
   }
 
   ## Define the range so all plots will be equal height (ylim)
+  #! Deze variablen day2 t/m day14 bestaan helemaal niet. Die heb je nooit aangemaakt.
+  #! Wat moet deze regel eigenlijk doen?
   ylimit <- range(na.omit(c(day1$Activity, day2$Activity, day3$Activity, day4$Activity, day5$Activity,
                             day6$Activity, day7$Activity, day8$Activity, day9$Activity, day10$Activity,
                             day11$Activity, day12$Activity, day13$Activity, day14$Activity)))
