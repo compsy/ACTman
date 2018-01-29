@@ -48,7 +48,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   # List files and initiate overview file
   pattern_file <- ""
-  #! Is dit een generieke conventie die mensen buiten dit project ook snappen?
   if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
     pattern_file <- "NK_data.csv"
   } else {
@@ -199,48 +198,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub[tail(grep("00:00:00", ACTdata.1.sub$Date), 2), "Date"]
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub.lastwhole24h[1]
 
-    #! De deze detectie van zomer- en/of wintertijd is niet generiek. R kan deze detectie gewoon zelf prima voor je doen,
-    #! zolang je al je date/time objecten als POSIXct objecten opslaat. Hieronder een paar regels die ik hierover eerder
-    #! heb geschreven:
-    #! I think the best way to handle times and dates is probably with the built-in class POSIXct.
-    #!
-    #! If we have a string that represents a time and date, we can convert it to a POSIXct object using strptime:
-    #!
-    #!  mytimedatea = as.POSIXct(strptime('2017-03-06 11:19:03', format = '%Y-%m-%d %H:%M:%S'), tz = "Europe/Amsterdam")
-    #!
-    #! Or, if you have the values as numbers, you can use ISOdate:
-    #!  mytimedateb = ISOdate(2017, 3, 6, 11, 19, 3, tz = "Europe/Amsterdam")
-    #!
-    #! These two statements return identical objects.
-    #!
-    #! Now that you have the times as POSIXct objects, you can change their timezones very easily like this:
-    #!  attr(mytimedatea, "tzone") <- "UTC"
-    #!
-    #! Of course you can also print the time using a different format, e.g.:
-    #!  format(mytimedatea, '%d %B %Y, %H:%M:%S %z')
-    #!
-    #! Maar dit alles lijkt me typisch iets dat ik wel kan doen (gegeven wat meer tijd).
-    # Summertime start and end Detection Parameters
-    summertime.start.2015 <- "2015-03-29 02:00:00" # Assign summertime start date for 2015
-    summertime.start.2014 <- "2014-03-30 02:00:00" # Assign summertime start date for 2014
-    summertime.start.indata <- summertime.start.2014 %in% ACTdata.1.sub$Date | summertime.start.2015 %in% ACTdata.1.sub$Date # Detect if summertime start is in dataset
-
-    ## Summertime start Detection and 14day length correction
-    print("Task 1: Summertime Start Detection and Correction")
-    if (summertime.start.indata == TRUE) {
-      print("Warning: Start of Summertime Detected!")
-      ACTdata.1.sub.14day <- as.POSIXct(ACTdata.1.sub$Date[1]) + secs14day # Start Date plus 14 days
-      ACTdata.1.sub.14day <- ACTdata.1.sub.14day - secshour
-      ACTdata.overview$summertime.start[i] <- TRUE
-      print("Action: Subtracted the one hour excess from 14day length.")
-      print("Task 1 DONE: Dataset corrected for Summertime.")
-      print("")
-    } else {
-      ACTdata.1.sub.14day <- as.POSIXct(ACTdata.1.sub$Date[1]) + secs14day # Start Date plus 14 days
-      print("Task 1 OK: No Start of Summertime in Dataset.")
-      print("")
-    }
-
+    # Add 14 days in a way that respects daylight savings time changes:
+    ACTdata.1.sub.14day <- increase_by_days(ACTdata.1.sub$Date[1], 14)
 
     if (lengthcheck) {
         ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
