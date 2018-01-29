@@ -255,9 +255,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
 
     ## END OF Step 2.1: Managing the Data
-    ## Assign Original & Managed data as global
-    ACTdata.1 <<- ACTdata.1
-    ACTdata.1.sub <<- ACTdata.1.sub
 
     # Update overview file after NA- and non-activity removal
     ACTdata.overview[i, "numberofobs3"] <- nrow(ACTdata.1.sub)
@@ -289,9 +286,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Plot actogram
     if (plotactogram) {
-      plot_actogram(workdir = workdir)
+      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub)
     }
-
 
     ## Moving Window
     if (movingwindow) {
@@ -319,7 +315,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
             colnames(CRV.data) <- c("Date", "Activity")
           }
 
-          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
+          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
           rollingwindow.results[i, 1] <- as.character(strftime(CRV.data[1, "Date"], format = "%Y-%m-%d %H:%M:%S"))
           rollingwindow.results[i, 2] <- as.character(strftime(CRV.data[nrow(CRV.data), "Date"], format = "%Y-%m-%d %H:%M:%S"))
           rollingwindow.results[i, 3] <- r2$IS
@@ -357,7 +353,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
 
     } else {
-        r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
+        r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
 
         # Attach r2 output to overview
         ACTdata.overview[i, "r2.IS"] <- r2$IS

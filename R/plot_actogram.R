@@ -7,16 +7,14 @@
 ### To add: Grey part before start, Hour variables underneath, Title,      ###
 ### Export to PDF function, Days more clearly written                      ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@###
-
 #' plot_actogram
 #'
 #' Function to plot 48 hour Actograms.
 #'
 #' @param workdir the working directory as supplied to ACTman.
+#' @param ACTdata.1.sub the managed data set
 #'
-
-
-plot_actogram <- function(workdir) {
+plot_actogram <- function(workdir, ACTdata.1.sub) {
 
 ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
@@ -26,7 +24,7 @@ plot_actogram <- function(workdir) {
 
   pdf("Actigraphy Data - Plot.pdf") # Initialise .PDF plot
 
-  act_data <<- ACTdata.1.sub # Copy data for editing required for plotting
+  act_data <- ACTdata.1.sub # Copy data for editing required for plotting
   act_data <- within(act_data, Date <- as.character(act_data$Date)) # Date as character for plotting
   ndays.plot <- round(abs(as.numeric(round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2))))
 
@@ -50,14 +48,12 @@ plot_actogram <- function(workdir) {
 ### Part 3: Loop for assigning subsequent days (14 days max for plot) & setting ylim's ----------------------
 
   ## Assign other days
-  for(i.plot in 2:(ndays.plot)){
-
-    if(i.plot == 2){
+  for (i.plot in 2:(ndays.plot)) {
+    if (i.plot == 2) {
       assign(paste("day", i.plot, sep = ""), act_data[((day2start + (1440 ^ (i.plot - 2))):(day2start + (1440 * (i.plot - 1)))), ])
     } else {
       assign(paste("day", i.plot, sep = ""), act_data[((day2start + ((1440 * (i.plot - 2)) + 1)):(day2start + (1440 * (i.plot - 1)))), ])
     }
-
   }
 
   ## Define the range so all plots will be equal height (ylim)
@@ -69,13 +65,10 @@ plot_actogram <- function(workdir) {
   ### Part 4: Combining Days & 48 hour Doubleplot -----------------------------------------------------------
 
   ## Combine days
-  for(j.plot in 1:(ndays.plot - 1)){
-
+  for (j.plot in 1:(ndays.plot - 1)) {
     assign(paste("day.", j.plot, ".", (j.plot + 1), sep = ""),
            rbind(eval(parse(text = paste("day", j.plot, sep = ""))), eval(parse(text =  paste("day", (j.plot + 1), sep = "")))))
-
   }
-
 
   ## Plot initialisation & parameters
   par(mfrow = c(14, 1)) # Set plot parameters
@@ -84,11 +77,9 @@ plot_actogram <- function(workdir) {
   abline(v = day2start + 75, lty = 2) # Set start moment
 
   ## Filling in plot with loop for other days
-  for(k.plot in 2:(ndays.plot - 1)){
-
+  for (k.plot in 2:(ndays.plot - 1)) {
     barplot(eval(parse(text = paste("day.", k.plot, ".", (k.plot + 1), "$Activity", sep = ""))),
             ylim = ylimit, ylab = paste("Day", k.plot))
-
   }
 
 

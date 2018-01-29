@@ -5,9 +5,10 @@
 #' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
 #' @param movingwindow A boolean indicating whether moving window is used.
 #' @param CRV.data CRV data
+#' @param ACTdata.1.sub Managed data set
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
-nparcalc <- function(myACTdevice, movingwindow, CRV.data) {
+nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub) {
   ## Defined constants
   secshour <- 60 * 60 # Seconds per hour
   secsday <- 24 * secshour # Seconds per day
