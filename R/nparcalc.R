@@ -102,8 +102,6 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   sum.sq.Xi_diffXi.perhour <- sum.sq.Xi_diffXi / n # sum of squares per hour
 
   Xi_X <- xi - X # difference Xi and overall mean
-  #! #! Deze variabele wordt verder niet gebruikt? (Ik heb m gecomment)
-  #sq.Xi_X <- Xi_X^2 # square of difference
   sum.sq.Xi_X <- sum(Xi_X ^ 2, na.rm = T) # sum of squares
   sum.sq.Xi_X.perhour <- sum.sq.Xi_X / (n - 1) # sum of squares per hour minus 1
 
