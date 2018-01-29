@@ -5,6 +5,6 @@ unlink("/Users/ando/repos/ACTman/inst/help_files", recursive = TRUE, force = TRU
 dir.create("/Users/ando/repos/ACTman/inst/help_files", recursive = TRUE)
 #devtools::install_github("hadley/pkgdown")
 currently_generating_help_files <<- TRUE
-pkgdown::build_site('/Users/ando/repos/ACTman', site_path = "/Users/ando/repos/ACTman/inst/help_files")
+pkgdown::build_site(pkg = '/Users/ando/repos/ACTman', path = "/Users/ando/repos/ACTman/inst/help_files")
 currently_generating_help_files <<- FALSE
 cat("Done.\n")
