@@ -24,7 +24,7 @@
 #' @param lengthcheck Boolean value indicating whether data recorded after 14 days should be included.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
 #'
-#' @return if iwantsleepanalysis, this returns the sleepdata overview, else it returns the actdata overview.
+#' @return if iwantsleepanalysis, this returns the sleepdata overview, else if movingwindow, it returns the moving window results, and otherwise it returns the actdata overview.
 #' @examples
 #' \dontrun{
 #' View(ACTman::ACTman(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
@@ -297,7 +297,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         n <- nrow(x)
         rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 9))
 
-
         for (i in 1:(floor(((n - window) / 1440)))) {
 
           if (i == 1) {
@@ -325,8 +324,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           rollingwindow.results[i, 9] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
           colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")
 
-          rollingwindow.results <<- rollingwindow.results
-
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
 
@@ -345,10 +342,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print("---------------------------------------------------------------------------------")
 
         }
-
+        rollingwindow.results
       }
 
-      rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
+      rollingwindow.results <- rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
 
     } else {
         r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
@@ -418,6 +415,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # Returned result.
   if (iwantsleepanalysis) {
     sleepdata.overview
+  } else if (movingwindow) {
+    rollingwindow.results
   } else {
     ACTdata.overview
   }
