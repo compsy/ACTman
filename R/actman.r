@@ -53,10 +53,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   } else {
     pattern_file <- ".csv"
   }
-  ACTdata.files <- list.files(getwd(), pattern = pattern_file)
-  #! Misschien wil je deze files eerst nog even sorteren op bestandsnaam? Anders kan de volgorde verschillen
-  #! op verschillende platforms geloof ik.
-
+  ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
   ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
                                  "numberofobs" = NA, "numberofobs2" = NA, "numberofobs3" = NA, "recordingtime" = NA,
                                  "recordingtime2" = NA, "recordingtime3" = NA, "summertime.start" = NA,
