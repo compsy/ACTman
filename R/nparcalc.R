@@ -81,10 +81,12 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   sum.sq.xi_X.perhour <- sum.sq.xi_X / n # sum of squares per hour
 
 
+  #! Deze regel geeft een waarschuwing:
+  #! In matrix(xi, nrow = 24) :
+  #!  data length [749] is not a sub-multiple or multiple of the number of rows [24]
+  #! Maakt dit wat uit voor jullie berekening? Of kunnen we dit negeren?
   Xh <- rowMeans(matrix(xi, nrow = 24), na.rm = T)
   Xh_X <- Xh - X # difference 24 hour means and overall mean
-  #! #! Deze variabele wordt verder niet gebruikt? (Ik heb m gecomment)
-  #sq.Xh_X <- Xh_X^2 # square of difference
   sum.sq.Xh_X <- sum(Xh_X ^ 2, na.rm = T) # sum of squares
   sum.sq.Xh_X.perhour <- sum.sq.Xh_X / 24 # sum of squares per hour
 

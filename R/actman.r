@@ -125,6 +125,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           #! In as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30",  :
           #!   longer object length is not a multiple of shorter object length
           #! Dit komt omdat er 1 tijd meer is die eindigt op :00 dan op :30
+          #! Maar volgens mij gaat het voor alle gevallen wel zoals je zou verwachten, en om alles
+          #! om te schrijven is een boel werk en veel meer code. Ik zou het zo laten.
           ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
 
           ACTdata.1.sub <- ACTdata.TEMP
@@ -190,7 +192,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.overview[i, "numberofobs"] <- nr_obs
 
     # Identify Last Whole 24 Hour component and its Position: (EDITED for NK_data)
-    #! Aan mezelf: als we data hebben dit doorlopen of het wel allemaal klopt.
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub[tail(grep("00:00:00", ACTdata.1.sub$Date), 2), "Date"]
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub.lastwhole24h[1]
 
