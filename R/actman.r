@@ -24,7 +24,7 @@
 #' @param lengthcheck Boolean value indicating whether data recorded after 14 days should be included.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
 #'
-#' @return nothing
+#' @return if iwantsleepanalysis, this returns the sleepdata overview, else if movingwindow, it returns the moving window results, and otherwise it returns the actdata overview.
 #' @examples
 #' \dontrun{
 #' View(ACTman::ACTman(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
@@ -48,16 +48,12 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   # List files and initiate overview file
   pattern_file <- ""
-  #! Is dit een generieke conventie die mensen buiten dit project ook snappen?
   if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
     pattern_file <- "NK_data.csv"
   } else {
     pattern_file <- ".csv"
   }
-  ACTdata.files <- list.files(getwd(), pattern = pattern_file)
-  #! Misschien wil je deze files eerst nog even sorteren op bestandsnaam? Anders kan de volgorde verschillen
-  #! op verschillende platforms geloof ik.
-
+  ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
   ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
                                  "numberofobs" = NA, "numberofobs2" = NA, "numberofobs3" = NA, "recordingtime" = NA,
                                  "recordingtime2" = NA, "recordingtime3" = NA, "summertime.start" = NA,
@@ -101,7 +97,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.1.sub <- ACTdata.1[, c(4, 5, 6)]
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
 
-
     } else if (myACTdevice == "MW8") { # Device-specific Data Management
 
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
@@ -130,6 +125,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           #! In as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30",  :
           #!   longer object length is not a multiple of shorter object length
           #! Dit komt omdat er 1 tijd meer is die eindigt op :00 dan op :30
+          #! Maar volgens mij gaat het voor alle gevallen wel zoals je zou verwachten, en om alles
+          #! om te schrijven is een boel werk en veel meer code. Ik zou het zo laten.
           ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
 
           ACTdata.1.sub <- ACTdata.TEMP
@@ -195,52 +192,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.overview[i, "numberofobs"] <- nr_obs
 
     # Identify Last Whole 24 Hour component and its Position: (EDITED for NK_data)
-    #! Aan mezelf: als we data hebben dit doorlopen of het wel allemaal klopt.
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub[tail(grep("00:00:00", ACTdata.1.sub$Date), 2), "Date"]
     ACTdata.1.sub.lastwhole24h <- ACTdata.1.sub.lastwhole24h[1]
 
-    #! De deze detectie van zomer- en/of wintertijd is niet generiek. R kan deze detectie gewoon zelf prima voor je doen,
-    #! zolang je al je date/time objecten als POSIXct objecten opslaat. Hieronder een paar regels die ik hierover eerder
-    #! heb geschreven:
-    #! I think the best way to handle times and dates is probably with the built-in class POSIXct.
-    #!
-    #! If we have a string that represents a time and date, we can convert it to a POSIXct object using strptime:
-    #!
-    #!  mytimedatea = as.POSIXct(strptime('2017-03-06 11:19:03', format = '%Y-%m-%d %H:%M:%S'), tz = "Europe/Amsterdam")
-    #!
-    #! Or, if you have the values as numbers, you can use ISOdate:
-    #!  mytimedateb = ISOdate(2017, 3, 6, 11, 19, 3, tz = "Europe/Amsterdam")
-    #!
-    #! These two statements return identical objects.
-    #!
-    #! Now that you have the times as POSIXct objects, you can change their timezones very easily like this:
-    #!  attr(mytimedatea, "tzone") <- "UTC"
-    #!
-    #! Of course you can also print the time using a different format, e.g.:
-    #!  format(mytimedatea, '%d %B %Y, %H:%M:%S %z')
-    #!
-    #! Maar dit alles lijkt me typisch iets dat ik wel kan doen (gegeven wat meer tijd).
-    # Summertime start and end Detection Parameters
-    summertime.start.2015 <- "2015-03-29 02:00:00" # Assign summertime start date for 2015
-    summertime.start.2014 <- "2014-03-30 02:00:00" # Assign summertime start date for 2014
-    summertime.start.indata <- summertime.start.2014 %in% ACTdata.1.sub$Date | summertime.start.2015 %in% ACTdata.1.sub$Date # Detect if summertime start is in dataset
-
-    ## Summertime start Detection and 14day length correction
-    print("Task 1: Summertime Start Detection and Correction")
-    if (summertime.start.indata == TRUE) {
-      print("Warning: Start of Summertime Detected!")
-      ACTdata.1.sub.14day <- as.POSIXct(ACTdata.1.sub$Date[1]) + secs14day # Start Date plus 14 days
-      ACTdata.1.sub.14day <- ACTdata.1.sub.14day - secshour
-      ACTdata.overview$summertime.start[i] <- TRUE
-      print("Action: Subtracted the one hour excess from 14day length.")
-      print("Task 1 DONE: Dataset corrected for Summertime.")
-      print("")
-    } else {
-      ACTdata.1.sub.14day <- as.POSIXct(ACTdata.1.sub$Date[1]) + secs14day # Start Date plus 14 days
-      print("Task 1 OK: No Start of Summertime in Dataset.")
-      print("")
-    }
-
+    # Add 14 days in a way that respects daylight savings time changes:
+    ACTdata.1.sub.14day <- increase_by_days(ACTdata.1.sub$Date[1], 14)
 
     if (lengthcheck) {
         ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
@@ -296,9 +252,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
 
     ## END OF Step 2.1: Managing the Data
-    ## Assign Original & Managed data as global
-    ACTdata.1 <<- ACTdata.1
-    ACTdata.1.sub <<- ACTdata.1.sub
 
     # Update overview file after NA- and non-activity removal
     ACTdata.overview[i, "numberofobs3"] <- nrow(ACTdata.1.sub)
@@ -330,9 +283,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Plot actogram
     if (plotactogram) {
-      plot_actogram(workdir = workdir)
+      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub)
     }
-
 
     ## Moving Window
     if (movingwindow) {
@@ -341,8 +293,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <<- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 9))
-
+        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 9))
 
         for (i in 1:(floor(((n - window) / 1440)))) {
 
@@ -352,7 +303,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
             out <- x[((i - 1) * 1440):(((i - 1) * 1440) + window), ]
           }
 
-          out <<- out
           CRV.data <- out
           if (ncol(CRV.data) > 2) {
             colnames(CRV.data) <- c("Date", "Time", "Activity")
@@ -360,7 +310,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
             colnames(CRV.data) <- c("Date", "Activity")
           }
 
-          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
+          r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub, out = out)
           rollingwindow.results[i, 1] <- as.character(strftime(CRV.data[1, "Date"], format = "%Y-%m-%d %H:%M:%S"))
           rollingwindow.results[i, 2] <- as.character(strftime(CRV.data[nrow(CRV.data), "Date"], format = "%Y-%m-%d %H:%M:%S"))
           rollingwindow.results[i, 3] <- r2$IS
@@ -371,8 +321,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           rollingwindow.results[i, 8] <- round(r2$M10, 2)
           rollingwindow.results[i, 9] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
           colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")
-
-          rollingwindow.results <<- rollingwindow.results
 
           print("---------------------------------------------------------------------------------")
           print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
@@ -392,13 +340,13 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print("---------------------------------------------------------------------------------")
 
         }
-
+        rollingwindow.results
       }
 
-      rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
+      rollingwindow.results <- rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
 
     } else {
-        r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data)
+        r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
 
         # Attach r2 output to overview
         ACTdata.overview[i, "r2.IS"] <- r2$IS
@@ -450,8 +398,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ACTdata.1.sub.expvars <- ACTdata.overview[c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime", "recordingtime2")]
   colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time", "No. of Days")
 
-  ACTdata.overview <<- ACTdata.overview
-
   # Export Experimental variables to .pdf
   pdf("Table - Experimental Variables.pdf")
   gridExtra::grid.table(ACTdata.1.sub.expvars)
@@ -465,6 +411,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # Returned result.
   if (iwantsleepanalysis) {
     sleepdata.overview
+  } else if (movingwindow) {
+    rollingwindow.results
   } else {
     ACTdata.overview
   }
