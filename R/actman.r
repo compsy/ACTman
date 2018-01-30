@@ -39,7 +39,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
                    selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL, movingwindow = FALSE, movingwindow.size = 14,
-                   lengthcheck = FALSE, na_omit = TRUE) {
+                   lengthcheck = FALSE, nparACT_compare = FALSE, na_omit = TRUE) {
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
@@ -50,10 +50,15 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   pattern_file <- ""
   if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
     pattern_file <- "NK_data.csv"
+    ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
   } else {
     pattern_file <- ".csv"
+    ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
+      if (any((grep(pattern = "SLEEPLOG", x = ACTdata.files)))){
+          ACTdata.files <- ACTdata.files[-(grep(pattern = "SLEEPLOG", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
+      }
   }
-  ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
+
   ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
                                  "numberofobs" = NA, "numberofobs2" = NA, "numberofobs3" = NA, "recordingtime" = NA,
                                  "recordingtime2" = NA, "recordingtime3" = NA, "summertime.start" = NA,
@@ -229,7 +234,16 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ACTdata.1.sub <- na.omit(ACTdata.1.sub)
     }
     print(paste("Number of NA's in this Dataset:", ACTdata.overview[i, "missings"]))
+    print(paste("This is:", (ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]), "% of the total number of observations!"))
     print("")
+
+    # User-control over Analysis if too much Missings!
+    if ((ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]) > 10){
+      if (winDialog(type = "yesno", message = "More than 10% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
+        stop("Stopped by user!")
+      }
+    }
+
 
     ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
     ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
@@ -359,18 +373,20 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     }
 
-    # # Use nparACT Package to calculate Experimental Variables
-    # # Calculate IS, etc. with nparACT
-    # r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
-    #
-    # # Attach nparACT output to overview
-    # ACTdata.overview[i, "IS"] <- r$IS
-    # ACTdata.overview[i, "IV"] <- r$IV
-    # ACTdata.overview[i, "RA"] <- r$RA
-    # ACTdata.overview[i, "L5"] <- r$L5
-    # ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
-    # ACTdata.overview[i, "M10"] <- r$M10
-    # ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
+    if (nparACT_compare) {
+        # Use nparACT Package to calculate Experimental Variables
+        # Calculate IS, etc. with nparACT
+        r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
+
+        # Attach nparACT output to overview
+        ACTdata.overview[i, "IS"] <- r$IS
+        ACTdata.overview[i, "IV"] <- r$IV
+        ACTdata.overview[i, "RA"] <- r$RA
+        ACTdata.overview[i, "L5"] <- r$L5
+        ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
+        ACTdata.overview[i, "M10"] <- r$M10
+        ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
+    }
 
     # Set wd back to main workdir
     setwd(workdir)
@@ -397,6 +413,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # Subset experimental variables
   ACTdata.1.sub.expvars <- ACTdata.overview[c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime", "recordingtime2")]
   colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time", "No. of Days")
+  # Update overview, depending on nparACT_compare
+  if (!nparACT_compare) {
+      ACTdata.overview["IS"] <- NULL
+      ACTdata.overview["IV"] <- NULL
+      ACTdata.overview["RA"] <- NULL
+      ACTdata.overview["L5"] <- NULL
+      ACTdata.overview["L5_starttime"] <- NULL
+      ACTdata.overview["M10"] <- NULL
+      ACTdata.overview["M10_starttime"] <- NULL
+
+      # Rename Circdin variables if not nparACT_compare
+      colnames(ACTdata.overview) <- gsub(pattern = "r2.", x = colnames(ACTdata.overview), replacement = "")
+  }
 
   # Export Experimental variables to .pdf
   pdf("Table - Experimental Variables.pdf")
@@ -414,6 +443,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   } else if (movingwindow) {
     rollingwindow.results
   } else {
-    ACTdata.overview
+    ACTdata.overview <<- ACTdata.overview
   }
 }
+
+
+
+

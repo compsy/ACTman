@@ -20,13 +20,23 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## Read Data
   # CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
 
+  CRV.data1 <<- CRV.data # For debug
+
   if (ncol(CRV.data) > 2) {
     CRV.data$Date <- paste(CRV.data$Date, " ", CRV.data$Time)
-    CRV.data$Date <- as.POSIXct(CRV.data$Date)
-    CRV.data <- CRV.data[, c("Date", "Activity")]
+
+    CRV.dataTEST <<- CRV.data # For debug
+
+    # CRV.data$Date <- as.POSIXct(CRV.data$Date)
+    # CRV.data <- CRV.data[, c("Date", "Activity")]
+
+    CRV.data <- CRV.data[, -2]
+
   } else {
     colnames(CRV.data) <- c("Date", "Activity")
   }
+
+  CRV.data2 <<- CRV.data # For debug
 
   ## Prune data untill only full 24h days are obtained
   CRV.data.wholehours <- CRV.data[grep("00:00", CRV.data[, "Date"]), ]
@@ -40,7 +50,9 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
     if (movingwindow) {
       CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
-    } else {CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday * 13))}
+    # } else {CRV.data.end <- which(CRV.data[, "Date"] == as.POSIXct(CRV.data.wholehours[1, "Date"]) + (secsday * 13))}
+    } else {CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]}
+
   }
 
   CRV.data <- CRV.data[CRV.data.start:CRV.data.end, ]
