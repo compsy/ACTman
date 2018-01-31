@@ -20,12 +20,12 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## Read Data
   # CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
 
-  CRV.data1 <<- CRV.data # For debug
+  # CRV.data1 <<- CRV.data # For debug
 
   if (ncol(CRV.data) > 2) {
     CRV.data$Date <- paste(CRV.data$Date, " ", CRV.data$Time)
 
-    CRV.dataTEST <<- CRV.data # For debug
+    # CRV.dataTEST <<- CRV.data # For debug
 
     # CRV.data$Date <- as.POSIXct(CRV.data$Date)
     # CRV.data <- CRV.data[, c("Date", "Activity")]
@@ -36,7 +36,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
     colnames(CRV.data) <- c("Date", "Activity")
   }
 
-  CRV.data2 <<- CRV.data # For debug
+  # CRV.data2 <<- CRV.data # For debug
 
   ## Prune data untill only full 24h days are obtained
   CRV.data.wholehours <- CRV.data[grep("00:00", CRV.data[, "Date"]), ]
@@ -167,10 +167,25 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   }
 
-  L5 <- mean(TEST.df.L5[, "L5"])
+  # # L5 NA debug
+  # L5_TEST <<- TEST.df.L5[, "L5"]
+  # print(paste(L5_TEST))
+  # print("-------------------------")
+
+  L5 <- mean(TEST.df.L5[, "L5"], na.action = na.pass, na.rm = TRUE)
+
+  # print(paste(L5)) #debug
+
   result$L5 <- L5
 
+
+ # NA starttime workaround
+ # TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"] <- TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"])) - 1), "L5_starttime"] # Replace NA with prev. obs. (doen not work is prev obs is also NA!)
+  TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"] <- TEST.df.L5[(which(!is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"][1] # Replace NA with first non-NA value
+
+
   L5.temp <- as.POSIXct(paste("1970-01-01", format(as.POSIXct(TEST.df.L5[, "L5_starttime"], origin = "1970-01-01"), "%H:%M:%S")))
+
 
   for (a in 1:length(L5.temp)) {
 
@@ -183,7 +198,9 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   }
 
 
-  L5.temp <- as.POSIXct(paste("1970-01-01", format(L5.temp, "%H:%M:%S")))
+  # L5_starttime debug
+  # L5.temp <<- as.POSIXct(paste("1970-01-01", format(L5.temp, "%H:%M:%S")))
+  # print(paste("!!!!!!!!!!!!!!!!--------------------", L5.temp, "----------------!!!!!!!!!!!"))
 
   L5_starttime <- mean(L5.temp)
   result$L5_starttime <- L5_starttime

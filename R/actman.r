@@ -234,12 +234,12 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ACTdata.1.sub <- na.omit(ACTdata.1.sub)
     }
     print(paste("Number of NA's in this Dataset:", ACTdata.overview[i, "missings"]))
-    print(paste("This is:", (ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]), "% of the total number of observations!"))
+    print(paste("This is:", round(ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"], 3), "% of the total number of observations!"))
     print("")
 
     # User-control over Analysis if too much Missings!
-    if ((ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]) > 10){
-      if (winDialog(type = "yesno", message = "More than 10% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
+    if ((ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]) > 0.01){
+      if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
         stop("Stopped by user!")
       }
     }
@@ -443,7 +443,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   } else if (movingwindow) {
     rollingwindow.results
   } else {
-    ACTdata.overview <<- ACTdata.overview
+    View(ACTdata.overview)
   }
 }
 
