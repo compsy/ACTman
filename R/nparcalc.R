@@ -18,10 +18,6 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   result <- list()
 
   ## Read Data
-  # CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt")))
-
-  # CRV.data1 <<- CRV.data # For debug
-
   if (ncol(CRV.data) > 2) {
     CRV.data$Date <- paste(CRV.data$Date, " ", CRV.data$Time)
 
@@ -35,8 +31,6 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   } else {
     colnames(CRV.data) <- c("Date", "Activity")
   }
-
-  # CRV.data2 <<- CRV.data # For debug
 
   ## Prune data untill only full 24h days are obtained
   CRV.data.wholehours <- CRV.data[grep("00:00", CRV.data[, "Date"]), ]
@@ -56,9 +50,6 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   }
 
   CRV.data <- CRV.data[CRV.data.start:CRV.data.end, ]
-  #test.data <- CRV.data # Checking if nparACT and IS Calculation Module use the same data (Seems OK)
-  # write.table(test.data, row.names = FALSE, col.names = FALSE,
-  #             file = paste(gsub(pattern = ".csv", replacement = "", x = ACTdata_file), "MANAGED.txt"))
 
 
   ##---------------------------------------------------------------------------------------------------------
@@ -71,7 +62,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## Xi
   xi <- aggregate(CRV.data[, "Activity"],
                   list(hour = cut(as.POSIXct(CRV.data[, "Date"]), breaks = "hour")),
-                  mean)
+                  mean) # , na.action = na.pass, na.rm = TRUE
 
 
   if (!movingwindow) {
@@ -79,7 +70,6 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   } else {
       xi <- xi[1:(nrow(xi)), ]
   }
-
 
   xi <- xi$x
 
@@ -146,19 +136,11 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
     } # calculating mean activity in 300 minute intervals ~ 5 hours
 
     L5 <- min(CRV.data.loc.L5) #round(min(CRV.data.loc.L5), 2)
-    # M10 <- max(CRV.data.loc.M10) #round(max(CRV.data.loc.M10), 2)
     TEST.df.L5[f, "L5"] <- L5
-    # TEST.df[f, "M10"] <- M10
-
-    # print(M10)
 
     L5M10frame <- data.frame(CRV.data.loc.L5 = CRV.data.loc.L5) #, CRV.data.loc.M10 = CRV.data.loc.M10)
 
     L5onset <- which(L5M10frame$CRV.data.loc.L5 == L5)[1] / 60 # locating the first value that equals L5 and get the number of hours from start
-
-
-
-    # M10onset <- which(L5M10frame$CRV.data.loc.M10 == M10)[1]/60 # locating the first value that equals M10 and get the number of hours from start
 
     L5_starttime <- as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (L5onset * secshour)
     # print(CRV.data[CRV.data.locmidnight[f], "Date"] + (L5onset*secshour))
@@ -198,9 +180,16 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   }
 
 
-  # L5_starttime debug
-  # L5.temp <<- as.POSIXct(paste("1970-01-01", format(L5.temp, "%H:%M:%S")))
+  # # L5_starttime debug
+  # L5.temp <- as.POSIXct(paste("1970-01-01", format(L5.temp, "%H:%M:%S")))
   # print(paste("!!!!!!!!!!!!!!!!--------------------", L5.temp, "----------------!!!!!!!!!!!"))
+  # print("")
+  # print(paste(mean(L5.temp)))
+  # print("")
+
+
+  # L5.temp <- gsub(pattern = "1970-01-02", x = L5.temp, replacement = "1970-01-01")
+  # print(paste(mean(L5.temp)))
 
   L5_starttime <- mean(L5.temp)
   result$L5_starttime <- L5_starttime

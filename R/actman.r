@@ -21,7 +21,7 @@
 #' @param daysperiod An optional vector specifying the length in days of the period.
 #' @param movingwindow Boolean value indicating whether a moving window should be utilised.
 #' @param movingwindow.size An optional vector specifying the length in days of the moving window. Default is 14 days.
-#' @param lengthcheck Boolean value indicating whether data recorded after 14 days should be included.
+#' @param circadian_analysis Boolean value indicating whether non-parametric circadian rhythm analysis should be performed.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
 #'
 #' @return if iwantsleepanalysis, this returns the sleepdata overview, else if movingwindow, it returns the moving window results, and otherwise it returns the actdata overview.
@@ -33,13 +33,13 @@
 #'                     plotactogram = FALSE,
 #'                     selectperiod = FALSE,
 #'                     startperiod = "2016-10-03 00:00:00",
-#'                     daysperiod = 14, movingwindow = FALSE, lengthcheck = TRUE))
+#'                     daysperiod = 14, movingwindow = FALSE, circadian_analysis = TRUE))
 #' }
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
                    selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL, movingwindow = FALSE, movingwindow.size = 14,
-                   lengthcheck = FALSE, nparACT_compare = FALSE, na_omit = TRUE) {
+                   circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = TRUE) {
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
@@ -203,29 +203,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # Add 14 days in a way that respects daylight savings time changes:
     ACTdata.1.sub.14day <- increase_by_days(ACTdata.1.sub$Date[1], 14)
 
-    if (lengthcheck) {
-        ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
-        print("Task 2: Detecting if Dataset is longer than Start Date plus 14 full days")
-        if (ACTdata.1.sub[nrow(ACTdata.1.sub), "Date"] > ACTdata.1.sub.14day) {
-          print("Warning: Dataset is longer than Start Date plus 14 full days!")
-
-          ACTdata.1.sub <- ACTdata.1.sub[1:((secs14day/60) + 1), ]
-
-          print("Action: Observations recorded after Start Date plus 14 full days were removed.")
-          print("Task 2 DONE: Dataset shortened to Start Date plus 14 days. Tasks 3, 4, and 5 also OK")
-          print("")
-          ACTdata.overview$lengthcheck[i] <- TRUE
-        } else {
-          print("Task 2 OK: Dataset not longer than Start Date plus 14 days.")
-          print("")
-        }
-
-        # Update overview after removal
-        ACTdata.overview[i, "numberofobs2"] <- nrow(ACTdata.1.sub)
-        ACTdata.overview[i, "recordingtime2"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
-        ACTdata.overview[i, "end2"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
-    }
-
 
     ## Remove NA's
     print("Task 6: Reporting NA's")
@@ -360,17 +337,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       rollingwindow.results <- rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
 
     } else {
-        r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
 
-        # Attach r2 output to overview
-        ACTdata.overview[i, "r2.IS"] <- r2$IS
-        ACTdata.overview[i, "r2.IV"] <- r2$IV
-        ACTdata.overview[i, "r2.RA"] <- round(r2$RA, 2)
-        ACTdata.overview[i, "r2.L5"] <- round(r2$L5, 2)
-        ACTdata.overview[i, "r2.L5_starttime"] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
-        ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
-        ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
+        if (circadian_analysis){
+            r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
 
+            # Attach r2 output to overview
+            ACTdata.overview[i, "r2.IS"] <- r2$IS
+            ACTdata.overview[i, "r2.IV"] <- r2$IV
+            ACTdata.overview[i, "r2.RA"] <- round(r2$RA, 2)
+            ACTdata.overview[i, "r2.L5"] <- round(r2$L5, 2)
+            ACTdata.overview[i, "r2.L5_starttime"] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
+            ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
+            ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
+        }
     }
 
     if (nparACT_compare) {
