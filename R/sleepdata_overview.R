@@ -11,9 +11,9 @@
 sleepdata_overview <- function(workdir, actdata) {
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
 
-  # Set Working directory
-  oldworkdir <- getwd()
-  setwd(workdir)
+  # # Set Working directory
+  # oldworkdir <- getwd()
+  # setwd(workdir)
 
   # Load data (example data: actigraphy file from MotionWatch8 worn by Nicolien Knapen)
   data <- actdata # Previously read.csv("NK_data.csv")
@@ -21,7 +21,7 @@ sleepdata_overview <- function(workdir, actdata) {
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
   #! Ik snap niet waarom je hier keihard die nkdata sleeplog inleest. Is dat niet steeds dezelfde data voor alle personen?
-  data.sleeplog <- read.csv("NKdata_sleeplog.csv")
+  data.sleeplog <- read.csv("SWITCH_001_sleeplog.csv")
   data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
 
   # Recreate data$Time var for this module
@@ -165,8 +165,8 @@ sleepdata_overview <- function(workdir, actdata) {
 
   }
 
-  # Restore workdir
-  setwd(oldworkdir)
+  # # Restore workdir
+  # setwd(oldworkdir)
 
   # Return the sleepdata overview
   sleepdata.overview

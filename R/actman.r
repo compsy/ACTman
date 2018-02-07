@@ -49,7 +49,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # List files and initiate overview file
   pattern_file <- ""
   if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
-    pattern_file <- "NK_data.csv"
+    pattern_file <- "SWITCH-001_actfile_new.csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
   } else {
     pattern_file <- ".csv"
