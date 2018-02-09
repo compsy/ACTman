@@ -169,5 +169,5 @@ sleepdata_overview <- function(workdir, actdata) {
   # setwd(oldworkdir)
 
   # Return the sleepdata overview
-  sleepdata.overview
+  write.csv(sleepdata.overview, file = "sleepdata.csv")
 }
