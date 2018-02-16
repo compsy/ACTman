@@ -123,10 +123,9 @@ sleepdata_overview <- function(workdir, actdata) {
     AssumedSleep <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
     ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
-    # Commented out because not used:
-    # ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
-    # ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
-    # ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
+    ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
+    ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
+    ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
     SleepEfficiency <- (ActualSleep/TimeInBed) * 100 # Actual sleep time expressed as a percentage of time in bed.
     SleepLatency <- (rownr.sleep.start - rownr.bedtime) / 60 # The time between "Lights Out" and "Fell Asleep"
 
@@ -157,8 +156,17 @@ sleepdata_overview <- function(workdir, actdata) {
 
     # Attach Sleep Analysis output to overview
     sleepdata.overview[a, "date"] <- as.character(data.sleeplog[a, "Date"])
+    sleepdata.overview[a, "bedtime_sleeplog"] <- bedtime
+    sleepdata.overview[a, "gotup_sleeplog"] <- gotup
     sleepdata.overview[a, "sleep.start"] <- sleep.start
     sleepdata.overview[a, "sleep.end"] <- sleep.end
+    sleepdata.overview[a, "timeinbed"] <- TimeInBed
+    sleepdata.overview[a, "assumed_sleep"] <- AssumedSleep
+    sleepdata.overview[a, "wakepochs_duration"] <- WakeEpochs
+    sleepdata.overview[a, "actual_sleep_duration"] <- ActualSleep
+    sleepdata.overview[a, "actual_sleep_perc"] <- ActualSleepPerc
+    sleepdata.overview[a, "actual_wake_duration"] <- ActualWakeTime
+    sleepdata.overview[a, "actual_wake_perc"] <- ActualWakePerc
     sleepdata.overview[a, "sleep.efficiency"] <- SleepEfficiency
     sleepdata.overview[a, "sleep.latency"] <- SleepLatency
 
