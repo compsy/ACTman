@@ -40,7 +40,6 @@ sleepdata_overview <- function(workdir, actdata) {
 
   ## LOOP for Calculatins Sleep Variables
   for (a in 1:nrow(data.sleeplog)) {
-    print(paste("data.sub.night", a, sep = ""))
 
     if (a == 1) {
       aaa <- data[1:end.night.1, ]
