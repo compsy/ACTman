@@ -40,7 +40,6 @@ sleepdata_overview <- function(workdir, actdata) {
 
   ## LOOP for Calculatins Sleep Variables
   for (a in 1:nrow(data.sleeplog)) {
-    print(paste("data.sub.night", a, sep = ""))
 
     if (a == 1) {
       aaa <- data[1:end.night.1, ]
@@ -125,9 +124,9 @@ sleepdata_overview <- function(workdir, actdata) {
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
     ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
     # Commented out because not used:
-    # ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
-    # ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
-    # ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
+    ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
+    ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
+    ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
     SleepEfficiency <- (ActualSleep/TimeInBed) * 100 # Actual sleep time expressed as a percentage of time in bed.
     SleepLatency <- (rownr.sleep.start - rownr.bedtime) / 60 # The time between "Lights Out" and "Fell Asleep"
 
@@ -162,6 +161,10 @@ sleepdata_overview <- function(workdir, actdata) {
     sleepdata.overview[a, "sleep.end"] <- sleep.end
     sleepdata.overview[a, "sleep.efficiency"] <- SleepEfficiency
     sleepdata.overview[a, "sleep.latency"] <- SleepLatency
+
+    sleepdata.overview[a, "ActualSleepPerc"] <- ActualSleepPerc
+    sleepdata.overview[a, "ActualWakeTime"] <- ActualWakeTime
+    sleepdata.overview[a, "ActualWakePerc"] <- ActualWakePerc
 
   }
 
