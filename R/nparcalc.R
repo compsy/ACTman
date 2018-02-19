@@ -62,7 +62,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## Xi
   xi <- aggregate(CRV.data[, "Activity"],
                   list(hour = cut(as.POSIXct(CRV.data[, "Date"]), breaks = "hour")),
-                  mean) # , na.action = na.pass, na.rm = TRUE
+                  mean, na.action = na.pass, na.rm = TRUE) # , na.action = na.pass, na.rm = TRUE
 
 
   if (!movingwindow) {
