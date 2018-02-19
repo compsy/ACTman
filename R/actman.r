@@ -216,10 +216,31 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # User-control over Analysis if too much Missings!
     if ((ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]) > 0.01){
-      if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
+      # if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
+      #   stop("Stopped by user!")
+      # }
+
+      message("\nMore than 0.01% of data is missing!\nAnalysis results might deviate from true values!")
+      message("Do you want to continue?")
+      missings_prompt_answer <- readline(prompt="Enter 'y' for Yes or 'n' for No:")
+
+      if(missings_prompt_answer == "n"){
         stop("Stopped by user!")
       }
+
+
+
     }
+
+    # ## Set NA to 0
+    # ACTdata.1.sub[is.na(ACTdata.1.sub)] <- 0
+
+
+    # ## Impute Missings
+    # library(mice); library(pscl); library(accelmissing)
+    # tempData <- mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m=5, maxit=50, meth='pmm', seed=500)
+    # tempData2 <- complete(tempData, 1)
+    # ACTdata.1.sub$Activity <- tempData2$V1
 
 
     ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
@@ -241,6 +262,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       print("Task 7 OK: Dataset contained Activity in Last 5 observations.")
       print("")
     }
+
 
     ## END OF Step 2.1: Managing the Data
 
