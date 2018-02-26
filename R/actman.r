@@ -49,7 +49,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # List files and initiate overview file
   pattern_file <- ""
   if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
-    pattern_file <- "SWITCH-001_actfile_new.csv"
+    pattern_file <- "_actdata.csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
   } else {
     pattern_file <- ".csv"
@@ -245,11 +245,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
     ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
-<<<<<<< HEAD
     ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = T) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
-=======
-    ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = TRUE) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
->>>>>>> 037d360f79a6b974f4e95a1ebcb3c9542ce69026
     print("Task 7: Checking for Activity in Last 5 observations")
     if (ACTdata.1.sub.last5act.active == FALSE) {
       print("Warning: No Activity in Last 5 observations!")
