@@ -215,7 +215,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     print("")
 
     # User-control over Analysis if too much Missings!
-    if ((ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]) > 0.01){
+
+    #### Function below gave an error when there are NO missings (ACTdata.overview[i, "missings"] == NA), so made a function first to test this. If it is NA, than return 0, so the next test is FALSE.
+    number_of_missings <- ifelse(is.na(ACTdata.overview[i, "missings"]), 0, ACTdata.overview[i, "missings"])
+    if ((number_of_missings / ACTdata.overview[i, "numberofobs"]) > 0.01){ # Gives error when there are NO missings.
       # if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
       #   stop("Stopped by user!")
       # }
