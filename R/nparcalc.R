@@ -44,7 +44,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
     if (movingwindow) {
       CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
-    # } else {CRV.data.end <- which(CRV.data[, "Date"] == as.POSIXct(CRV.data.wholehours[1, "Date"]) + (secsday * 13))}
+      # } else {CRV.data.end <- which(CRV.data[, "Date"] == as.POSIXct(CRV.data.wholehours[1, "Date"]) + (secsday * 13))}
     } else {CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]}
 
   }
@@ -62,13 +62,13 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## Xi
   xi <- aggregate(CRV.data[, "Activity"],
                   list(hour = cut(as.POSIXct(CRV.data[, "Date"]), breaks = "hour")),
-                  mean) # , na.action = na.pass, na.rm = TRUE
+                  mean, na.action = na.pass, na.rm = TRUE) # , na.action = na.pass, na.rm = TRUE
 
 
   if (!movingwindow) {
-      xi <- xi[1:(nrow(xi) - 1), ]
+    xi <- xi[1:(nrow(xi) - 1), ]
   } else {
-      xi <- xi[1:(nrow(xi)), ]
+    xi <- xi[1:(nrow(xi)), ]
   }
 
   xi <- xi$x
@@ -177,8 +177,8 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   result$L5 <- L5
 
 
- # NA starttime workaround
- # TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"] <- TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"])) - 1), "L5_starttime"] # Replace NA with prev. obs. (doen not work is prev obs is also NA!)
+  # NA starttime workaround
+  # TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"] <- TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"])) - 1), "L5_starttime"] # Replace NA with prev. obs. (doen not work is prev obs is also NA!)
   TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"] <- TEST.df.L5[(which(!is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"][1] # Replace NA with first non-NA value
 
 

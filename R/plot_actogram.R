@@ -17,7 +17,7 @@
 #'
 plot_actogram <- function(workdir, ACTdata.1.sub) {
 
-### Part 1: Basic Operations ----------------------------------------------------------------------------
+  ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
   # Set and save working directory
   workdir.save <- getwd()
@@ -30,7 +30,7 @@ plot_actogram <- function(workdir, ACTdata.1.sub) {
   ndays.plot <- round(abs(as.numeric(round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2))))
 
 
-### Part 2: 1st day Selection & Midnight Detection 2nd day  ---------------------------------------------------
+  ### Part 2: 1st day Selection & Midnight Detection 2nd day  ---------------------------------------------------
 
   ## Midnight Detection 2nd day
   day2start <- ((which(substr(act_data$Date, start = 12, stop = 19) == "00:00:00")[1]) - 1) # Start of day2 at midnight.
@@ -46,7 +46,7 @@ plot_actogram <- function(workdir, ACTdata.1.sub) {
   day1 <- rbind(day1.rest.mat, day1) # Combine day1 data with empty pre-day1 matrix
 
 
-### Part 3: Loop for assigning subsequent days (14 days max for plot) & setting ylim's ----------------------
+  ### Part 3: Loop for assigning subsequent days (14 days max for plot) & setting ylim's ----------------------
 
   ## Assign other days
   for (i.plot in 2:(ndays.plot)) {

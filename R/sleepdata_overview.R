@@ -15,7 +15,7 @@ sleepdata_overview <- function(workdir, actdata) {
   # oldworkdir <- getwd()
   # setwd(workdir)
 
-  # Load data (example data: actigraphy file from MotionWatch8 worn by Nicolien Knapen)
+  # Load data
   data <- actdata # Previously read.csv("NK_data.csv")
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
@@ -74,7 +74,7 @@ sleepdata_overview <- function(workdir, actdata) {
     ## Dit gedeelte aanpassen a.d.h.v. MW8 Info Bullitin
     ## !!Open Question: Where is Number of Counts Allowed above Threshold specified?? (6 seems arbitrary?)
     ## !! Day 4 sleep.end zou 08:53:00 moeten zijn i.p.v. 05:44:00??
-    aaa$epoch.sleep.chance <- ifelse(aaa$Activity..MW.counts. > 6, 1, 0) # 1 is under treshold, 0 is above treshold
+    aaa$epoch.sleep.chance <- ifelse(aaa$Activity..MW.counts. > 6, 1, 0) # 1 is above treshold, 0 is below treshold
     aaa$sleep.chance <- (dplyr::lead(aaa$epoch.sleep.chance, n = 1L) +
                            dplyr::lead(aaa$epoch.sleep.chance, n = 2L) +
                            dplyr::lead(aaa$epoch.sleep.chance, n = 3L) +
@@ -106,14 +106,20 @@ sleepdata_overview <- function(workdir, actdata) {
     ## !!Problem with day 4 sleep.end might originate here, as sleep.end (08:53:00) ligt buiten range rownr.gotup (<08:00:00)??
     ## !! Adding "+24" to rownr.gotup is a work-around. (24 seems to be minimum to switch 05:54:00 to 08:53:00)??
     # aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup+24), ] # This includes only the time in which the subject is in bed handpicked in this sample based on sleep.start (00:29) / got up (7:59) data
-    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup), ]
+    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + 30), ] # A 30 minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
     #  Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
     sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance >= 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)), ]
+
+    # Calculate the difference, so the beginning of the last wake period is selected.
+    sleep.end.$diff[2:nrow(sleep.end.)] <- diff(as.numeric(row.names(sleep.end.)))
+
     ## First row now contains the start of sleep.
-    sleep.end <- as.character(sleep.end.$Time[nrow(sleep.end.)])
-    rownr.sleep.end <- which(aaa$Time == sleep.end)[1]
+    sleep.end.new <- sleep.end.[which(sleep.end.$diff > 4), ] # Bigger than 4, as the difference should be at least 5 minutes, so a small difference with possible sleep is left out.
+    sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new),]))
+    sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
+    rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
 
     ## END OF Step 2: Calculate sleep for night1.------------------------------------------------------------------------
 

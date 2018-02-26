@@ -1,7 +1,7 @@
 #############################################################################
 ### ACTman package                                                        ###
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
-### Most recent Update: 30-11-2017                                        ###
+### Most recent Update: 26-02-2018                                        ###
 ### Supported devices: Actiwatch 2 Respironics & MW8                      ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 
@@ -49,14 +49,14 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # List files and initiate overview file
   pattern_file <- ""
   if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
-    pattern_file <- "SWITCH-001_actfile_new.csv"
+    pattern_file <- "_actdata.csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
   } else {
     pattern_file <- ".csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
-      if (any((grep(pattern = "SLEEPLOG", x = ACTdata.files)))){
-          ACTdata.files <- ACTdata.files[-(grep(pattern = "SLEEPLOG", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
-      }
+    if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
+      ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
+    }
   }
 
   ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
@@ -107,7 +107,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
 
       if (any(ACTdata.1[, 1] == "Raw data:")) {
-          ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
+        ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
       } else {
         ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = TRUE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
       }
@@ -118,34 +118,34 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       # Test for 30 sec. bins!
       if (any(grepl(pattern = ":30", x = ACTdata.1$B[1:2]))) {
-          print("Detecting Epoch Length.......")
-          print("Warning: 30 sec. Epoch's Detected!")
-          print("Action: Binning 30 sec. Epochs in 60 sec. Epochs")
-          print("")
+        print("Detecting Epoch Length.......")
+        print("Warning: 30 sec. Epoch's Detected!")
+        print("Action: Binning 30 sec. Epochs in 60 sec. Epochs")
+        print("")
 
 
 
-          ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
-          #! Deze regel geeft een warning:
-          #! In as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30",  :
-          #!   longer object length is not a multiple of shorter object length
-          #! Dit komt omdat er 1 tijd meer is die eindigt op :00 dan op :30
-          #! Maar volgens mij gaat het voor alle gevallen wel zoals je zou verwachten, en om alles
-          #! om te schrijven is een boel werk en veel meer code. Ik zou het zo laten.
-          ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
+        ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
+        #! Deze regel geeft een warning:
+        #! In as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30",  :
+        #!   longer object length is not a multiple of shorter object length
+        #! Dit komt omdat er 1 tijd meer is die eindigt op :00 dan op :30
+        #! Maar volgens mij gaat het voor alle gevallen wel zoals je zou verwachten, en om alles
+        #! om te schrijven is een boel werk en veel meer code. Ik zou het zo laten.
+        ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
 
-          ACTdata.1.sub <- ACTdata.TEMP
-          colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
-          ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
+        ACTdata.1.sub <- ACTdata.TEMP
+        colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
+        ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
 
-          rm(ACTdata.TEMP)
+        rm(ACTdata.TEMP)
 
       } else {
         print("Detecting Epoch Length.......")
         print("Normal 60 sec. Epochs detected")
         print("No changes made")
         print("")
-        }
+      }
 
     }
 
@@ -208,14 +208,17 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     print("Task 6: Reporting NA's")
     ACTdata.overview[i, "missings"] <- table(is.na(ACTdata.1.sub))["TRUE"]  # write missings to overview
     if (na_omit) {
-        ACTdata.1.sub <- na.omit(ACTdata.1.sub)
+      ACTdata.1.sub <- na.omit(ACTdata.1.sub)
     }
     print(paste("Number of NA's in this Dataset:", ACTdata.overview[i, "missings"]))
     print(paste("This is:", round(ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"], 3), "% of the total number of observations!"))
     print("")
 
     # User-control over Analysis if too much Missings!
-    if ((ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"]) > 0.01){
+
+    #### Function below gave an error when there are NO missings (ACTdata.overview[i, "missings"] == NA), so made a function first to test this. If it is NA, than return 0, so the next test is FALSE.
+    number_of_missings <- ifelse(is.na(ACTdata.overview[i, "missings"]), 0, ACTdata.overview[i, "missings"])
+    if ((number_of_missings / ACTdata.overview[i, "numberofobs"]) > 0.01){ # Gives error when there are NO missings.
       # if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
       #   stop("Stopped by user!")
       # }
@@ -245,7 +248,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
     ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
-    ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = TRUE) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
+    ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = T) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
     print("Task 7: Checking for Activity in Last 5 observations")
     if (ACTdata.1.sub.last5act.active == FALSE) {
       print("Warning: No Activity in Last 5 observations!")
@@ -290,7 +293,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Read managed dataset for CRV analysis
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")),
-                          stringsAsFactors = FALSE)
+                           stringsAsFactors = FALSE)
     colnames(CRV.data) <- c("Date", "Time", "Activity")
 
 
@@ -360,33 +363,33 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     } else {
 
-        if (circadian_analysis){
-            r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
+      if (circadian_analysis){
+        r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
 
-            # Attach r2 output to overview
-            ACTdata.overview[i, "r2.IS"] <- r2$IS
-            ACTdata.overview[i, "r2.IV"] <- r2$IV
-            ACTdata.overview[i, "r2.RA"] <- round(r2$RA, 2)
-            ACTdata.overview[i, "r2.L5"] <- round(r2$L5, 2)
-            ACTdata.overview[i, "r2.L5_starttime"] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
-            ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
-            ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
-        }
+        # Attach r2 output to overview
+        ACTdata.overview[i, "r2.IS"] <- r2$IS
+        ACTdata.overview[i, "r2.IV"] <- r2$IV
+        ACTdata.overview[i, "r2.RA"] <- round(r2$RA, 2)
+        ACTdata.overview[i, "r2.L5"] <- round(r2$L5, 2)
+        ACTdata.overview[i, "r2.L5_starttime"] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
+        ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
+        ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
+      }
     }
 
     if (nparACT_compare) {
-        # Use nparACT Package to calculate Experimental Variables
-        # Calculate IS, etc. with nparACT
-        r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
+      # Use nparACT Package to calculate Experimental Variables
+      # Calculate IS, etc. with nparACT
+      r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
 
-        # Attach nparACT output to overview
-        ACTdata.overview[i, "IS"] <- r$IS
-        ACTdata.overview[i, "IV"] <- r$IV
-        ACTdata.overview[i, "RA"] <- r$RA
-        ACTdata.overview[i, "L5"] <- r$L5
-        ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
-        ACTdata.overview[i, "M10"] <- r$M10
-        ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
+      # Attach nparACT output to overview
+      ACTdata.overview[i, "IS"] <- r$IS
+      ACTdata.overview[i, "IV"] <- r$IV
+      ACTdata.overview[i, "RA"] <- r$RA
+      ACTdata.overview[i, "L5"] <- r$L5
+      ACTdata.overview[i, "L5_starttime"] <- r$L5_starttime
+      ACTdata.overview[i, "M10"] <- r$M10
+      ACTdata.overview[i, "M10_starttime"] <- r$M10_starttime
     }
 
     # Set wd back to main workdir
@@ -416,16 +419,16 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time", "No. of Days")
   # Update overview, depending on nparACT_compare
   if (!nparACT_compare) {
-      ACTdata.overview["IS"] <- NULL
-      ACTdata.overview["IV"] <- NULL
-      ACTdata.overview["RA"] <- NULL
-      ACTdata.overview["L5"] <- NULL
-      ACTdata.overview["L5_starttime"] <- NULL
-      ACTdata.overview["M10"] <- NULL
-      ACTdata.overview["M10_starttime"] <- NULL
+    ACTdata.overview["IS"] <- NULL
+    ACTdata.overview["IV"] <- NULL
+    ACTdata.overview["RA"] <- NULL
+    ACTdata.overview["L5"] <- NULL
+    ACTdata.overview["L5_starttime"] <- NULL
+    ACTdata.overview["M10"] <- NULL
+    ACTdata.overview["M10_starttime"] <- NULL
 
-      # Rename Circdin variables if not nparACT_compare
-      colnames(ACTdata.overview) <- gsub(pattern = "r2.", x = colnames(ACTdata.overview), replacement = "")
+    # Rename Circdin variables if not nparACT_compare
+    colnames(ACTdata.overview) <- gsub(pattern = "r2.", x = colnames(ACTdata.overview), replacement = "")
   }
 
   # Export Experimental variables to .pdf
@@ -447,7 +450,4 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     View(ACTdata.overview)
   }
 }
-
-
-
 
