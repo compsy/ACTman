@@ -54,8 +54,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   } else {
     pattern_file <- ".csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
-      if (any((grep(pattern = "SLEEPLOG", x = ACTdata.files)))){
-          ACTdata.files <- ACTdata.files[-(grep(pattern = "SLEEPLOG", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
+      if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
+          ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
       }
   }
 
