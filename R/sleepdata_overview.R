@@ -8,7 +8,7 @@
 #' @return Returns a sleepdata overview.
 #'
 # Voeg fragmentation index toe!
-sleepdata_overview <- function(workdir, actdata) {
+sleepdata_overview <- function(workdir, actdata, i) {
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
 
   # # Set Working directory
@@ -21,7 +21,7 @@ sleepdata_overview <- function(workdir, actdata) {
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
   #! Ik snap niet waarom je hier keihard die nkdata sleeplog inleest. Is dat niet steeds dezelfde data voor alle personen?
-  data.sleeplog <- read.csv(list.files(pattern = "sleeplog.csv"))
+  data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
   data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
 
   # Recreate data$Time var for this module
@@ -64,9 +64,19 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## Now calculate sleep start from a certain point in the data (based on sleep log)
     bedtime <- paste((as.character(data.sleeplog.sub$BedTime[a])), ":00", sep = "")
+
+    if(nchar(bedtime) > 8){
+      bedtime <- substr(bedtime, 1, nchar(bedtime)-3)
+    }
+
     rownr.bedtime <- which(aaa$Time == bedtime)[1]
 
     gotup <- paste((as.character(data.sleeplog.sub$GotUp[a])), ":00", sep = "")
+
+    if(nchar(gotup) > 8){
+      gotup <- substr(gotup, 1, nchar(gotup)-3)
+    }
+
     rownr.gotup <- which(aaa$Time == gotup)[1]
 
     ## Calculation should indicate the moment of sleep start and 10 consecutive non-active epochs. 1 epoch can have activity.
@@ -187,3 +197,4 @@ sleepdata_overview <- function(workdir, actdata) {
   # Return the sleepdata overview
   write.csv(sleepdata.overview, file = "sleepdata.csv")
 }
+

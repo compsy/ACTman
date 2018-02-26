@@ -23,6 +23,7 @@
 #' @param movingwindow.size An optional vector specifying the length in days of the moving window. Default is 14 days.
 #' @param circadian_analysis Boolean value indicating whether non-parametric circadian rhythm analysis should be performed.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
+#' @param missings_report Boolean value indicating whether missings promt should appear.
 #'
 #' @return if iwantsleepanalysis, this returns the sleepdata overview, else if movingwindow, it returns the moving window results, and otherwise it returns the actdata overview.
 #' @examples
@@ -39,7 +40,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
                    selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL, movingwindow = FALSE, movingwindow.size = 14,
-                   circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = TRUE) {
+                   circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = TRUE,
+                   missings_report = TRUE) {
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
@@ -53,6 +55,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
     if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
       ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
+    }
   } else {
     pattern_file <- ".csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
@@ -60,6 +63,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
     }
   }
+
 
   ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
                                  "numberofobs" = NA, "numberofobs2" = NA, "numberofobs3" = NA, "recordingtime" = NA,
@@ -134,7 +138,13 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         #! Dit komt omdat er 1 tijd meer is die eindigt op :00 dan op :30
         #! Maar volgens mij gaat het voor alle gevallen wel zoals je zou verwachten, en om alles
         #! om te schrijven is een boel werk en veel meer code. Ik zou het zo laten.
+        #! >> Error doordat selecteren op ":00" niet alle 30 sec epochs verwijderd;
+        #! >> e.g. "16:00:30" bevat zowel ":00" als ":30"!
         ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
+
+        #! Workaround for aforementioned issue
+        ACTdata.TEMP <- ACTdata.TEMP[ - which(grepl("00:30", ACTdata.TEMP$B)), ]
+
 
         ACTdata.1.sub <- ACTdata.TEMP
         colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
@@ -220,19 +230,21 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     #### Function below gave an error when there are NO missings (ACTdata.overview[i, "missings"] == NA), so made a function first to test this. If it is NA, than return 0, so the next test is FALSE.
     number_of_missings <- ifelse(is.na(ACTdata.overview[i, "missings"]), 0, ACTdata.overview[i, "missings"])
-    if ((number_of_missings / ACTdata.overview[i, "numberofobs"]) > 0.01){ # Gives error when there are NO missings.
-      # if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
-      #   stop("Stopped by user!")
-      # }
 
-      message("\nMore than 0.01% of data is missing!\nAnalysis results might deviate from true values!")
-      message("Do you want to continue?")
-      missings_prompt_answer <- readline(prompt="Enter 'y' for Yes or 'n' for No:")
+    if(missings_report){
+      if ((number_of_missings / ACTdata.overview[i, "numberofobs"]) > 0.01){ # Gives error when there are NO missings.
+        # if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
+        #   stop("Stopped by user!")
+        # }
 
-      if(missings_prompt_answer == "n"){
-        stop("Stopped by user!")
-      }
+        message("\nMore than 0.01% of data is missing!\nAnalysis results might deviate from true values!")
+        message("Do you want to continue?")
+        missings_prompt_answer <- readline(prompt="Enter 'y' for Yes or 'n' for No:")
 
+        if(missings_prompt_answer == "n"){
+          stop("Stopped by user!")
+        }
+    }
 
 
     }
@@ -248,33 +260,33 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # ACTdata.1.sub$Activity <- tempData2$V1
 
 
-    # ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
-    # ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
-    # ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = T) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
-    # print("Task 7: Checking for Activity in Last 5 observations")
-    # if (ACTdata.1.sub.last5act.active == FALSE) {
-    #   print("Warning: No Activity in Last 5 observations!")
-    #   print("Last 5 Activity Counts, before Correction:")
-    #   print(ACTdata.1.sub.last5act)
-    #   ACTdata.1.sub <- ACTdata.1.sub[1:max(which(ACTdata.1.sub$Activity >= (5 * length(ACTdata.1.sub.last5act)))), ] # Shortens data untill reached last activity
-    #   ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
-    #   ACTdata.overview$last5act.active[i] <- FALSE
-    #   print("Last 5 Activity Counts, after Correction:")
-    #   print(ACTdata.1.sub.last5act)
-    #   print("Task 7 DONE: Dataset Skipped to last Activity.")
-    #   print("")
-    # } else {
-    #   print("Task 7 OK: Dataset contained Activity in Last 5 observations.")
-    #   print("")
-    # }
-    #
-    #
-    # ## END OF Step 2.1: Managing the Data
-    #
-    # # Update overview file after NA- and non-activity removal
-    # ACTdata.overview[i, "numberofobs3"] <- nrow(ACTdata.1.sub)
-    # ACTdata.overview[i, "recordingtime3"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
-    # ACTdata.overview[i, "end3"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
+    ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
+    ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
+    ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = T) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
+    print("Task 7: Checking for Activity in Last 5 observations")
+    if (ACTdata.1.sub.last5act.active == FALSE) {
+      print("Warning: No Activity in Last 5 observations!")
+      print("Last 5 Activity Counts, before Correction:")
+      print(ACTdata.1.sub.last5act)
+      ACTdata.1.sub <- ACTdata.1.sub[1:max(which(ACTdata.1.sub$Activity >= (5 * length(ACTdata.1.sub.last5act)))), ] # Shortens data untill reached last activity
+      ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
+      ACTdata.overview$last5act.active[i] <- FALSE
+      print("Last 5 Activity Counts, after Correction:")
+      print(ACTdata.1.sub.last5act)
+      print("Task 7 DONE: Dataset Skipped to last Activity.")
+      print("")
+    } else {
+      print("Task 7 OK: Dataset contained Activity in Last 5 observations.")
+      print("")
+    }
+
+
+    ## END OF Step 2.1: Managing the Data
+
+    # Update overview file after NA- and non-activity removal
+    ACTdata.overview[i, "numberofobs3"] <- nrow(ACTdata.1.sub)
+    ACTdata.overview[i, "recordingtime3"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
+    ACTdata.overview[i, "end3"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
 
     ## Use nparACT Package to calculate Experimental Variables
     ## Pre-process
@@ -402,7 +414,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Loop for sleep_calc
     ## (!!) "Sleep_calculation_functional v1" still has to be made dynamic, now only woks for NK_data (!!)
     if (iwantsleepanalysis) {
-      sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub)
+      sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub, i = i)
     }
 
     print(paste("--------------------------------------", "END OF DATASET", i, "---", "@", round(i * (100 / length(ACTdata.files))), "% DONE",  "--------------------------------------"))
@@ -445,7 +457,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   # Returned result.
   if (iwantsleepanalysis) {
-    sleepdata.overview
+    View(sleepdata.overview)
   } else if (movingwindow) {
     rollingwindow.results
   } else {
