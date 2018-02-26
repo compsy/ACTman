@@ -49,8 +49,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # List files and initiate overview file
   pattern_file <- ""
   if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
-    pattern_file <- "_actdata.csv"
+    pattern_file <- ".csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
+    if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
+      ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
   } else {
     pattern_file <- ".csv"
     ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
@@ -246,33 +248,33 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     # ACTdata.1.sub$Activity <- tempData2$V1
 
 
-    ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
-    ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
-    ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = T) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
-    print("Task 7: Checking for Activity in Last 5 observations")
-    if (ACTdata.1.sub.last5act.active == FALSE) {
-      print("Warning: No Activity in Last 5 observations!")
-      print("Last 5 Activity Counts, before Correction:")
-      print(ACTdata.1.sub.last5act)
-      ACTdata.1.sub <- ACTdata.1.sub[1:max(which(ACTdata.1.sub$Activity >= (5 * length(ACTdata.1.sub.last5act)))), ] # Shortens data untill reached last activity
-      ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
-      ACTdata.overview$last5act.active[i] <- FALSE
-      print("Last 5 Activity Counts, after Correction:")
-      print(ACTdata.1.sub.last5act)
-      print("Task 7 DONE: Dataset Skipped to last Activity.")
-      print("")
-    } else {
-      print("Task 7 OK: Dataset contained Activity in Last 5 observations.")
-      print("")
-    }
-
-
-    ## END OF Step 2.1: Managing the Data
-
-    # Update overview file after NA- and non-activity removal
-    ACTdata.overview[i, "numberofobs3"] <- nrow(ACTdata.1.sub)
-    ACTdata.overview[i, "recordingtime3"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
-    ACTdata.overview[i, "end3"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
+    # ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
+    # ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
+    # ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = T) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
+    # print("Task 7: Checking for Activity in Last 5 observations")
+    # if (ACTdata.1.sub.last5act.active == FALSE) {
+    #   print("Warning: No Activity in Last 5 observations!")
+    #   print("Last 5 Activity Counts, before Correction:")
+    #   print(ACTdata.1.sub.last5act)
+    #   ACTdata.1.sub <- ACTdata.1.sub[1:max(which(ACTdata.1.sub$Activity >= (5 * length(ACTdata.1.sub.last5act)))), ] # Shortens data untill reached last activity
+    #   ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
+    #   ACTdata.overview$last5act.active[i] <- FALSE
+    #   print("Last 5 Activity Counts, after Correction:")
+    #   print(ACTdata.1.sub.last5act)
+    #   print("Task 7 DONE: Dataset Skipped to last Activity.")
+    #   print("")
+    # } else {
+    #   print("Task 7 OK: Dataset contained Activity in Last 5 observations.")
+    #   print("")
+    # }
+    #
+    #
+    # ## END OF Step 2.1: Managing the Data
+    #
+    # # Update overview file after NA- and non-activity removal
+    # ACTdata.overview[i, "numberofobs3"] <- nrow(ACTdata.1.sub)
+    # ACTdata.overview[i, "recordingtime3"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
+    # ACTdata.overview[i, "end3"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
 
     ## Use nparACT Package to calculate Experimental Variables
     ## Pre-process
