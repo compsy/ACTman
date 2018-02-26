@@ -1,7 +1,7 @@
 #############################################################################
 ### ACTman package                                                        ###
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
-### Most recent Update: 30-11-2017                                        ###
+### Most recent Update: 26-02-2018                                        ###
 ### Supported devices: Actiwatch 2 Respironics & MW8                      ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
 
