@@ -15,7 +15,7 @@ sleepdata_overview <- function(workdir, actdata) {
   # oldworkdir <- getwd()
   # setwd(workdir)
 
-  # Load data (example data: actigraphy file from MotionWatch8 worn by Nicolien Knapen)
+  # Load data
   data <- actdata # Previously read.csv("NK_data.csv")
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
