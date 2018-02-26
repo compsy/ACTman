@@ -45,7 +45,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
-  # workdir <- "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata3" # mydata2 = Actiwatch2, mydata3 = MW8 sleep
   setwd(workdir)
 
   # List files and initiate overview file
@@ -65,13 +64,12 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   }
 
 
-  ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
-                                 "numberofobs" = NA, "numberofobs2" = NA, "numberofobs3" = NA, "recordingtime" = NA,
-                                 "recordingtime2" = NA, "recordingtime3" = NA, "summertime.start" = NA,
-                                 "summertime.end" = NA, "missings" = NA, "IS" = NA, "IV" = NA, "RA" = NA, "L5" = NA,
-                                 "L5_starttime" = NA, "M10" = NA, "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA,
-                                 "r2.RA" = NA, "r2.L5" = NA, "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA,
-                                 "lengthcheck" = NA, "last5act.active" = NA)
+  ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA,
+                                 "numberofobs" = NA, "numberofobs2" = NA, "recordingtime" = NA,
+                                 "recordingtime2" = NA, "summertime.start" = NA, "summertime.end" = NA, "missings" = NA,
+                                 "missings_perc" = NA, "IS" = NA, "IV" = NA, "RA" = NA, "L5" = NA, "L5_starttime" = NA, "M10" = NA,
+                                 "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA, "r2.RA" = NA, "r2.L5" = NA,
+                                 "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA, "last5act.active" = NA)
 
   # Initiate loop parameters
   i <- 1 # set i
@@ -219,6 +217,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Remove NA's
     print("Task 6: Reporting NA's")
     ACTdata.overview[i, "missings"] <- table(is.na(ACTdata.1.sub))["TRUE"]  # write missings to overview
+    ACTdata.overview[i, "missings_perc"] <- round(ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"], 3) # write missings perc to overview
     if (na_omit) {
       ACTdata.1.sub <- na.omit(ACTdata.1.sub)
     }
@@ -284,9 +283,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## END OF Step 2.1: Managing the Data
 
     # Update overview file after NA- and non-activity removal
-    ACTdata.overview[i, "numberofobs3"] <- nrow(ACTdata.1.sub)
-    ACTdata.overview[i, "recordingtime3"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
-    ACTdata.overview[i, "end3"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
+    ACTdata.overview[i, "numberofobs2"] <- nrow(ACTdata.1.sub)
+    ACTdata.overview[i, "recordingtime2"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
+    ACTdata.overview[i, "end2"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
 
     ## Use nparACT Package to calculate Experimental Variables
     ## Pre-process
@@ -425,12 +424,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ## Step 3: After loop processing:
   # Transform negative recordingtime to positive
   ACTdata.overview$recordingtime <- ((ACTdata.overview$recordingtime) ^ 2) ^ (1 / 2)
-  ACTdata.overview$recordingtime2 <- ((ACTdata.overview$recordingtime2) ^ 2) ^ (1 / 2)
   # Assign zero to missings without missings
   ACTdata.overview[is.na(ACTdata.overview[, "missings"]), "missings"] <- 0
   # Subset experimental variables
-  ACTdata.1.sub.expvars <- ACTdata.overview[c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime", "recordingtime2")]
-  colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time", "No. of Days")
+  ACTdata.1.sub.expvars <- ACTdata.overview[c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")]
+  colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time")
   # Update overview, depending on nparACT_compare
   if (!nparACT_compare) {
     ACTdata.overview["IS"] <- NULL
