@@ -85,9 +85,9 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   #! Deze regel geeft een waarschuwing:
   #! In matrix(xi, nrow = 24) :
-  #!  data length [749] is not a sub-multiple or multiple of the number of rows [24]
+  #!  data length [343] is not a sub-multiple or multiple of the number of rows [24]
   #! Maakt dit wat uit voor jullie berekening? Of kunnen we dit negeren?
-  Xh <- rowMeans(matrix(xi, nrow = 24), na.rm = T)
+  Xh <- rowMeans(matrix(xi, nrow = 24), na.rm = T) #! Error
   Xh_X <- Xh - X # difference 24 hour means and overall mean
   sum.sq.Xh_X <- sum(Xh_X ^ 2, na.rm = T) # sum of squares
   sum.sq.Xh_X.perhour <- sum.sq.Xh_X / 24 # sum of squares per hour
@@ -116,11 +116,13 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## L5: Average of the 5 Lowest Hourly Means (within each day(!))
   ## daily minute means
 
-  # CRV.data.locmidnight <- grep(pattern = "12:00:00", x = CRV.data[, "Date"]) # Locations of midnight (!!!Is "12:00:00" midnight or "00:00:00"???)
-  CRV.data.locmidnight <- grep(pattern = "00:00:00", x = CRV.data[, "Date"]) # Locations of midnight (!!!Is "12:00:00" midnight or "00:00:00"???)
+  CRV.data.locmidnight <- grep(pattern = "12:00:00", x = CRV.data[, "Date"]) # Locations of midnight (!!!Is "12:00:00" midnight or "00:00:00"???)
+  # CRV.data.locmidnight <- grep(pattern = "00:00:00", x = CRV.data[, "Date"]) # Locations of midnight (!!!Is "12:00:00" midnight or "00:00:00"???)
   # CRV.data.locmidnight <- grep(pattern = strftime(ACTdata.1.sub$Date[1], format = "%H:%M:%S"), x = CRV.data[, "Date"])
 
   TEST.df.L5 <- data.frame("L5" <- NA, "L5_starttime" <- NA)
+
+  TEST_L5_starttimes <- as.data.frame(matrix(NA, ncol = 1, nrow = length(CRV.data.locmidnight)))
 
   for (f in 1:(length(CRV.data.locmidnight) - 1)) {
 
@@ -135,6 +137,11 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
       CRV.data.loc.L5[g] <- mean(c(CRV.data.full24minavg.act, CRV.data.full24minavg.act[c(1:300)])[c(g:(299 + g))], na.rm = T)
     } # calculating mean activity in 300 minute intervals ~ 5 hours
 
+
+    ## Workaround NaN's in CRV.data.loc.L5 (set to zero)
+    CRV.data.loc.L5[is.na(CRV.data.loc.L5)] <- 0
+
+
     L5 <- min(CRV.data.loc.L5) #round(min(CRV.data.loc.L5), 2)
     TEST.df.L5[f, "L5"] <- L5
 
@@ -147,17 +154,26 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
     # TEST.df[f, 1] <- as.POSIXct(L5_starttime, origin = "1970-01-01")
     TEST.df.L5[f, "L5_starttime"] <- L5_starttime
 
+
+    ##debug
+    TEST_L5_starttimes[f, ] <- (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (L5onset * secshour)) - (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]))
+
+
+
   }
 
-  # # L5 NA debug
-  # L5_TEST <<- TEST.df.L5[, "L5"]
-  # print(paste(L5_TEST))
-  # print("-------------------------")
+  # ## debug
+  # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  # print(as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (L5onset * secshour))
+  # print((as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (L5onset * secshour)) - (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"])))
+  # print("")
+  # print(TEST_L5_starttimes)
+  # print(mean(unlist(TEST_L5_starttimes), na.action = na.pass, na.rm = T))
+  # print("")
+  # print((as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (mean(unlist(TEST_L5_starttimes), na.action = na.pass, na.rm = T) * secshour)))
+  # print("------------------------------------------")
 
-  L5 <- mean(TEST.df.L5[, "L5"], na.action = na.pass, na.rm = TRUE)
-
-  # print(paste(L5)) #debug
-
+  L5 <- mean(TEST.df.L5[, "L5"], na.action = na.pass, na.rm = T)
   result$L5 <- L5
 
 
@@ -168,36 +184,41 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   L5.temp <- as.POSIXct(paste("1970-01-01", format(as.POSIXct(TEST.df.L5[, "L5_starttime"], origin = "1970-01-01"), "%H:%M:%S")))
 
-
-  for (a in 1:length(L5.temp)) {
-
-    # print(as.POSIXct("1970-01-01 00:00:00 CET") - L5.temp[a])
-
-    if (L5.temp[a] > "1970-01-01 21:00:00 CET") {
-      L5.temp[a] <- (L5.temp[a] + (secshour * 6))
-    }
-    # print(L5.temp[a])
-  }
+  # ##debug
+  # print(L5.temp)
 
 
-  # # L5_starttime debug
-  # L5.temp <- as.POSIXct(paste("1970-01-01", format(L5.temp, "%H:%M:%S")))
-  # print(paste("!!!!!!!!!!!!!!!!--------------------", L5.temp, "----------------!!!!!!!!!!!"))
-  # print("")
-  # print(paste(mean(L5.temp)))
-  # print("")
+
+  #! UNCLEAR WHAT THIS DOES..
+  # for (a in 1:length(L5.temp)) {
+  #
+  #   # print(as.POSIXct("1970-01-01 00:00:00 CET") - L5.temp[a])
+  #
+  #   if (L5.temp[a] > "1970-01-01 21:00:00 CET") {
+  #     L5.temp[a] <- (L5.temp[a] + (secshour * 6))
+  #   }
+  #   # print(L5.temp[a])
+  # }
 
 
   # L5.temp <- gsub(pattern = "1970-01-02", x = L5.temp, replacement = "1970-01-01")
   # print(paste(mean(L5.temp)))
 
-  L5_starttime <- mean(L5.temp)
+
+  # L5_starttime <- mean(L5.temp) # ORIG!
+  L5_starttime <- (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (mean(unlist(TEST_L5_starttimes), na.action = na.pass, na.rm = T) * secshour))
+
+
   result$L5_starttime <- L5_starttime
 
   ##---------------------------------------------------------------------------------------------------------
 
   ## M10: Average of the 10 Highest Hourly Means (within each day(!))
   ## daily minute means
+
+  CRV.data.locmidnight <- grep(pattern = "00:00:00", x = CRV.data[, "Date"]) # Locations of midnight (!!!Is "12:00:00" midnight or "00:00:00"???)
+
+  TEST_M10_starttimes <- as.data.frame(matrix(NA, ncol = 1, nrow = length(CRV.data.locmidnight)))
 
   TEST.df <- data.frame("M10" <- NA, "M10_starttime" <- NA)
 
@@ -222,33 +243,43 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
     # TEST.df[f, "L5"] <- L5
     TEST.df[f, "M10"] <- M10
 
-    # print(M10)
-
     L5M10frame <- data.frame(CRV.data.loc.M10 = CRV.data.loc.M10)
 
-    # L5onset <- which(L5M10frame$CRV.data.loc.L5 == L5)[1]/60 # locating the first value that equals L5 and get the number of hours from start
     M10onset <- which(L5M10frame$CRV.data.loc.M10 == M10)[1] / 60 # locating the first value that equals M10 and get the number of hours from start
-
-    # L5_starttime <- CRV.data[CRV.data.locmidnight[f], "Date"] + (L5onset*secshour)
-    # print(CRV.data[CRV.data.locmidnight[f], "Date"] + (L5onset*secshour))
-    # # TEST.df[f, 1] <- as.POSIXct(L5_starttime, origin = "1970-01-01")
-    # TEST.df[f, "L5_starttime"] <- L5_starttime
 
     M10_starttime <- as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (M10onset * secshour)
     # print(CRV.data[CRV.data.locmidnight[f], "Date"] + (M10onset * secshour))
     # TEST.df[f, 2] <- as.POSIXct(M10_starttime, origin = "1970-01-01")
     TEST.df[f, "M10_starttime"] <- M10_starttime
 
+    ##debug
+    TEST_M10_starttimes[f, ] <- (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (M10onset * secshour)) - (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]))
+
   }
+
 
   M10 <- mean(TEST.df[, "M10"])
   result$M10 <- M10
+
+  # ## debug
+  # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  # print(as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (M10onset * secshour))
+  # print((as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (M10onset * secshour)) - (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"])))
+  # print("")
+  # print(TEST_M10_starttimes)
+  # print(mean(unlist(TEST_M10_starttimes), na.action = na.pass, na.rm = T))
+  # print("")
+  # print((as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (mean(unlist(TEST_M10_starttimes), na.action = na.pass, na.rm = T) * secshour)))
+  # print("------------------------------------------")
 
   ### !!!! HERE is the whole problem (!!!) a mean is calculated over differing days and times. However, with differing days
   ### strong discrepancies appear as WHOLE days are averaged. The SOLUTION is simple, attach the same day to all times.
   ### There is, however, a smaller problem with multiple M10 starttimes being found within one day (!!)
 
-  M10_starttime <- mean(as.POSIXct(paste("1970-01-01", format(as.POSIXct(TEST.df[, "M10_starttime"], origin = "1970-01-01"), "%H:%M:%S"))))
+  # # Orig
+  # M10_starttime <- mean(as.POSIXct(paste("1970-01-01", format(as.POSIXct(TEST.df[, "M10_starttime"], origin = "1970-01-01"), "%H:%M:%S"))))
+  M10_starttime <- (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (mean(unlist(TEST_M10_starttimes), na.action = na.pass, na.rm = T) * secshour))
+
   result$M10_starttime <- M10_starttime
 
   Amp <- M10 - L5 # self explanatory
