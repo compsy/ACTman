@@ -15,7 +15,7 @@
 #' @param workdir the working directory as supplied to ACTman.
 #' @param ACTdata.1.sub the managed data set
 #'
-plot_actogram <- function(workdir, ACTdata.1.sub) {
+plot_actogram <- function(workdir, ACTdata.1.sub, i) {
 
   ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ plot_actogram <- function(workdir, ACTdata.1.sub) {
   workdir.save <- getwd()
   setwd(workdir)
 
-  pdf("Actigraphy Data - Plot.pdf") # Initialise .PDF plot
+  pdf(paste("Actigraphy Data - Plot", i, ".pdf", sep = "")) # Initialise .PDF plot
 
   act_data <- ACTdata.1.sub # Copy data for editing required for plotting
   act_data <- within(act_data, Date <- as.character(act_data$Date)) # Date as character for plotting

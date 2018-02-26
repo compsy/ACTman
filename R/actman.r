@@ -312,7 +312,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     # Plot actogram
     if (plotactogram) {
-      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub)
+      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i)
     }
 
     ## Moving Window
