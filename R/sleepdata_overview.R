@@ -16,11 +16,11 @@ sleepdata_overview <- function(workdir, actdata, i) {
   # setwd(workdir)
 
   # Load data
-  data <- actdata # Previously read.csv("NK_data.csv")
+  data <- actdata
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
-  #! Ik snap niet waarom je hier keihard die nkdata sleeplog inleest. Is dat niet steeds dezelfde data voor alle personen?
+  ## Read sleeplog
   data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
   data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
 
@@ -127,7 +127,7 @@ sleepdata_overview <- function(workdir, actdata, i) {
 
     ## First row now contains the start of sleep.
     sleep.end.new <- sleep.end.[which(sleep.end.$diff > 4), ] # Bigger than 4, as the difference should be at least 5 minutes, so a small difference with possible sleep is left out.
-    sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new),]))
+    sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new), ]))
     sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
     rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
 
@@ -194,7 +194,7 @@ sleepdata_overview <- function(workdir, actdata, i) {
   # # Restore workdir
   # setwd(oldworkdir)
 
-  # Return the sleepdata overview
-  write.csv(sleepdata.overview, file = "sleepdata.csv")
+  # Write sleepdata output as .CSV
+  write.csv(sleepdata.overview, file = paste("sleepdata", i,".csv"))
 }
 

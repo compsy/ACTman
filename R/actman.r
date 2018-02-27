@@ -43,27 +43,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = TRUE,
                    missings_report = TRUE) {
 
-  ## Step 1: Basic Operations:
-  # Set current working directory and set back to old working directory on exit
+  ## Step 1: Basic Operations-----------------------------------------------------------------
+
+  ## Set working directory:
   setwd(workdir)
 
-  # List files and initiate overview file
-  pattern_file <- ""
-  if (iwantsleepanalysis) { # iwantsleepanalysis determines input .csv's because of added sleeplog .csv
-    pattern_file <- ".csv"
-    ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
-    if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
-      ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
-    }
-  } else {
-    pattern_file <- ".csv"
-    ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
-    if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
-      ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
-    }
+  ## List actigraphy files and seperate out sleeplogs:
+  pattern_file <- ".csv"
+  ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
+  if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
+    ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any SLEEPLOG's from list if not needed
   }
 
-
+  ## Initialise overview:
   ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA,
                                  "numberofobs" = NA, "numberofobs2" = NA, "recordingtime" = NA,
                                  "recordingtime2" = NA, "summertime.start" = NA, "summertime.end" = NA, "missings" = NA,
@@ -71,25 +63,25 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                                  "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA, "r2.RA" = NA, "r2.L5" = NA,
                                  "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA, "last5act.active" = NA)
 
-  # Initiate loop parameters
+  ## Initiate parameters:
   i <- 1 # set i
-  secshour <- 60 * 60 # Seconds per hour
-  secsday <- 24 * secshour # Seconds per day
-  secs14day <- secsday * 14 # Seconds in 14 days
-  minsaday <- (secsday / 60) # Minutes per day
+  secshour <- 60 * 60 # Seconds per hour.
+  secsday <- 24 * secshour # Seconds per day.
+  secs14day <- secsday * 14 # Seconds in 14 days.
+  minsaday <- (secsday / 60) # Minutes per day.
 
-  # Semantic checks
+  ## Semantic checks:
   if (selectperiod && length(startperiod) != length(ACTdata.files)) {
     stop(paste("The number of start periods does not match the number of data files found:", startperiod, length(ACTdata.files)))
   }
 
-  ## END OF Step 1: Basic Operations.----------------------------------------------------------------------------
 
-  ## Step 2: Loop:
-  ## Loop Description: for each of the files listed in working directory, ...
+  ## Step 2: Main ACTman Loop------------------------------------------------------------------------
+  ## Description: ...
+
   for (i in 1:length(ACTdata.files)) {
 
-    # Test for user-defined arguments
+    ## Test for user-defined arguments:
     if (myACTdevice != "MW8" && myACTdevice != "Actiwatch2" ) {
       stop(paste("Unknown value for myACTdevice (should be Actiwatch2 or MW8):", myACTdevice))
     }
@@ -99,14 +91,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     print(paste("Dataset Name:", ACTdata.overview[i, "filename"]))
     print("")
 
-    # Read and manage data:
-    if (myACTdevice == "Actiwatch2") { # Device-specific Data Management
+
+    ## Step 2.1.: Reading Data-----------------------------------------------------------------------
+
+    ## Reading in .CSV data, plus some device-specific Data Management:
+    ## Device-specific Data Management is required as raw data format differs between
+    ## devices, in e.g., headers and raw data locations.
+    if (myACTdevice == "Actiwatch2") {
 
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE)
       ACTdata.1.sub <- ACTdata.1[, c(4, 5, 6)]
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
 
-    } else if (myACTdevice == "MW8") { # Device-specific Data Management
+    } else if (myACTdevice == "MW8") {
 
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
 
@@ -116,41 +113,34 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = TRUE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
       }
 
+      ## Make a copy of the original data to work on:
       ACTdata.1.sub <- ACTdata.1
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
       ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
 
-      # Test for 30 sec. bins!
+      ## Test for 30 sec. bins:
       if (any(grepl(pattern = ":30", x = ACTdata.1$B[1:2]))) {
         print("Detecting Epoch Length.......")
         print("Warning: 30 sec. Epoch's Detected!")
         print("Action: Binning 30 sec. Epochs in 60 sec. Epochs")
         print("")
 
-
-
+        ## If epochs are 30 sec. instead of 60 sec., bin them together to form 60 sec. epochs.
         ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
-        #! Deze regel geeft een warning:
-        #! In as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30",  :
-        #!   longer object length is not a multiple of shorter object length
-        #! Dit komt omdat er 1 tijd meer is die eindigt op :00 dan op :30
-        #! Maar volgens mij gaat het voor alle gevallen wel zoals je zou verwachten, en om alles
-        #! om te schrijven is een boel werk en veel meer code. Ik zou het zo laten.
         #! >> Error doordat selecteren op ":00" niet alle 30 sec epochs verwijderd;
         #! >> e.g. "16:00:30" bevat zowel ":00" als ":30"!
         ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
-
         #! Workaround for aforementioned issue
         ACTdata.TEMP <- ACTdata.TEMP[ - which(grepl("00:30", ACTdata.TEMP$B)), ]
 
-
+        ## Write binned data in ACTdata.TEMP to workable data object ACTdata.1.sub:
         ACTdata.1.sub <- ACTdata.TEMP
         colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
         ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
-
-        rm(ACTdata.TEMP)
+        rm(ACTdata.TEMP) # Remove temporary data object
 
       } else {
+        ## Make no changes if 60 sec. bins
         print("Detecting Epoch Length.......")
         print("Normal 60 sec. Epochs detected")
         print("No changes made")
@@ -160,7 +150,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
 
 
-    ## Step 2.1: Managing the Data
+    ## Step 2.2: Managing the Data
     # Reformat dates and times into required format for further processing:
     ACTdata.1.sub$Date <- gsub(pattern = "/20", replacement = "/", x = ACTdata.1.sub$Date) # Take only last two year digits
     ACTdata.1.sub$Date <- paste(ACTdata.1.sub$Date, ACTdata.1.sub$Time) # Merge Date Time
@@ -225,27 +215,21 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     print(paste("This is:", round(ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"], 3), "% of the total number of observations!"))
     print("")
 
-    # User-control over Analysis if too much Missings!
 
-    #### Function below gave an error when there are NO missings (ACTdata.overview[i, "missings"] == NA), so made a function first to test this. If it is NA, than return 0, so the next test is FALSE.
+    ## User-control over Analysis if too much Missings!
+    ## Function below gave an error when there are NO missings (ACTdata.overview[i, "missings"] == NA), so made a function first to test this. If it is NA, than return 0, so the next test is FALSE.
     number_of_missings <- ifelse(is.na(ACTdata.overview[i, "missings"]), 0, ACTdata.overview[i, "missings"])
 
     if(missings_report){
       if ((number_of_missings / ACTdata.overview[i, "numberofobs"]) > 0.01){ # Gives error when there are NO missings.
-        # if (winDialog(type = "yesno", message = "More than 0.01% of data is missing!\nAnalysis results might deviate from true values!\nDo you want to continue?") == "NO"){
-        #   stop("Stopped by user!")
-        # }
-
         message("\nMore than 0.01% of data is missing!\nAnalysis results might deviate from true values!")
         message("Do you want to continue?")
-        missings_prompt_answer <- readline(prompt="Enter 'y' for Yes or 'n' for No:")
+        missings_prompt_answer <- readline(prompt = "Enter 'y' for Yes or 'n' for No:")
 
         if(missings_prompt_answer == "n"){
           stop("Stopped by user!")
         }
-    }
-
-
+      }
     }
 
     # ## Set NA to 0
@@ -253,8 +237,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
 
     # ## Impute Missings
-    # library(mice); library(pscl); library(accelmissing)
-    # tempData <- mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m=5, maxit=50, meth='pmm', seed=500)
+    # if(!require('mice')){install.packages('mice', dep = TRUE)};library('mice')
+    # if(!require('pscl')){install.packages('pscl', dep = TRUE)};library('pscl')
+    # if(!require('accelmissing')){install.packages('accelmissing', dep = TRUE)};library('accelmissing')
+    # tempData <- mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m = 5, maxit = 50, meth = 'pmm', seed = 500)
     # tempData2 <- complete(tempData, 1)
     # ACTdata.1.sub$Activity <- tempData2$V1
 
@@ -410,8 +396,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
 
     ## Sleep Analysis Source
-    ## Loop for sleep_calc
-    ## (!!) "Sleep_calculation_functional v1" still has to be made dynamic, now only woks for NK_data (!!)
     if (iwantsleepanalysis) {
       sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub, i = i)
     }
@@ -443,10 +427,12 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     colnames(ACTdata.overview) <- gsub(pattern = "r2.", x = colnames(ACTdata.overview), replacement = "")
   }
 
-  # Export Experimental variables to .pdf
-  pdf("Table - Experimental Variables.pdf")
-  gridExtra::grid.table(ACTdata.1.sub.expvars)
-  dev.off()
+  ## Export Experimental variables of circadian analysis to .pdf
+  if(circadian_analysis){
+      pdf("Table - Experimental Variables.pdf")
+      gridExtra::grid.table(ACTdata.1.sub.expvars)
+      dev.off()
+  }
 
   # Export ACTdata.overview to .pdf
   pdf("Table - ACTdata.overview.pdf")
@@ -455,7 +441,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   # Returned result.
   if (iwantsleepanalysis) {
-    View(sleepdata.overview)
+    sleepdata.overview
   } else if (movingwindow) {
     rollingwindow.results
   } else {
