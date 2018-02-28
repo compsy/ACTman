@@ -83,7 +83,6 @@ sleepdata_overview <- function(workdir, actdata, i) {
 
     ## Dit gedeelte aanpassen a.d.h.v. MW8 Info Bullitin
     ## !!Open Question: Where is Number of Counts Allowed above Threshold specified?? (6 seems arbitrary?)
-    ## !! Day 4 sleep.end zou 08:53:00 moeten zijn i.p.v. 05:44:00??
     aaa$epoch.sleep.chance <- ifelse(aaa$Activity..MW.counts. > 6, 1, 0) # 1 is above treshold, 0 is below treshold
     aaa$sleep.chance <- (dplyr::lead(aaa$epoch.sleep.chance, n = 1L) +
                            dplyr::lead(aaa$epoch.sleep.chance, n = 2L) +

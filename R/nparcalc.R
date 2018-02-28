@@ -87,7 +87,6 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## Assign only activity data to xi:
   xi <- xi$x
 
-
   ## Calculate X (or X_bar; the mean of all the data):
   X <- mean(xi, na.rm = T)
 
@@ -99,11 +98,11 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   sum.sq.xi_X.perhour <- sum.sq.xi_X / n # Sum of squares per hour
 
 
-  #! Deze regel geeft een waarschuwing:
-  #! In matrix(xi, nrow = 24) :
-  #!  data length [343] is not a sub-multiple or multiple of the number of rows [24]
-  #! Maakt dit wat uit voor jullie berekening? Of kunnen we dit negeren?
-  Xh <- rowMeans(matrix(xi, nrow = 24), na.rm = T) #! Error
+  ## Calculate the Nominator part of the IS formula (van Someren et al., 1999):
+  ## Workaround to assure xi length is multiple of the number of rows [24]
+  xi_sub <- xi[1:(24 * floor(length(xi) / 24))]
+
+  Xh <- rowMeans(matrix(xi_sub, nrow = 24), na.rm = T) # Calculate hourly means
   Xh_X <- Xh - X # difference 24 hour means and overall mean
   sum.sq.Xh_X <- sum(Xh_X ^ 2, na.rm = T) # sum of squares
   sum.sq.Xh_X.perhour <- sum.sq.Xh_X / 24 # sum of squares per hour
