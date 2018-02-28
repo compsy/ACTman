@@ -202,7 +202,7 @@ sleepdata_overview <- function(workdir, actdata, i) {
   setwd(file.path(workdir_temp, "Results"))
 
   ## Write sleepdata output as .CSV into "Results" directory:
-  write.csv(sleepdata.overview, file = paste("sleepdata", i,".csv"))
+  write.csv(sleepdata.overview, file = paste("sleepdata", i, ".csv", sep = ""))
 
   ## Set working directory back to main working directory:
   setwd(workdir_temp)

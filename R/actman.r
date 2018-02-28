@@ -289,7 +289,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## If Activity in Last 5 observations is on average zero, Skip to Last Activity:
     ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
     ACTdata.1.sub.last5act.active <- sum(ACTdata.1.sub.last5act, na.rm = T) >= (5 * length(ACTdata.1.sub.last5act)) # Is there on average more than 5 counts per obs?
-    print("Task 7: Checking for Activity in Last 5 observations")
+    print("Task: Checking for Activity in Last 5 observations")
     if (ACTdata.1.sub.last5act.active == FALSE) {
       print("Warning: No Activity in Last 5 observations!")
       print("Last 5 Activity Counts, before Correction:")
@@ -299,10 +299,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       ACTdata.overview$last5act.active[i] <- FALSE
       print("Last 5 Activity Counts, after Correction:")
       print(ACTdata.1.sub.last5act)
-      print("Task 7 DONE: Dataset Skipped to last Activity.")
+      print("Task DONE: Dataset Skipped to last Activity.")
       print("")
     } else {
-      print("Task 7 OK: Dataset contained Activity in Last 5 observations.")
+      print("Task OK: Dataset contained Activity in Last 5 observations.")
       print("")
     }
 
@@ -439,6 +439,21 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     setwd(workdir)
 
 
+    ## Create "Results" directory for rolling window results:
+    workdir_temp <- getwd()
+    dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
+    setwd(file.path(workdir_temp, "Results"))
+
+    ## Write rollingwindow.results to .CSV
+    if (movingwindow) {
+      write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv", sep = ""), sep = ",")
+    }
+
+    ## Set working directory back to main working directory:
+    setwd(workdir_temp)
+    rm(workdir_temp)
+
+
     ## Sleep Analysis:
     ## Use the sleepdata_overview{ACTman} function to calculate sleep variables over
     ## the whole period.
@@ -492,16 +507,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   ## Write results of circadian analysis to .CSV
   if(circadian_analysis){
-      write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.CSV", sep = ",")
-  }
-
-  ## Write rollingwindow.results to .CSV
-  if (movingwindow) {
-    write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv"), sep = ",")
+      write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",")
   }
 
   ## Write ACTdata.overview to .CSV
-  write.table(ACTdata.overview, file = "ACTdata_overview.CSV", sep = ",")
+  write.table(ACTdata.overview, file = "ACTdata_overview.csv", sep = ",")
 
   ## Set working directory back to main working directory:
   setwd(workdir_temp)
