@@ -21,6 +21,7 @@
 ## Specify nparcalc function and arguments:
 nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = NULL) {
 
+
   ## Step 1: Basic Operations-------------------------------------------------------------------
 
   ## Define constants
@@ -45,49 +46,57 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   CRV.data.start <- which(CRV.data$Date == CRV.data.wholehours[1, "Date"])
 
   ## Device- and functionality specific identification of dataset end:
-  ##
+  #! Note: There is repetition in this loop > can be written more efficiently!
+  ## If device is MW8, then take dataset end at last "00:00:00" of dataset.
   if (myACTdevice == "MW8") {
     CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]
+    ## Else, if moving window is required take dataset end at last "00:00:00" of "out" dataset.
   } else {
     if (movingwindow) {
       CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
-
+      ## Else, assume device to be Actiwatch2 and take dataset end at last "00:00:00" of dataset.
     } else {CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]}
 
   }
 
+  ## Assign dataset for circadian rhythm analysis to be dataset "CRV.data" with a period of the
+  ## aforementioned start and end date/times:
   CRV.data <- CRV.data[CRV.data.start:CRV.data.end, ]
 
 
-  ##---------------------------------------------------------------------------------------------------------
+  ## Step 2: Calculate Circadian Rhythm Variables-------------------------------------------------
 
   ## IS: Interdaily stability
   ## Source: Van Someren, E., Swaab, D., Colenda, C., Cohen, W., McCall, W. and Rosenquist, P. (1999).
   ## Bright Light Therapy: Improved Sensitivity to Its Effects on Rest-Activity Rhythms in Alzheimer Patients
   ## by Application of Nonparametric Methods. Chronobiology International, 16(4), pp.505-518.
 
-  ## Xi
+  ## Calculate Xi (which represent the individual datapoints / consecutive hourly means)
+  ## by aggregation with hourly breaks:
   xi <- aggregate(CRV.data[, "Activity"],
                   list(hour = cut(as.POSIXct(CRV.data[, "Date"]), breaks = "hour")),
-                  mean, na.action = na.pass, na.rm = TRUE) # , na.action = na.pass, na.rm = TRUE
+                  mean, na.action = na.pass, na.rm = TRUE)
 
-
+  ## Exception for moving window to retain last observation for correct number of observtions:
   if (!movingwindow) {
     xi <- xi[1:(nrow(xi) - 1), ]
   } else {
     xi <- xi[1:(nrow(xi)), ]
   }
 
+  ## Assign only activity data to xi:
   xi <- xi$x
 
-  # X
+
+  ## Calculate X (or X_bar; the mean of all the data):
   X <- mean(xi, na.rm = T)
 
-  xi_X <- xi - X # difference consecutive hourly means and overall mean
-  sq.xi_X <- xi_X ^ 2 # square of differences
-  sum.sq.xi_X <- sum(sq.xi_X, na.rm = T) # sum of squares
-  n <- sum(!is.na(xi)) # get number og hours (should be 168 for 7 day intervals (7*24))
-  sum.sq.xi_X.perhour <- sum.sq.xi_X / n # sum of squares per hour
+  ## Calculate the Denominator part of the IS formula (van Someren et al., 1999):
+  xi_X <- xi - X # Differences between consecutive hourly means and overall mean.
+  sq.xi_X <- xi_X ^ 2 # Square of differences.
+  sum.sq.xi_X <- sum(sq.xi_X, na.rm = T) # Sum of squares.
+  n <- sum(!is.na(xi)) # Get number of hours (should be 168 for 7 day intervals (7*24)).
+  sum.sq.xi_X.perhour <- sum.sq.xi_X / n # Sum of squares per hour
 
 
   #! Deze regel geeft een waarschuwing:

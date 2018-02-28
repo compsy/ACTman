@@ -21,6 +21,7 @@
 #' @param daysperiod An optional vector specifying the length in days of the period.
 #' @param movingwindow Boolean value indicating whether a moving window should be utilised.
 #' @param movingwindow.size An optional vector specifying the length in days of the moving window. Default is 14 days.
+#' @param movingwindow.jump An optional vector specifying the length of the jumps with which the moving window is shifted each iteration. Default is 1 day.
 #' @param circadian_analysis Boolean value indicating whether non-parametric circadian rhythm analysis should be performed.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
 #' @param missings_report Boolean value indicating whether missings promt should appear.
@@ -41,7 +42,8 @@
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
-                   selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL, movingwindow = FALSE, movingwindow.size = 14,
+                   selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL,
+                   movingwindow = FALSE, movingwindow.size = 14, movingwindow.jump = 1,
                    circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = FALSE, na_impute = FALSE,
                    missings_report = TRUE) {
 
@@ -342,20 +344,20 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     #! Add Sleep-analysis for Rolling Window!
     #! Add possibility to change 'jump-length' of rolling window (now 1 day) to multiple days!
     if (movingwindow) {
-      rollingwindow <- function(x, window){
+      rollingwindow <- function(x, window, jump){
         ## Initialise parameters:
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / 1440))), ncol = 9))
-        ## Set number of iterations at number of rows of (data - windowsize) / minutes per day (1440)
-        for (i in 1:(floor(((n - window) / 1440)))) {
+        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 9))
+        ## Set number of iterations at number of rows of (data - windowsize) / (minutes per day (1440) * jump)
+        for (i in 1:(floor(((n - window) / jump)))) {
           ## Take data as 1 till windowsize for first iteration, for further iterations take
-          ## data as starting at ((iteration - 1) * minutes per day), and ending at
-          ## ((iteration - 1) * minutes per day) plus windowsize.
+          ## data as starting at ((iteration - 1) * (minutes per day * jump)), and ending at
+          ## ((iteration - 1) * (minutes per day * jump)) plus windowsize.
           if (i == 1) {
             out <- x[i:window, ]
           } else {
-            out <- x[((i - 1) * 1440):(((i - 1) * 1440) + window), ]
+            out <- x[((i - 1) * jump):(((i - 1) * jump) + window), ]
           }
           ## Write selected period to dataset (CRV.data) and add relevant column names:
           CRV.data <- out
@@ -399,7 +401,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         rollingwindow.results # Needed for output in .CSV
       }
       ## Assign results from rolling window:
-      rollingwindow.results <- rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)))
+      rollingwindow.results <- rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)), jump = (1440 * (movingwindow.jump)))
 
       ## Initialise normal circadian rhythm analysis without moving window:
     } else {
