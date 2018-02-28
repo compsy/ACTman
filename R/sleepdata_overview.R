@@ -127,6 +127,12 @@ sleepdata_overview <- function(workdir, actdata, i) {
 
     ## First row now contains the start of sleep.
     sleep.end.new <- sleep.end.[which(sleep.end.$diff > 4), ] # Bigger than 4, as the difference should be at least 5 minutes, so a small difference with possible sleep is left out.
+
+    ## err ex
+    if(sum(na.omit(sleep.end.$diff > 4)) == 0){
+      sleep.end.new <- sleep.end.[1, ]
+    }
+
     sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new), ]))
     sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
     rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
@@ -191,10 +197,15 @@ sleepdata_overview <- function(workdir, actdata, i) {
 
   }
 
-  # # Restore workdir
-  # setwd(oldworkdir)
+  # ## Create "Results" directory:
+  workdir_temp <- getwd()
+  dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
+  setwd(file.path(workdir_temp, "Results"))
 
-  # Write sleepdata output as .CSV
+  ## Write sleepdata output as .CSV into "Results" directory:
   write.csv(sleepdata.overview, file = paste("sleepdata", i,".csv"))
-}
 
+  ## Set working directory back to main working directory:
+  setwd(workdir_temp)
+  rm(workdir_temp)
+}

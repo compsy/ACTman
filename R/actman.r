@@ -383,7 +383,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
           ## Report the calculated circadian results in console:
           print("---------------------------------------------------------------------------------")
-          print(paste("Roling window CRV analysis output - Window step:", (i - 1)))
+          print(paste("Rolling window CRV analysis output - Window step:", (i - 1)))
           print(paste("Begin time:", CRV.data[1, "Date"]))
           print(paste("End time:", CRV.data[nrow(CRV.data), "Date"]))
           print(paste("nOBS:", nrow(CRV.data)))
@@ -438,11 +438,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Set wd back to main workdir
     setwd(workdir)
 
-    ## Write rollingwindow.results to .CSV
-    if (movingwindow) {
-      write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv"), sep = ",")
-    }
-
 
     ## Sleep Analysis:
     ## Use the sleepdata_overview{ACTman} function to calculate sleep variables over
@@ -490,16 +485,30 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   # colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time")
 
 
-  ## Write only results of circadian analysis to .CSV
+  ## Create "Results" directory:
+  workdir_temp <- getwd()
+  dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
+  setwd(file.path(workdir_temp, "Results"))
+
+  ## Write results of circadian analysis to .CSV
   if(circadian_analysis){
       write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.CSV", sep = ",")
   }
 
-  # Write ACTdata.overview to .CSV
+  ## Write rollingwindow.results to .CSV
+  if (movingwindow) {
+    write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv"), sep = ",")
+  }
+
+  ## Write ACTdata.overview to .CSV
   write.table(ACTdata.overview, file = "ACTdata_overview.CSV", sep = ",")
 
+  ## Set working directory back to main working directory:
+  setwd(workdir_temp)
+  rm(workdir_temp)
 
-  # Returned result.
+
+  ## Returned result.
   if (iwantsleepanalysis) {
     sleepdata.overview
   } else if (movingwindow) {
