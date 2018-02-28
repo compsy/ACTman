@@ -1,9 +1,9 @@
 #############################################################################
 ### ACTman package                                                        ###
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
-### Most recent Update: 26-02-2018                                        ###
+### Most recent Update: 27-02-2018                                        ###
 ### Supported devices: Actiwatch 2 Respironics & MW8                      ###
-###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~###
+###~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~###
 
 #' ACTman - Actigraphy Manager
 #'
@@ -36,6 +36,8 @@
 #'                     startperiod = "2016-10-03 00:00:00",
 #'                     daysperiod = 14, movingwindow = FALSE, circadian_analysis = TRUE))
 #' }
+
+## Specify ACTman function and arguments:
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
@@ -126,12 +128,16 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         print("")
 
         ## If epochs are 30 sec. instead of 60 sec., bin them together to form 60 sec. epochs.
-        ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
+        # ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
+        ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ".*(?<!:30)$", x = ACTdata.1$B, perl = TRUE)), ]
+
+
         #! >> Error doordat selecteren op ":00" niet alle 30 sec epochs verwijderd;
         #! >> e.g. "16:00:30" bevat zowel ":00" als ":30"!
-        ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
-        #! Workaround for aforementioned issue
-        ACTdata.TEMP <- ACTdata.TEMP[ - which(grepl("00:30", ACTdata.TEMP$B)), ]
+        # ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
+        ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ".*(?<!:30)$", x = ACTdata.1$B, perl = TRUE)), ]$C)
+        # #! Workaround for aforementioned issue
+        # ACTdata.TEMP <- ACTdata.TEMP[ - which(grepl("00:30", ACTdata.TEMP$B)), ]
 
         ## Write binned data in ACTdata.TEMP to workable data object ACTdata.1.sub:
         ACTdata.1.sub <- ACTdata.TEMP

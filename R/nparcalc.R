@@ -1,6 +1,13 @@
-#' Nparcalc
+#############################################################################
+### nparcalc{ACTman}                                                      ###
+### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
+### Most recent Update: 27-02-2018                                        ###
+###~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~###
+
+#' nparcalc
 #'
-#' Calculate non-parametrical circadian rhythm variables, such as: IS, IV, L5, and M10.
+#' Calculate non-parametrical circadian rhythm variables:
+#' IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
 #'
 #' @param myACTdevice Name of the input device used. Should be either Actiwatch2 or MW8.
 #' @param movingwindow A boolean indicating whether moving window is used.
@@ -10,24 +17,25 @@
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
 #'
+
+## Specify nparcalc function and arguments:
 nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = NULL) {
-  ## Defined constants
+
+  ## Step 1: Basic Operations-------------------------------------------------------------------
+
+  ## Define constants
   secshour <- 60 * 60 # Seconds per hour
   secsday <- 24 * secshour # Seconds per day
 
+  ## Initialise results list:
   result <- list()
 
-  ## Read Data
+  ## Read Data, and combine seperate date and time variables when needed:
+  ## If there are more than 2 columns, combine date and time variables, and remove extra column.
   if (ncol(CRV.data) > 2) {
     CRV.data$Date <- paste(CRV.data$Date, " ", CRV.data$Time)
-
-    # CRV.dataTEST <<- CRV.data # For debug
-
-    # CRV.data$Date <- as.POSIXct(CRV.data$Date)
-    # CRV.data <- CRV.data[, c("Date", "Activity")]
-
     CRV.data <- CRV.data[, -2]
-
+  ## Else, just assign correct column names.
   } else {
     colnames(CRV.data) <- c("Date", "Activity")
   }
@@ -36,15 +44,14 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   CRV.data.wholehours <- CRV.data[grep("00:00", CRV.data[, "Date"]), ]
   CRV.data.start <- which(CRV.data$Date == CRV.data.wholehours[1, "Date"])
 
+  ## Device- and functionality specific identification of dataset end:
+  ##
   if (myACTdevice == "MW8") {
-    # CRV.data.end <- lastwhole24h.pos
     CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]
-  } else {# Actiwatch2 assumed
-    # CRV.data.end <- which(CRV.data[, "Date"] == CRV.data.wholehours[1, "Date"] + (secsday*13))
-
+  } else {
     if (movingwindow) {
       CRV.data.end <- which(out == "00:00:00")[length(which(out == "00:00:00"))]
-      # } else {CRV.data.end <- which(CRV.data[, "Date"] == as.POSIXct(CRV.data.wholehours[1, "Date"]) + (secsday * 13))}
+
     } else {CRV.data.end <- tail(grep("00:00:00", ACTdata.1.sub$Date), 2)[1]}
 
   }
