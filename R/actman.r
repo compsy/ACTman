@@ -350,7 +350,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         n <- nrow(x)
         rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 9))
         ## Set number of iterations at number of rows of (data - windowsize) / (minutes per day (1440) * jump)
-        for (i in 1:(floor(((n - window) / jump)))) {
+        for (i in 1:((floor(((n - window) / jump))) + 1)) {
           ## Take data as 1 till windowsize for first iteration, for further iterations take
           ## data as starting at ((iteration - 1) * (minutes per day * jump)), and ending at
           ## ((iteration - 1) * (minutes per day * jump)) plus windowsize.
@@ -440,7 +440,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     ## Write rollingwindow.results to .CSV
     if (movingwindow) {
-      write.table(rollingwindow.results, file = "rollingwindow-results.csv", sep = ",")
+      write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv"), sep = ",")
     }
 
 
