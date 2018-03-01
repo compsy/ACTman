@@ -408,7 +408,14 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       if (circadian_analysis){
         ## Use the nparcalc{ACTman} function to calculate circadian rhythm variables over
         ## the whole period:
+
+        ## Runtime analysis start nparcalc:
+        start_time_nparcalc <<- Sys.time()
+
         r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
+
+        ## Runtime analysis end nparcalc:
+        end_time_nparcalc <<- Sys.time()
 
         ## Attach r2 output to overview
         ACTdata.overview[i, "r2.IS"] <- r2$IS
@@ -422,8 +429,15 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     }
     ## If a comparison with another actigraphy R package is required, run nparACT_base_loop{nparACT}:
     if (nparACT_compare) {
+
+      ## Runtime analysis start nparcalc:
+      start_time_nparACT <<- Sys.time()
+
       ## Use nparACT Package to calculate circadian rhythm variables:
-      r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = F)
+      r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = T)
+
+      ## Runtime analysis end nparcalc:
+      end_time_nparACT <<- Sys.time()
 
       ## Attach nparACT output to overview
       ACTdata.overview[i, "IS"] <- r$IS
