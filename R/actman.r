@@ -446,7 +446,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     ## Write rollingwindow.results to .CSV
     if (movingwindow) {
-      write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv", sep = ""), sep = ",")
+      write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv", sep = ""), row.names = F, sep = ",")
     }
 
     ## Set working directory back to main working directory:
