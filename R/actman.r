@@ -521,11 +521,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   ## Write results of circadian analysis to .CSV
   if(circadian_analysis){
-      write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",")
-  }
+      write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",", row.names = F)
+  
 
   ## Write ACTdata.overview to .CSV
-  write.table(ACTdata.overview, file = "ACTdata_overview.csv", sep = ",")
+  write.table(ACTdata.overview, file = "ACTdata_overview.csv", sep = ",", row.names = F)
 
   ## Set working directory back to main working directory:
   setwd(workdir_temp)
