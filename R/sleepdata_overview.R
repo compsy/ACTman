@@ -8,7 +8,7 @@
 #' @return Returns a sleepdata overview.
 #'
 # Voeg fragmentation index toe!
-sleepdata_overview <- function(workdir, actdata) {
+sleepdata_overview <- function(workdir, actdata, i) {
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
 
   # # Set Working directory
@@ -16,12 +16,12 @@ sleepdata_overview <- function(workdir, actdata) {
   # setwd(workdir)
 
   # Load data
-  data <- actdata # Previously read.csv("NK_data.csv")
+  data <- actdata
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
-  #! Ik snap niet waarom je hier keihard die nkdata sleeplog inleest. Is dat niet steeds dezelfde data voor alle personen?
-  data.sleeplog <- read.csv(list.files(pattern = "sleeplog.csv"))
+  ## Read sleeplog
+  data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
   data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
 
   # Recreate data$Time var for this module
@@ -64,16 +64,25 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## Now calculate sleep start from a certain point in the data (based on sleep log)
     bedtime <- paste((as.character(data.sleeplog.sub$BedTime[a])), ":00", sep = "")
+
+    if(nchar(bedtime) > 8){
+      bedtime <- substr(bedtime, 1, nchar(bedtime)-3)
+    }
+
     rownr.bedtime <- which(aaa$Time == bedtime)[1]
 
     gotup <- paste((as.character(data.sleeplog.sub$GotUp[a])), ":00", sep = "")
+
+    if(nchar(gotup) > 8){
+      gotup <- substr(gotup, 1, nchar(gotup)-3)
+    }
+
     rownr.gotup <- which(aaa$Time == gotup)[1]
 
     ## Calculation should indicate the moment of sleep start and 10 consecutive non-active epochs. 1 epoch can have activity.
 
     ## Dit gedeelte aanpassen a.d.h.v. MW8 Info Bullitin
     ## !!Open Question: Where is Number of Counts Allowed above Threshold specified?? (6 seems arbitrary?)
-    ## !! Day 4 sleep.end zou 08:53:00 moeten zijn i.p.v. 05:44:00??
     aaa$epoch.sleep.chance <- ifelse(aaa$Activity..MW.counts. > 6, 1, 0) # 1 is above treshold, 0 is below treshold
     aaa$sleep.chance <- (dplyr::lead(aaa$epoch.sleep.chance, n = 1L) +
                            dplyr::lead(aaa$epoch.sleep.chance, n = 2L) +
@@ -117,7 +126,13 @@ sleepdata_overview <- function(workdir, actdata) {
 
     ## First row now contains the start of sleep.
     sleep.end.new <- sleep.end.[which(sleep.end.$diff > 4), ] # Bigger than 4, as the difference should be at least 5 minutes, so a small difference with possible sleep is left out.
-    sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new),]))
+
+    ## err ex
+    if(sum(na.omit(sleep.end.$diff > 4)) == 0){
+      sleep.end.new <- sleep.end.[1, ]
+    }
+
+    sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new), ]))
     sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
     rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
 
@@ -181,9 +196,15 @@ sleepdata_overview <- function(workdir, actdata) {
 
   }
 
-  # # Restore workdir
-  # setwd(oldworkdir)
+  # ## Create "Results" directory:
+  workdir_temp <- getwd()
+  dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
+  setwd(file.path(workdir_temp, "Results"))
 
-  # Return the sleepdata overview
-  write.csv(sleepdata.overview, file = "sleepdata.csv")
+  ## Write sleepdata output as .CSV into "Results" directory:
+  write.csv(sleepdata.overview, file = paste("sleepdata", i, ".csv", sep = ""))
+
+  ## Set working directory back to main working directory:
+  setwd(workdir_temp)
+  rm(workdir_temp)
 }
