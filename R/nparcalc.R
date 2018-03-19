@@ -258,7 +258,13 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   }
 
 
+<<<<<<< HEAD
   M10 <- mean(TEST.df[, "M10"])
+=======
+  ## After - Loop for calculating M10 and M10_starttime - processing:
+  ## Take M10 as mean from M10 values from data.frame, and assign to result
+  M10 <- mean(TEST.df[, "M10"], na.action = na.pass, na.rm = T)
+>>>>>>> 7cdda3f134c5b79a45521efa89956a0815cca34e
   result$M10 <- M10
 
   # ## debug

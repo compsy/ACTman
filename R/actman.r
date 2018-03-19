@@ -38,8 +38,17 @@
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
                    sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
+<<<<<<< HEAD
                    selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL, movingwindow = FALSE, movingwindow.size = 14,
                    circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = TRUE) {
+=======
+                   selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL,
+                   movingwindow = FALSE, movingwindow.size = 14, movingwindow.jump = 1,
+                   circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = FALSE, na_impute = FALSE,
+                   missings_report = TRUE, lengthcheck = TRUE) {
+
+  ## Step 1: Basic Operations-----------------------------------------------------------------
+>>>>>>> 7cdda3f134c5b79a45521efa89956a0815cca34e
 
   ## Step 1: Basic Operations:
   # Set current working directory and set back to old working directory on exit
@@ -59,6 +68,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       }
   }
 
+<<<<<<< HEAD
   ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA, "end3" = NA,
                                  "numberofobs" = NA, "numberofobs2" = NA, "numberofobs3" = NA, "recordingtime" = NA,
                                  "recordingtime2" = NA, "recordingtime3" = NA, "summertime.start" = NA,
@@ -66,6 +76,15 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                                  "L5_starttime" = NA, "M10" = NA, "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA,
                                  "r2.RA" = NA, "r2.L5" = NA, "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA,
                                  "lengthcheck" = NA, "last5act.active" = NA)
+=======
+  ## Initialise overview:
+  ACTdata.overview <- data.frame("filename" = ACTdata.files, "start" = NA, "end" = NA, "end2" = NA,
+                                 "numberofobs" = NA, "numberofobs2" = NA, "recordingtime" = NA,
+                                 "recordingtime2" = NA, "summertime.start" = NA, "summertime.end" = NA, "missings" = NA,
+                                 "missings_perc" = NA, "IS" = NA, "IV" = NA, "RA" = NA, "L5" = NA, "L5_starttime" = NA, "M10" = NA,
+                                 "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA, "r2.RA" = NA, "r2.L5" = NA,
+                                 "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA, "last5act.active" = NA, "lengthcheck" = NA)
+>>>>>>> 7cdda3f134c5b79a45521efa89956a0815cca34e
 
   # Initiate loop parameters
   i <- 1 # set i
@@ -204,8 +223,41 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.1.sub.14day <- increase_by_days(ACTdata.1.sub$Date[1], 14)
 
 
+<<<<<<< HEAD
     ## Remove NA's
     print("Task 6: Reporting NA's")
+=======
+    ## Lengthcheck:
+
+    if (lengthcheck) {
+      ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
+      print("Task 2: Detecting if Dataset is longer than Start Date plus 14 full days")
+      if (ACTdata.1.sub[nrow(ACTdata.1.sub), "Date"] > ACTdata.1.sub.14day) {
+        print("Warning: Dataset is longer than Start Date plus 14 full days!")
+
+        ACTdata.1.sub <- ACTdata.1.sub[1:((secs14day/60) + 1), ]
+
+        print("Action: Observations recorded after Start Date plus 14 full days were removed.")
+        print("Task 2 DONE: Dataset shortened to Start Date plus 14 days. Tasks 3, 4, and 5 also OK")
+        print("")
+        ACTdata.overview$lengthcheck[i] <- TRUE
+      } else {
+        print("Task 2 OK: Dataset not longer than Start Date plus 14 days.")
+        print("")
+      }
+
+      # Update overview after removal
+      ACTdata.overview[i, "numberofobs2"] <- nrow(ACTdata.1.sub)
+      ACTdata.overview[i, "recordingtime2"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
+      ACTdata.overview[i, "end2"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
+    }
+
+
+
+    ## Handling of Missing Data (NA's):
+    ## Write Missings values (total number of missings and percentage of total data missing)
+    ## to overview file:
+>>>>>>> 7cdda3f134c5b79a45521efa89956a0815cca34e
     ACTdata.overview[i, "missings"] <- table(is.na(ACTdata.1.sub))["TRUE"]  # write missings to overview
     if (na_omit) {
         ACTdata.1.sub <- na.omit(ACTdata.1.sub)
@@ -431,10 +483,27 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       colnames(ACTdata.overview) <- gsub(pattern = "r2.", x = colnames(ACTdata.overview), replacement = "")
   }
 
+<<<<<<< HEAD
   # Export Experimental variables to .pdf
   pdf("Table - Experimental Variables.pdf")
   gridExtra::grid.table(ACTdata.1.sub.expvars)
   dev.off()
+=======
+  ## Subset experimental variables
+  ACTdata.1.sub.expvars <- ACTdata.overview[c("IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")]
+  # colnames(ACTdata.1.sub.expvars) <- c("IS", "IV", "RA", "L5", "L5 Start time", "M10", "M10 Start time")
+
+
+  ## Create "Results" directory:
+  workdir_temp <- getwd()
+  dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
+  setwd(file.path(workdir_temp, "Results"))
+
+  ## Write results of circadian analysis to .CSV
+  if(circadian_analysis){
+      write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",", row.names = F)
+  }
+>>>>>>> 7cdda3f134c5b79a45521efa89956a0815cca34e
 
   # Export ACTdata.overview to .pdf
   pdf("Table - ACTdata.overview.pdf")
