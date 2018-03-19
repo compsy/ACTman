@@ -45,7 +45,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL,
                    movingwindow = FALSE, movingwindow.size = 14, movingwindow.jump = 1,
                    circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = FALSE, na_impute = FALSE,
-                   missings_report = TRUE) {
+                   missings_report = TRUE, lengthcheck = TRUE) {
 
   ## Step 1: Basic Operations-----------------------------------------------------------------
 
@@ -218,6 +218,33 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Add 14 days in a way that respects daylight savings time changes:
     #! Number of days needs to be made dynamic!! Needs to correspond to number of days in dataset!!
     ACTdata.1.sub.14day <- increase_by_days(ACTdata.1.sub$Date[1], 14)
+
+
+    ## Lengthcheck:
+
+    if (lengthcheck) {
+      ## If Dataset is longer than Start Date plus 14 days, Remove data recorded thereafter:
+      print("Task 2: Detecting if Dataset is longer than Start Date plus 14 full days")
+      if (ACTdata.1.sub[nrow(ACTdata.1.sub), "Date"] > ACTdata.1.sub.14day) {
+        print("Warning: Dataset is longer than Start Date plus 14 full days!")
+
+        ACTdata.1.sub <- ACTdata.1.sub[1:((secs14day/60) + 1), ]
+
+        print("Action: Observations recorded after Start Date plus 14 full days were removed.")
+        print("Task 2 DONE: Dataset shortened to Start Date plus 14 days. Tasks 3, 4, and 5 also OK")
+        print("")
+        ACTdata.overview$lengthcheck[i] <- TRUE
+      } else {
+        print("Task 2 OK: Dataset not longer than Start Date plus 14 days.")
+        print("")
+      }
+
+      # Update overview after removal
+      ACTdata.overview[i, "numberofobs2"] <- nrow(ACTdata.1.sub)
+      ACTdata.overview[i, "recordingtime2"] <- round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2)
+      ACTdata.overview[i, "end2"] <- as.character(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]) # write end date to overview
+    }
+
 
 
     ## Handling of Missing Data (NA's):
@@ -522,7 +549,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ## Write results of circadian analysis to .CSV
   if(circadian_analysis){
       write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",", row.names = F)
-  
+  }
 
   ## Write ACTdata.overview to .CSV
   write.table(ACTdata.overview, file = "ACTdata_overview.csv", sep = ",", row.names = F)
