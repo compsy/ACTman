@@ -15,7 +15,7 @@
 #' @param workdir the working directory as supplied to ACTman.
 #' @param ACTdata.1.sub the managed data set
 #'
-plot_actogram <- function(workdir, ACTdata.1.sub) {
+plot_actogram <- function(workdir, ACTdata.1.sub, i) {
 
 ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
