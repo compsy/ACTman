@@ -8,7 +8,7 @@
 #' @return Returns a sleepdata overview.
 #'
 # Voeg fragmentation index toe!
-sleepdata_overview <- function(workdir, actdata, i) {
+sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
 
   # # Set Working directory
@@ -38,8 +38,15 @@ sleepdata_overview <- function(workdir, actdata, i) {
 
   ## END OF Step 1: Basic Operations.
 
+  ## Exception for lengtcheck in number ook LOOP iterations
+  if(lengthcheck){
+    loop_steps <- 14
+  } else {
+    loop_steps <- nrow(data.sleeplog)
+  }
+
   ## LOOP for Calculatins Sleep Variables
-  for (a in 1:nrow(data.sleeplog)) {
+  for (a in 1:loop_steps) {
 
     if (a == 1) {
       aaa <- data[1:end.night.1, ]
@@ -111,6 +118,24 @@ sleepdata_overview <- function(workdir, actdata, i) {
                             lag(aaa$epoch.sleep.chance, n = 4L) +
                             aaa$epoch.sleep.chance
     )
+
+
+    ##--------------------------------------------------
+
+    print("##--------------------------------------------------")
+    print(rownr.sleep.start)
+    print(rownr.gotup)
+
+    ## Exception for when rownr.sleep.start is NA
+    if (is.na(rownr.sleep.start)){
+
+      message("rownr.sleep.start is NA!")
+      message("Skipping current day!")
+      next()
+
+    }
+
+    ##--------------------------------------------------
 
     ## !!Problem with day 4 sleep.end might originate here, as sleep.end (08:53:00) ligt buiten range rownr.gotup (<08:00:00)??
     ## !! Adding "+24" to rownr.gotup is a work-around. (24 seems to be minimum to switch 05:54:00 to 08:53:00)??

@@ -499,7 +499,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Use the sleepdata_overview{ACTman} function to calculate sleep variables over
     ## the whole period.
     if (iwantsleepanalysis) {
-      sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub, i = i)
+      sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub, i = i, lengthcheck = lengthcheck)
     }
 
 
