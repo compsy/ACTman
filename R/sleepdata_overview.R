@@ -103,6 +103,24 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
                            aaa$epoch.sleep.chance
     )
 
+
+    ##--------------------------------------------------
+    ##debug
+    # print("##--------------------------------------------------")
+    # print(paste("Iteration No.:", a))
+    # print(paste("rownr.gotup:", rownr.gotup))
+    # print(paste("rownr.bedtime:", rownr.bedtime))
+
+    ## Exception for when rownr.gotup is NA
+    if (is.na(rownr.gotup)){
+
+      message("rownr.gotup is NA!")
+      message("Skipping current day!")
+      next()
+
+    }
+
+
     aaa.bedtime <- aaa[rownr.bedtime:rownr.gotup, ] # This includes only the time in which the subject is in bed handpicked in this sample based on lights out (00:17) / got up (7:59) data
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
@@ -121,11 +139,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
 
     ##--------------------------------------------------
-
-    print("##--------------------------------------------------")
-    print(a)
-    print(rownr.sleep.start)
-    print(rownr.gotup)
+    #! debug
+    print(paste("rownr.sleep.start:", rownr.sleep.start))
 
     ## Exception for when rownr.sleep.start is NA
     if (is.na(rownr.sleep.start)){
@@ -136,7 +151,6 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
     }
 
-    ##--------------------------------------------------
 
     ## !!Problem with day 4 sleep.end might originate here, as sleep.end (08:53:00) ligt buiten range rownr.gotup (<08:00:00)??
     ## !! Adding "+24" to rownr.gotup is a work-around. (24 seems to be minimum to switch 05:54:00 to 08:53:00)??
@@ -161,6 +175,20 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new), ]))
     sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
     rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
+
+
+    #! debug
+    # print(paste("rownr.sleep.end:", rownr.sleep.end))
+
+    ## Exception for when rownr.sleep.end is NA
+    if (is.na(rownr.sleep.end)){
+
+      message("rownr.sleep.end is NA!")
+      message("Skipping current day!")
+      next()
+
+    }
+
 
     ## END OF Step 2: Calculate sleep for night1.------------------------------------------------------------------------
 
