@@ -123,6 +123,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     ##--------------------------------------------------
 
     print("##--------------------------------------------------")
+    print(i)
     print(rownr.sleep.start)
     print(rownr.gotup)
 
