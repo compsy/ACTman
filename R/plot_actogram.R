@@ -4,8 +4,11 @@
 ### Most recent Update: 21-12-2017                                         ###
 ### Goal: plot activity counts over time, with 24 hour lines (or 48 hours) ###
 ###                                                                        ###
-### To add: Grey part before start, Hour variables underneath, Title,      ###
+### To add: Grey part before start, Title,                                 ###
 ### Export to PDF function, Days more clearly written                      ###
+###========================================================================###
+### Revision History:                                                      ###
+### 16-04-2018: Added x-axis hours & 24h Plotting                          ###
 ###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@###
 
 #' plot_actogram
@@ -15,7 +18,7 @@
 #' @param workdir the working directory as supplied to ACTman.
 #' @param ACTdata.1.sub the managed data set
 #'
-plot_actogram <- function(workdir, ACTdata.1.sub, i) {
+plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
 
 ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
@@ -58,8 +61,6 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i) {
   }
 
   ## Define the range so all plots will be equal height (ylim)
-  #! Deze variablen day2 t/m day14 bestaan helemaal niet. Die heb je nooit aangemaakt.
-  #! Wat moet deze regel eigenlijk doen?
   ylimit <- range(na.omit(c(day1$Activity, day2$Activity, day3$Activity, day4$Activity, day5$Activity,
                             day6$Activity, day7$Activity, day8$Activity, day9$Activity, day10$Activity,
                             day11$Activity, day12$Activity, day13$Activity, day14$Activity)))
@@ -73,40 +74,69 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i) {
            rbind(eval(parse(text = paste("day", j.plot, sep = ""))), eval(parse(text =  paste("day", (j.plot + 1), sep = "")))))
   }
 
-  ## Plot initialisation & parameters
-  par(mfrow = c(14, 1)) # Set plot parameters
-  par(mar = c(0.5, 4, 0.5, 4)) # Set margins
-  barplot(day.1.2$Activity, ylim = ylimit, ylab = "Day 1")
-  abline(v = day2start + 75, lty = 2) # Set start moment
 
-  ## Filling in plot with loop for other days
-  for (k.plot in 2:(ndays.plot - 1)) {
-    barplot(eval(parse(text = paste("day.", k.plot, ".", (k.plot + 1), "$Activity", sep = ""))),
-            ylim = ylimit, ylab = paste("Day", k.plot))
+
+  if (plotactogram ==  "48h"){
+
+     ## Plot initialisation & parameters
+      par(mfrow = c(14, 1)) # Set plot parameters
+      par(mar = c(0.5, 4, 0.5, 4)) # Set margins
+      bp <- barplot(day.1.2$Activity, ylim = ylimit, ylab = "Day 1", plot = FALSE)
+      barplot(day.1.2$Activity, ylim = ylimit, ylab = "Day 1")
+      # abline(v = day2start + 75, lty = 2) # Set start moment
+      x_labels <- substr(day.1.2$Date, nchar(day.1.2$Date) - 8 + 1, nchar(day.1.2$Date))
+      x_labels_pos <- grep("00:00", x_labels)
+      x_labels <- x_labels[x_labels_pos]
+      axis(side = 1, at = bp[1 + x_labels_pos], labels = x_labels)
+
+
+      ## Filling in plot with loop for other days
+      for (k.plot in 2:(ndays.plot - 1)) {
+
+        barplot(eval(parse(text = paste("day.", k.plot, ".", (k.plot + 1), "$Activity", sep = ""))),
+                ylim = ylimit, ylab = paste("Day", k.plot))
+
+        x_labels <- substr(day.2.3$Date, nchar(day.2.3$Date) - 8 + 1, nchar(day.2.3$Date))
+        x_labels_pos <- grep("00:00", x_labels)
+        x_labels <- x_labels[x_labels_pos]
+
+        axis(side = 1, at = bp[1 + x_labels_pos], labels = x_labels)
+
+      }
+
   }
 
 
   ### Part 5: 24 hour plot (to be added)---------------------------------------------------------------
 
-  # # 24 hour plot
-  # par(mfrow = c(14, 1)) # Set parameters for plots
-  # par(mar = c(1, 4, 1, 4)) # Set margins so plots are closer together
-  # barplot(day1$Activity, ylim = ylimit)
-  # abline(v = day2start+75, lty = 2) # Add start line (+75 = marge)
-  # barplot(day2$Activity, ylim = ylimit)
-  # barplot(day3$Activity, ylim = ylimit)
-  # barplot(day4$Activity, ylim = ylimit)
-  # barplot(day5$Activity, ylim = ylimit)
-  # barplot(day6$Activity, ylim = ylimit)
-  # barplot(day7$Activity, ylim = ylimit)
-  # barplot(day8$Activity, ylim = ylimit)
-  # barplot(day9$Activity, ylim = ylimit)
-  # barplot(day10$Activity, ylim = ylimit)
-  # barplot(day11$Activity, ylim = ylimit)
-  # barplot(day12$Activity, ylim = ylimit)
-  # barplot(day13$Activity, ylim = ylimit)
-  # barplot(day14$Activity, ylim = ylimit)
+  #! Still have to make call from ACTman::ACTman(plotactogram = ...)
+  ## 24 hour plot
+  if (plotactogram == "24h"){
 
+      par(mfrow = c(14, 1)) # Set parameters for plots
+      par(mar = c(0.5, 4, 0.5, 4)) # Set margins
+      bp <- barplot(day1$Activity, ylim = ylimit, ylab = "Dag 1", plot = F)
+      barplot(day1$Activity, ylim = ylimit, ylab = "Dag 1", plot = T)
+      # abline(v = day2start+75, lty = 2) # Add start line (+75 = marge)
+
+      x_labels <- substr(day2$Date, nchar(day2$Date) - 8 + 1, nchar(day2$Date))
+      x_labels_pos <- grep("00:00", x_labels)
+      x_labels <- x_labels[x_labels_pos]
+
+      axis(side = 1, at = bp[1 + x_labels_pos], labels = x_labels)
+
+      ## Filling in plot with loop for other days
+      for (k.plot in 2:(ndays.plot - 1)) {
+
+        barplot(eval(parse(text = paste("day", k.plot, "$Activity", sep = ""))),
+                ylim = ylimit, ylab = paste("Day", k.plot))
+
+        # axis(side = 1, at = (x_labels_pos), labels = x_labels)
+        axis(side = 1, at = bp[1 + x_labels_pos], labels = x_labels)
+
+      }
+
+}
   ### Part 6: Finishing Operations -------------------------------------------------------------------
   dev.off()
   setwd(workdir.save)

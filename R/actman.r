@@ -1,8 +1,11 @@
 #############################################################################
 ### ACTman package                                                        ###
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia        ###
-### Most recent Update: 27-02-2018                                        ###
+### Most recent Update: 16-04-2018                                        ###
 ### Supported devices: Actiwatch 2 Respironics & MW8                      ###
+###=======================================================================###
+### Revision History:                                                     ###
+### 16-04-2018: Added Actogram Functionality.                             ###
 ###~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~###
 
 #' ACTman - Actigraphy Manager
@@ -15,7 +18,7 @@
 #' @param sleepdatadir An optional vector specifying the directory for actogram and sleep analysis data.
 #' @param myACTdevice Name of the input device used. Should be either 'Actiwatch2' or 'MW8'.
 #' @param iwantsleepanalysis  Boolean value indicating whether sleep analysis should be performed.
-#' @param plotactogram Boolean value indicating whether an actogram has to be plotted.
+#' @param plotactogram Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE.
 #' @param selectperiod Boolean value indicating whether a specific period has to be selected.
 #' @param startperiod An optional vector specifying single or multiple period starts. Should be in the format "2016-10-03 00:00:00".
 #' @param daysperiod An optional vector specifying the length in days of the period.
@@ -505,8 +508,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
     ## Actogram:
     ## Use the plot_actogram{ACTman} function to plot an Actogram of the whole period.
-    if (plotactogram) {
-      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i)
+    if (plotactogram != FALSE) {
+      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram)
     }
 
 
