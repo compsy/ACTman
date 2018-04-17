@@ -17,6 +17,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
   # Load data
   data <- actdata
+  # TEMPdat <<- data
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
@@ -28,7 +29,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   data$Time <- strftime(data$Date, format = "%H:%M:%S")
 
   # Select different nights
-  startdates.new.days <- which(strftime(data$Date, format = "%H:%M:%S") == "12:00:00")
+  # startdates.new.days <- which(strftime(data$Date, format = "%H:%M:%S") == "12:00:00")
+  startdates.new.days <- which(strftime(data$Date, format = "%H:%M:%S") == "00:00:00")
   # startdates.new.days <- which(data$Time == "12:00:00") #Use when data <- ACTdata.1 !!!
   end.night.1 <- startdates.new.days[1]
 
@@ -49,7 +51,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   for (a in 1:loop_steps) {
 
     if (a == 1) {
-      aaa <- data[1:end.night.1, ]
+      aaa <- data[1:(end.night.1 + 1440), ] #! 17-4-18: was "aaa <- data[1:(end.night.1), ]" (!!)
     } else {
       aaa <- data[(end.night.1 + (1 + (1440 * (a - 2)))):(end.night.1 + (1440 * (a - 1))), ]
     }
@@ -76,7 +78,11 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
       bedtime <- substr(bedtime, 1, nchar(bedtime)-3)
     }
 
+    #debug
+    print(paste("rownr.bedtime is:", which(aaa$Time == bedtime)[1]))
+
     rownr.bedtime <- which(aaa$Time == bedtime)[1]
+
 
     gotup <- paste((as.character(data.sleeplog.sub$GotUp[a])), ":00", sep = "")
 
@@ -115,6 +121,18 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     if (is.na(rownr.gotup)){
 
       message("rownr.gotup is NA!")
+      message("Skipping current day!")
+      next()
+
+    }
+
+    # rownr.bedtime <- which(aaa$Time == bedtime)[1]
+    # print(rownr.bedtime)
+
+    ## Exception for when rownr.bedtime is NA
+    if (is.na(rownr.bedtime)){
+
+      message("rownr.bedtime is NA!")
       message("Skipping current day!")
       next()
 
