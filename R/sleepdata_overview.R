@@ -152,9 +152,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     }
 
 
-    ## !!Problem with day 4 sleep.end might originate here, as sleep.end (08:53:00) ligt buiten range rownr.gotup (<08:00:00)??
-    ## !! Adding "+24" to rownr.gotup is a work-around. (24 seems to be minimum to switch 05:54:00 to 08:53:00)??
-    # aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup+24), ] # This includes only the time in which the subject is in bed handpicked in this sample based on sleep.start (00:29) / got up (7:59) data
+    ## Get sleeptime
     aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + 60), ] # A 60 minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)

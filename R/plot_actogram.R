@@ -26,11 +26,11 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
   workdir.save <- getwd()
   setwd(workdir)
 
-  pdf("Actigraphy Data - Plot.pdf") # Initialise .PDF plot
+
 
   act_data <- ACTdata.1.sub # Copy data for editing required for plotting
   act_data <- within(act_data, Date <- as.character(act_data$Date)) # Date as character for plotting
-  ndays.plot <- round(abs(as.numeric(round(as.POSIXct(ACTdata.1.sub$Date[1]) - as.POSIXct(ACTdata.1.sub$Date[nrow(ACTdata.1.sub)]), 2))))
+  ndays.plot <- round(abs(as.numeric(round(as.POSIXct(act_data$Date[1]) - as.POSIXct(act_data$Date[nrow(act_data)]), 2))))
 
 
 ### Part 2: 1st day Selection & Midnight Detection 2nd day  ---------------------------------------------------
@@ -78,16 +78,23 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
 
   if (plotactogram ==  "48h"){
 
+    ## Initialise .PDF plot in A4 size (11.7 x 8.3 inches)
+    pdf(paste("Actigraphy Data - 48h Plot", i, ".pdf"), width = 11.7, height = 8.3)
+
+
      ## Plot initialisation & parameters
       par(mfrow = c(14, 1)) # Set plot parameters
       par(mar = c(0.5, 4, 0.5, 4)) # Set margins
+      # par(mai = c(1,1,1,1))
       bp <- barplot(day.1.2$Activity, ylim = ylimit, ylab = "Day 1", plot = FALSE)
       barplot(day.1.2$Activity, ylim = ylimit, ylab = "Day 1")
       # abline(v = day2start + 75, lty = 2) # Set start moment
       x_labels <- substr(day.1.2$Date, nchar(day.1.2$Date) - 8 + 1, nchar(day.1.2$Date))
       x_labels_pos <- grep("00:00", x_labels)
       x_labels <- x_labels[x_labels_pos]
-      axis(side = 1, at = bp[1 + x_labels_pos], labels = x_labels)
+      x_labels <- substr(x_labels, start = 1, stop = 5)
+      axis(side = 1, at = bp[1 + x_labels_pos[ c(TRUE, FALSE)]], labels = x_labels[ c(TRUE, FALSE)])
+      axis(side = 1, at = bp[1 + x_labels_pos[ c(FALSE, TRUE)]], labels = FALSE, col.ticks = "red")
 
 
       ## Filling in plot with loop for other days
@@ -99,19 +106,24 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
         x_labels <- substr(day.2.3$Date, nchar(day.2.3$Date) - 8 + 1, nchar(day.2.3$Date))
         x_labels_pos <- grep("00:00", x_labels)
         x_labels <- x_labels[x_labels_pos]
+        x_labels <- substr(x_labels, start = 1, stop = 5)
 
-        axis(side = 1, at = bp[1 + x_labels_pos], labels = x_labels)
-
+        axis(side = 1, at = bp[1 + x_labels_pos[ c(TRUE, FALSE)]], labels = x_labels[ c(TRUE, FALSE)])
+        axis(side = 1, at = bp[1 + x_labels_pos[ c(FALSE, TRUE)]], labels = FALSE, col.ticks = "red")
       }
+
+      dev.off()
 
   }
 
 
-  ### Part 5: 24 hour plot (to be added)---------------------------------------------------------------
+  ### Part 5: 24 hour plot ------------------------------------------------------------------------
 
-  #! Still have to make call from ACTman::ACTman(plotactogram = ...)
   ## 24 hour plot
   if (plotactogram == "24h"){
+
+    ## Initialise .PDF plot in A4 size (11.7 x 8.3 inches)
+    pdf(paste("Actigraphy Data - 24h Plot", i, ".pdf"), width = 11.7, height = 8.3)
 
       par(mfrow = c(14, 1)) # Set parameters for plots
       par(mar = c(0.5, 4, 0.5, 4)) # Set margins
@@ -136,9 +148,11 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
 
       }
 
+      dev.off()
+
 }
   ### Part 6: Finishing Operations -------------------------------------------------------------------
-  dev.off()
+
   setwd(workdir.save)
 
 }
