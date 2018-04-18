@@ -268,15 +268,15 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     sleepdata.overview[a, "gotup_sleeplog"] <- gotup
     sleepdata.overview[a, "sleep.start"] <- sleep.start
     sleepdata.overview[a, "sleep.end"] <- sleep.end
-    sleepdata.overview[a, "timeinbed"] <- TimeInBed
-    sleepdata.overview[a, "assumed_sleep"] <- AssumedSleep
+    sleepdata.overview[a, "timeinbed"] <- round(TimeInBed, 2)
+    sleepdata.overview[a, "assumed_sleep"] <- round(AssumedSleep, 2)
     sleepdata.overview[a, "wakepochs_duration"] <- WakeEpochs
-    sleepdata.overview[a, "actual_sleep_duration"] <- ActualSleep
-    sleepdata.overview[a, "actual_sleep_perc"] <- ActualSleepPerc
-    sleepdata.overview[a, "actual_wake_duration"] <- ActualWakeTime
-    sleepdata.overview[a, "actual_wake_perc"] <- ActualWakePerc
-    sleepdata.overview[a, "sleep.efficiency"] <- SleepEfficiency
-    sleepdata.overview[a, "sleep.latency"] <- SleepLatency
+    sleepdata.overview[a, "actual_sleep_duration"] <- round(ActualSleep, 2)
+    sleepdata.overview[a, "actual_sleep_perc"] <- round(ActualSleepPerc, 2)
+    sleepdata.overview[a, "actual_wake_duration"] <- round(ActualWakeTime, 2)
+    sleepdata.overview[a, "actual_wake_perc"] <- round(ActualWakePerc, 2)
+    sleepdata.overview[a, "sleep.efficiency"] <- round(SleepEfficiency, 2)
+    sleepdata.overview[a, "sleep.latency"] <- round(SleepLatency, 2)
 
 
   }
