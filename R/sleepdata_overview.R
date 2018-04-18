@@ -17,7 +17,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
   # Load data
   data <- actdata
-  # TEMPdat <<- data
+  TEMPdat <<- data
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
@@ -29,8 +29,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   data$Time <- strftime(data$Date, format = "%H:%M:%S")
 
   # Select different nights
-  # startdates.new.days <- which(strftime(data$Date, format = "%H:%M:%S") == "12:00:00")
-  startdates.new.days <- which(strftime(data$Date, format = "%H:%M:%S") == "00:00:00")
+  startdates.new.days <- which(strftime(data$Date, format = "%H:%M:%S") == "12:00:00")
+  # startdates.new.days <- which(strftime(data$Date, format = "%H:%M:%S") == "00:00:00")
   # startdates.new.days <- which(data$Time == "12:00:00") #Use when data <- ACTdata.1 !!!
   end.night.1 <- startdates.new.days[1]
 
@@ -51,7 +51,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   for (a in 1:loop_steps) {
 
     if (a == 1) {
-      aaa <- data[1:(end.night.1 + 1440), ] #! 17-4-18: was "aaa <- data[1:(end.night.1), ]" (!!)
+      # aaa <- data[1:(end.night.1 + 1440), ] #! 17-4-18: was "aaa <- data[1:(end.night.1), ]" (!!)
+      aaa <- data[1:(end.night.1), ]
     } else {
       aaa <- data[(end.night.1 + (1 + (1440 * (a - 2)))):(end.night.1 + (1440 * (a - 1))), ]
     }
@@ -139,6 +140,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     }
 
 
+    #! rownr.sleep.start is NA when obs with sleep.chance < 2 is NOT in aaa.bedtime (!!)
     aaa.bedtime <- aaa[rownr.bedtime:rownr.gotup, ] # This includes only the time in which the subject is in bed handpicked in this sample based on lights out (00:17) / got up (7:59) data
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
@@ -163,15 +165,22 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     ## Exception for when rownr.sleep.start is NA
     if (is.na(rownr.sleep.start)){
 
-      message("rownr.sleep.start is NA!")
-      message("Skipping current day!")
-      next()
+      message("Warning: rownr.sleep.start is NA!")
+      message("Cause: obs with sleep.chance < 2 is NOT in aaa.bedtime")
+      message("Action: Take bedtime from sleeplog instead")
+      # message("Skipping current day!")
+      # next()
+      # stop()
+
+      #! rownr.sleep.start is NA when obs with sleep.chance < 2 is NOT in aaa.bedtime (!!)
+      #! Take bedtime from sleeplog instead (!!)
+      rownr.sleep.start <- rownr.bedtime
 
     }
 
 
     ## Get sleeptime
-    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + 60), ] # A 60 minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
+    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + (4 * 60)), ] # A (4 * 60) minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
     #  Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
@@ -185,7 +194,10 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
     ## err ex
     if(sum(na.omit(sleep.end.$diff > 4)) == 0){
+
+      # message("sleep.end.$diff is NOT > 4!")
       sleep.end.new <- sleep.end.[1, ]
+
     }
 
     sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new), ]))
@@ -202,6 +214,9 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
       message("rownr.sleep.end is NA!")
       message("Skipping current day!")
       next()
+
+      #! Take sleep.end from sleeplog instead (!!)
+      # rownr.sleep.end <- rownr.gotup
 
     }
 
