@@ -16,7 +16,9 @@
 #' Function to plot 48 hour Actograms.
 #'
 #' @param workdir the working directory as supplied to ACTman.
-#' @param ACTdata.1.sub the managed data set
+#' @param ACTdata.1.sub The managed data set
+#' @param i The index of the current file in ACTdata.files
+#' @param plotactogram Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE
 #'
 plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
 
@@ -76,7 +78,7 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
 
 
 
-  if (plotactogram ==  "48h"){
+  if (plotactogram ==  "48h") {
 
     ## Initialise .PDF plot in A4 size (11.7 x 8.3 inches)
     pdf(paste("Actigraphy Data - 48h Plot", i, ".pdf"), width = 11.7, height = 8.3)
@@ -120,7 +122,7 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
   ### Part 5: 24 hour plot ------------------------------------------------------------------------
 
   ## 24 hour plot
-  if (plotactogram == "24h"){
+  if (plotactogram == "24h") {
 
     ## Initialise .PDF plot in A4 size (11.7 x 8.3 inches)
     pdf(paste("Actigraphy Data - 24h Plot", i, ".pdf"), width = 11.7, height = 8.3)

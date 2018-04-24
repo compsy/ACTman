@@ -4,6 +4,8 @@
 #'
 #' @param workdir The directory where the sleep files are located.
 #' @param actdata The activity data.
+#' @param i The index of the current file in ACTdata.files
+#' @param lengthcheck Boolean value. If TRUE, the dataset is shortened to the start date plus 14 days, and observations more than 14 days after the start date are removed.
 #'
 #' @return Returns a sleepdata overview.
 #'
@@ -41,7 +43,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   ## END OF Step 1: Basic Operations.
 
   ## Exception for lengtcheck in number ook LOOP iterations
-  if(lengthcheck){
+  if (lengthcheck) {
     loop_steps <- 14
   } else {
     loop_steps <- nrow(data.sleeplog)
@@ -75,8 +77,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     ## Now calculate sleep start from a certain point in the data (based on sleep log)
     bedtime <- paste((as.character(data.sleeplog.sub$BedTime[a])), ":00", sep = "")
 
-    if(nchar(bedtime) > 8){
-      bedtime <- substr(bedtime, 1, nchar(bedtime)-3)
+    if (nchar(bedtime) > 8) {
+      bedtime <- substr(bedtime, 1, nchar(bedtime) - 3)
     }
 
     #debug
@@ -87,8 +89,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
     gotup <- paste((as.character(data.sleeplog.sub$GotUp[a])), ":00", sep = "")
 
-    if(nchar(gotup) > 8){
-      gotup <- substr(gotup, 1, nchar(gotup)-3)
+    if (nchar(gotup) > 8) {
+      gotup <- substr(gotup, 1, nchar(gotup) - 3)
     }
 
     rownr.gotup <- which(aaa$Time == gotup)[1]
@@ -119,7 +121,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     # print(paste("rownr.bedtime:", rownr.bedtime))
 
     ## Exception for when rownr.gotup is NA
-    if (is.na(rownr.gotup)){
+    if (is.na(rownr.gotup)) {
 
       message("rownr.gotup is NA!")
       message("Skipping current day!")
@@ -131,7 +133,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     # print(rownr.bedtime)
 
     ## Exception for when rownr.bedtime is NA
-    if (is.na(rownr.bedtime)){
+    if (is.na(rownr.bedtime)) {
 
       message("rownr.bedtime is NA!")
       message("Skipping current day!")
@@ -163,7 +165,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     print(paste("rownr.sleep.start:", rownr.sleep.start))
 
     ## Exception for when rownr.sleep.start is NA
-    if (is.na(rownr.sleep.start)){
+    if (is.na(rownr.sleep.start)) {
 
       message("Warning: rownr.sleep.start is NA!")
       message("Cause: obs with sleep.chance < 2 is NOT in aaa.bedtime")
@@ -193,7 +195,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     sleep.end.new <- sleep.end.[which(sleep.end.$diff > 4), ] # Bigger than 4, as the difference should be at least 5 minutes, so a small difference with possible sleep is left out.
 
     ## err ex
-    if(sum(na.omit(sleep.end.$diff > 4)) == 0){
+    if (sum(na.omit(sleep.end.$diff > 4)) == 0) {
 
       # message("sleep.end.$diff is NOT > 4!")
       sleep.end.new <- sleep.end.[1, ]
@@ -209,7 +211,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     # print(paste("rownr.sleep.end:", rownr.sleep.end))
 
     ## Exception for when rownr.sleep.end is NA
-    if (is.na(rownr.sleep.end)){
+    if (is.na(rownr.sleep.end)) {
 
       message("rownr.sleep.end is NA!")
       message("Skipping current day!")

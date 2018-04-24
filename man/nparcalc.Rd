@@ -2,9 +2,9 @@
 % Please edit documentation in R/nparcalc.R
 \name{nparcalc}
 \alias{nparcalc}
-\title{Nparcalc}
+\title{nparcalc}
 \usage{
-nparcalc(myACTdevice, movingwindow, CRV.data)
+nparcalc(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = NULL)
 }
 \arguments{
 \item{myACTdevice}{Name of the input device used. Should be either Actiwatch2 or MW8.}
@@ -12,10 +12,15 @@ nparcalc(myACTdevice, movingwindow, CRV.data)
 \item{movingwindow}{A boolean indicating whether moving window is used.}
 
 \item{CRV.data}{CRV data}
+
+\item{ACTdata.1.sub}{Managed data set}
+
+\item{out}{Optional. When movingwindow is TRUE, this is the current window of data.}
 }
 \value{
 A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
 }
 \description{
-Calculate non-parametrical circadian rhythm variables, such as: IS, IV, L5, and M10.
+Calculate non-parametrical circadian rhythm variables:
+IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
 }

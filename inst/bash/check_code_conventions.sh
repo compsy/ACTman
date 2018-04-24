@@ -1,5 +1,5 @@
 #!/bin/bash
-matching_lines=$(grep --include "*.[rR]" -nrE '[^ !=><]=|[,=][^ =]|[^ <]<-|<-[^ ]|[^ ](<=|==|!=|>=)|(<=|==|!=|>=)[^ ]' . 2>/dev/null | grep -vE '^[^:]*:[^:]+:#*==|sep = ","')
+matching_lines=$(grep --include "*.[rR]" -nrE '[^ !=><]=|[,;=][^ =]|[^ <]<-|<-[^ ]|\)\{|\bif\(|[^ ](<=|==|!=|>=)|(<=|==|!=|>=)[^ ]' . 2>/dev/null | grep -vE '^[^:]*:[^:]+:#*==|sep = ","')
 if [[ "$matching_lines" == '' ]]
 then
 	exit 0

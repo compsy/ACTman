@@ -4,13 +4,13 @@
 \alias{plot_actogram}
 \title{plot_actogram}
 \usage{
-plot_actogram(CRV_data, workdir)
+plot_actogram(workdir, ACTdata.1.sub, i, plotactogram)
 }
 \arguments{
-\item{CRV_data}{is the CRV.data object.}
-
 \item{workdir}{the working directory as supplied to ACTman.}
+
+\item{ACTdata.1.sub}{the managed data set}
 }
 \description{
-Plots the actograms.
+Function to plot 48 hour Actograms.
 }

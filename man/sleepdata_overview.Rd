@@ -4,7 +4,7 @@
 \alias{sleepdata_overview}
 \title{sleepdata_overview}
 \usage{
-sleepdata_overview(workdir, actdata)
+sleepdata_overview(workdir, actdata, i, lengthcheck)
 }
 \arguments{
 \item{workdir}{The directory where the sleep files are located.}

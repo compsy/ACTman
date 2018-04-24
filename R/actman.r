@@ -17,17 +17,21 @@
 #' @param workdir The working directory of the script.
 #' @param sleepdatadir An optional vector specifying the directory for actogram and sleep analysis data.
 #' @param myACTdevice Name of the input device used. Should be either 'Actiwatch2' or 'MW8'.
-#' @param iwantsleepanalysis  Boolean value indicating whether sleep analysis should be performed.
+#' @param iwantsleepanalysis Boolean value indicating whether sleep analysis should be performed.
 #' @param plotactogram Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE.
 #' @param selectperiod Boolean value indicating whether a specific period has to be selected.
 #' @param startperiod An optional vector specifying single or multiple period starts. Should be in the format "2016-10-03 00:00:00".
 #' @param daysperiod An optional vector specifying the length in days of the period.
+#' @param endperiod An optional argument that is a date string (format: "2016-10-03 00:00:00"), denoting the end of the data subset to be analyzed. Only used if daysperiod is not specified.
 #' @param movingwindow Boolean value indicating whether a moving window should be utilised.
 #' @param movingwindow.size An optional vector specifying the length in days of the moving window. Default is 14 days.
 #' @param movingwindow.jump An optional vector specifying the length of the jumps with which the moving window is shifted each iteration. Default is 1 day.
 #' @param circadian_analysis Boolean value indicating whether non-parametric circadian rhythm analysis should be performed.
+#' @param nparACT_compare Boolean value indicating that comparison with another actigraphy R package should be performed. If TRUE, the values for IS, IV, RA, L5, L5_starttime, M10, and M10_starttime of the nparACT_base_loop function are recorded in the returned overview variable.
 #' @param na_omit Boolean value indicating whether NA's should be omitted.
+#' @param na_impute Boolean value indicating whether NA's should be imputed.
 #' @param missings_report Boolean value indicating whether missings promt should appear.
+#' @param lengthcheck Boolean value. If TRUE, the dataset is shortened to the start date plus 14 days, and observations more than 14 days after the start date are removed.
 #'
 #' @return if iwantsleepanalysis, this returns the sleepdata overview, else if movingwindow, it returns the moving window results, and otherwise it returns the actdata overview.
 #' @examples
@@ -49,6 +53,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                    movingwindow = FALSE, movingwindow.size = 14, movingwindow.jump = 1,
                    circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = FALSE, na_impute = FALSE,
                    missings_report = TRUE, lengthcheck = TRUE) {
+  # @Yoram maybe merge the na_omit and na_imput variables to one variable, e.g., 'na_handling', that can be 'ignore', 'impute' or 'omit'?
 
   ## Step 1: Basic Operations-----------------------------------------------------------------
 
@@ -58,7 +63,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ## List actigraphy files and seperate out sleeplogs:
   pattern_file <- ".csv"
   ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
-  if (any((grep(pattern = "sleeplog", x = ACTdata.files)))){
+  if (any((grep(pattern = "sleeplog", x = ACTdata.files)))) {
     ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any sleeplogs from data listing
   }
 
@@ -68,7 +73,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                                  "recordingtime2" = NA, "summertime.start" = NA, "summertime.end" = NA, "missings" = NA,
                                  "missings_perc" = NA, "IS" = NA, "IV" = NA, "RA" = NA, "L5" = NA, "L5_starttime" = NA, "M10" = NA,
                                  "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA, "r2.RA" = NA, "r2.L5" = NA,
-                                 "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA, "last5act.active" = NA, "lengthcheck" = NA)
+                                 "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA, "last5act.active" = NA,
+                                 "lengthcheck" = NA, "start_time_nparcalc" = NA, "end_time_nparcalc" = NA, "start_time_nparACT" = NA,
+                                 "end_time_nparACT" = NA)
 
   ## Initiate parameters:
   i <- 1 # set i
@@ -261,18 +268,18 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     print(paste("This is:", round(ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"], 3), "% of the total number of observations!"))
     print("")
     ## If user-defined argument "na_omit" is TRUE, then use na.omit{stats} to row-wise delete NA's:
-    if(na_omit) {
+    if (na_omit) {
       print("Row-wise removal of NA's as user defined na.omit = TRUE")
       ACTdata.1.sub <- na.omit(ACTdata.1.sub)
       print("All NA's removed!")
     }
     ## If user-defined argument "na_impute" is TRUE, then use mice{mice} to impute missings through
     ## Multivariate Imputation by Chained Equations (MICE). This installs the 'mice' package and dependencies.
-    if(na_impute){
+    if (na_impute) {
       ## Impute Missings
-      if(!require('mice')){install.packages('mice', dep = TRUE)};library('mice')
-      # if(!require('pscl')){install.packages('pscl', dep = TRUE)};library('pscl')
-      # if(!require('accelmissing')){install.packages('accelmissing', dep = TRUE)};library('accelmissing')
+      if (!require('mice')) { install.packages('mice', dep = TRUE)}; library('mice')
+      # if (!require('pscl')) { install.packages('pscl', dep = TRUE)}; library('pscl')
+      # if (!require('accelmissing')) { install.packages('accelmissing', dep = TRUE)}; library('accelmissing')
       tempData <- mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m = 5, maxit = 50, meth = 'pmm', seed = 500)
       tempData2 <- complete(tempData, 1)
       ACTdata.1.sub$Activity <- tempData2$V1
@@ -284,21 +291,21 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Initialise exception handling for when there are no missings:
     number_of_missings <- ifelse(is.na(ACTdata.overview[i, "missings"]), 0, ACTdata.overview[i, "missings"])
     ## If a missings-prompt is required (default is missings_report = TRUE), ..
-    if(missings_report && !na_impute){
+    if (missings_report && !na_impute) {
       ## .. see if number of missings exceeds 0.01% of total number of data.
-      if ((number_of_missings / ACTdata.overview[i, "numberofobs"]) > 0.01){
+      if ((number_of_missings / ACTdata.overview[i, "numberofobs"]) > 0.01) {
         ## If so, explain situation to user via text prompt, and give them the choice to
         ## either continue or stop with the analyses.
         message("\nMore than 0.01% of data is missing!\nAnalysis results might deviate from true values!")
         message("Do you want to continue?")
         missings_prompt_answer <- readline(prompt = "Enter 'y' for Yes or 'n' for No:")
         ## If user decides to stop the analyses, stop the analyses and report stop message.
-        if(missings_prompt_answer == "n"){
+        if (missings_prompt_answer == "n") {
           message("Stopped by user!")
           ({break()})
         }
         ## If user decides to continue the analyses, continue and report continue message.
-        if(missings_prompt_answer == "y"){
+        if (missings_prompt_answer == "y") {
           print("Continue analysis with > 0.01% missings")
           print("")
         } else {
@@ -374,12 +381,13 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     #! Add Sleep-analysis for Rolling Window!
     #! Add possibility to change 'jump-length' of rolling window (now 1 day) to multiple days!
     if (movingwindow) {
-      rollingwindow <- function(x, window, jump){
+      rollingwindow <- function(x, window, jump) {
         ## Initialise parameters:
         out <- data.frame()
         n <- nrow(x)
         rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 9))
         ## Set number of iterations at number of rows of (data - windowsize) / (minutes per day (1440) * jump)
+        # @Yoram Hier declareer je opnieuw een variabele i terwijl die al in een hogere scope gedeinifieerd is. Dat is verwarrend. Ik zou deze i hernoemen naar j oid.
         for (i in 1:((floor(((n - window) / jump))) + 1)) {
           ## Take data as 1 till windowsize for first iteration, for further iterations take
           ## data as starting at ((iteration - 1) * (minutes per day * jump)), and ending at
@@ -435,17 +443,17 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       ## Initialise normal circadian rhythm analysis without moving window:
     } else {
-      if (circadian_analysis){
+      if (circadian_analysis) {
         ## Use the nparcalc{ACTman} function to calculate circadian rhythm variables over
         ## the whole period:
 
         ## Runtime analysis start nparcalc:
-        start_time_nparcalc <<- Sys.time()
+        ACTdata.overview[i, "start_time_nparcalc"] <- Sys.time()
 
         r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
 
         ## Runtime analysis end nparcalc:
-        end_time_nparcalc <<- Sys.time()
+        ACTdata.overview[i, "end_time_nparcalc"] <- Sys.time()
 
         ## Attach r2 output to overview
         ACTdata.overview[i, "r2.IS"] <- r2$IS
@@ -461,13 +469,13 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     if (nparACT_compare) {
 
       ## Runtime analysis start nparcalc:
-      start_time_nparACT <<- Sys.time()
+      ACTdata.overview[i, "start_time_nparACT"] <- Sys.time()
 
       ## Use nparACT Package to calculate circadian rhythm variables:
       r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = T)
 
       ## Runtime analysis end nparcalc:
-      end_time_nparACT <<- Sys.time()
+      ACTdata.overview[i, "end_time_nparACT"] <- Sys.time()
 
       ## Attach nparACT output to overview
       ACTdata.overview[i, "IS"] <- r$IS
@@ -514,7 +522,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
 
     ## Report progress in console:
-    print(paste("--------------------------------------", "END OF DATASET", i, "---", "@", round(i * (100 / length(ACTdata.files))), "% DONE",  "--------------------------------------"))
+    print(paste("--------------------------------------", "END OF DATASET", i, "---", "@",
+                round(i * (100 / length(ACTdata.files))), "% DONE",  "--------------------------------------"))
   }
 
 
@@ -550,7 +559,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   setwd(file.path(workdir_temp, "Results"))
 
   ## Write results of circadian analysis to .CSV
-  if(circadian_analysis){
+  if (circadian_analysis) {
       write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",", row.names = F)
   }
 
