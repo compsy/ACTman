@@ -85,7 +85,7 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
      ## Plot initialisation & parameters
       par(mfrow = c(14, 1)) # Set plot parameters
       par(mar = c(0.5, 4, 0.5, 4)) # Set margins
-      # par(mai = c(1,1,1,1))
+      # par(mai = c(1, 1, 1, 1))
       bp <- barplot(day.1.2$Activity, ylim = ylimit, ylab = "Day 1", plot = FALSE)
       barplot(day.1.2$Activity, ylim = ylimit, ylab = "Day 1")
       # abline(v = day2start + 75, lty = 2) # Set start moment
