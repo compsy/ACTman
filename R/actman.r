@@ -44,16 +44,22 @@
 #'                     startperiod = "2016-10-03 00:00:00",
 #'                     daysperiod = 14, movingwindow = FALSE, circadian_analysis = TRUE))
 #' }
-
-## Specify ACTman function and arguments:
+#' @importFrom stats na.omit
+#' @importFrom utils View
+#' @importFrom utils read.csv
+#' @importFrom utils read.table
+#' @importFrom utils tail
+#' @importFrom utils write.table
+#'
+#' @export
 ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
-                   sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
+                   sleepdatadir = paste("C:/Bibliotheek/Studie/PhD/Publishing/",
+                                        "ACTman/R-part/Actogram & Sleep analysis", sep = ""),
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
                    selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL,
                    movingwindow = FALSE, movingwindow.size = 14, movingwindow.jump = 1,
                    circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = FALSE, na_impute = FALSE,
                    missings_report = TRUE, lengthcheck = TRUE) {
-  # @Yoram maybe merge the na_omit and na_imput variables to one variable, e.g., 'na_handling', that can be 'ignore', 'impute' or 'omit'?
 
   ## Step 1: Basic Operations-----------------------------------------------------------------
 
@@ -277,11 +283,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Multivariate Imputation by Chained Equations (MICE). This installs the 'mice' package and dependencies.
     if (na_impute) {
       ## Impute Missings
-      if (!require('mice')) { install.packages('mice', dep = TRUE)}; library('mice')
+      # if (!require('mice')) { install.packages('mice', dep = TRUE)}; library('mice')
       # if (!require('pscl')) { install.packages('pscl', dep = TRUE)}; library('pscl')
       # if (!require('accelmissing')) { install.packages('accelmissing', dep = TRUE)}; library('accelmissing')
-      tempData <- mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m = 5, maxit = 50, meth = 'pmm', seed = 500)
-      tempData2 <- complete(tempData, 1)
+      tempData <- mice::mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m = 5, maxit = 50, meth = 'pmm', seed = 500)
+      tempData2 <- mice::complete(tempData, 1)
       ACTdata.1.sub$Activity <- tempData2$V1
     }
 
@@ -387,7 +393,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         n <- nrow(x)
         rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 9))
         ## Set number of iterations at number of rows of (data - windowsize) / (minutes per day (1440) * jump)
-        # @Yoram Hier declareer je opnieuw een variabele i terwijl die al in een hogere scope gedeinifieerd is. Dat is verwarrend. Ik zou deze i hernoemen naar j oid.
         for (i in 1:((floor(((n - window) / jump))) + 1)) {
           ## Take data as 1 till windowsize for first iteration, for further iterations take
           ## data as starting at ((iteration - 1) * (minutes per day * jump)), and ending at
@@ -581,3 +586,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   }
 }
 
+#' Data included in the package
+#'
+#' @name ACTdata.1
+#' @docType data
+#' @author Yoram Kunkels \email{y.k.kunkels@umcg.nl}
+#' @references \url{exampledata.com}
+#' @keywords data
+NULL

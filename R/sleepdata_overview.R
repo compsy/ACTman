@@ -9,8 +9,12 @@
 #'
 #' @return Returns a sleepdata overview.
 #'
-# Voeg fragmentation index toe!
+#' @importFrom stats na.omit
+#' @importFrom utils read.csv
+#' @importFrom utils write.csv
 sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
+  # Voeg fragmentation index toe!
+
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
 
   # # Set Working directory
@@ -19,7 +23,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
   # Load data
   data <- actdata
-  TEMPdat <<- data
+  # TEMPdat <<- data
+
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
@@ -152,10 +157,10 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     rownr.sleep.start <- which(aaa$Time == sleep.start)[1]
 
     ## Calculate wake up time
-    aaa$wakeup.chance <- (lag(aaa$epoch.sleep.chance, n = 1L) +
-                            lag(aaa$epoch.sleep.chance, n = 2L) +
-                            lag(aaa$epoch.sleep.chance, n = 3L) +
-                            lag(aaa$epoch.sleep.chance, n = 4L) +
+    aaa$wakeup.chance <- (dplyr::lag(aaa$epoch.sleep.chance, n = 1L) +
+                            dplyr::lag(aaa$epoch.sleep.chance, n = 2L) +
+                            dplyr::lag(aaa$epoch.sleep.chance, n = 3L) +
+                            dplyr::lag(aaa$epoch.sleep.chance, n = 4L) +
                             aaa$epoch.sleep.chance
     )
 

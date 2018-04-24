@@ -9,7 +9,11 @@ plot_actogram(workdir, ACTdata.1.sub, i, plotactogram)
 \arguments{
 \item{workdir}{the working directory as supplied to ACTman.}
 
-\item{ACTdata.1.sub}{the managed data set}
+\item{ACTdata.1.sub}{The managed data set}
+
+\item{i}{The index of the current file in ACTdata.files}
+
+\item{plotactogram}{Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE}
 }
 \description{
 Function to plot 48 hour Actograms.

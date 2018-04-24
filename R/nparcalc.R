@@ -17,16 +17,16 @@
 #'
 #' @return A list with the result values IS, IV, RA, L5, L5_starttime, M10, and M10_starttime.
 #'
-
-## Specify nparcalc function and arguments:
+#' @importFrom stats na.pass
+#' @importFrom utils tail
+#' @importFrom stats aggregate
 nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = NULL) {
-
 
   ## Step 1: Basic Operations-------------------------------------------------------------------
 
   ## Define constants
   secshour <- 60 * 60 # Seconds per hour
-  secsday <- 24 * secshour # Seconds per day
+  # secsday <- 24 * secshour # Seconds per day # commented because not used
 
   ## Initialise results list:
   result <- list()

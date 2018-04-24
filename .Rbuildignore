@@ -3,3 +3,7 @@
 .git
 .gitignore
 ^circle.yml$
+^Dockerfile$
+^scripts$
+^test.Dockerfile$
+^todo.md$

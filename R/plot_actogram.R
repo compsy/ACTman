@@ -20,6 +20,12 @@
 #' @param i The index of the current file in ACTdata.files
 #' @param plotactogram Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE
 #'
+#' @importFrom grDevices dev.off
+#' @importFrom grDevices pdf
+#' @importFrom graphics axis
+#' @importFrom graphics barplot
+#' @importFrom graphics par
+#' @importFrom stats na.omit
 plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
 
 ### Part 1: Basic Operations ----------------------------------------------------------------------------

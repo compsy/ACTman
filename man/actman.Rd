@@ -6,11 +6,14 @@
 \usage{
 
   ACTman(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
-  sleepdatadir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram & Sleep analysis",
+  sleepdatadir = paste("C:/Bibliotheek/Studie/PhD/Publishing/",
+  "ACTman/R-part/Actogram & Sleep analysis", sep = ""),
   myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE,
-  plotactogram = FALSE, selectperiod = FALSE, startperiod, daysperiod,
-  movingwindow = FALSE, movingwindow.size = 14, lengthcheck = FALSE,
-  na_omit = TRUE)
+  plotactogram = FALSE, selectperiod = FALSE, startperiod = NULL,
+  daysperiod = FALSE, endperiod = NULL, movingwindow = FALSE,
+  movingwindow.size = 14, movingwindow.jump = 1,
+  circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = FALSE,
+  na_impute = FALSE, missings_report = TRUE, lengthcheck = TRUE)
 }
 \arguments{
 \item{workdir}{The working directory of the script.}
@@ -21,7 +24,7 @@
 
 \item{iwantsleepanalysis}{Boolean value indicating whether sleep analysis should be performed.}
 
-\item{plotactogram}{Boolean value indicating whether an actogram has to be plotted.}
+\item{plotactogram}{Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE.}
 
 \item{selectperiod}{Boolean value indicating whether a specific period has to be selected.}
 
@@ -29,16 +32,28 @@
 
 \item{daysperiod}{An optional vector specifying the length in days of the period.}
 
+\item{endperiod}{An optional argument that is a date string (format: "2016-10-03 00:00:00"), denoting the end of the data subset to be analyzed. Only used if daysperiod is not specified.}
+
 \item{movingwindow}{Boolean value indicating whether a moving window should be utilised.}
 
 \item{movingwindow.size}{An optional vector specifying the length in days of the moving window. Default is 14 days.}
 
-\item{lengthcheck}{Boolean value indicating whether data recorded after 14 days should be included.}
+\item{movingwindow.jump}{An optional vector specifying the length of the jumps with which the moving window is shifted each iteration. Default is 1 day.}
+
+\item{circadian_analysis}{Boolean value indicating whether non-parametric circadian rhythm analysis should be performed.}
+
+\item{nparACT_compare}{Boolean value indicating that comparison with another actigraphy R package should be performed. If TRUE, the values for IS, IV, RA, L5, L5_starttime, M10, and M10_starttime of the nparACT_base_loop function are recorded in the returned overview variable.}
 
 \item{na_omit}{Boolean value indicating whether NA's should be omitted.}
+
+\item{na_impute}{Boolean value indicating whether NA's should be imputed.}
+
+\item{missings_report}{Boolean value indicating whether missings promt should appear.}
+
+\item{lengthcheck}{Boolean value. If TRUE, the dataset is shortened to the start date plus 14 days, and observations more than 14 days after the start date are removed.}
 }
 \value{
-nothing
+if iwantsleepanalysis, this returns the sleepdata overview, else if movingwindow, it returns the moving window results, and otherwise it returns the actdata overview.
 }
 \description{
 ACTman manages actigraphy data whilst offering pre-processing and analyses options.
@@ -53,6 +68,6 @@ View(ACTman::ACTman(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-par
                     plotactogram = FALSE,
                     selectperiod = FALSE,
                     startperiod = "2016-10-03 00:00:00",
-                    daysperiod = 14, movingwindow = FALSE, lengthcheck = TRUE))
+                    daysperiod = 14, movingwindow = FALSE, circadian_analysis = TRUE))
 }
 }
