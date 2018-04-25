@@ -18,13 +18,24 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="ACTman - Actigraphy Manager — ACTman" />
+
+<meta property="og:description" content="ACTman manages actigraphy data whilst offering pre-processing and analyses options.
+This initial version supports the 'Actiwatch 2' and 'MotionWatch 8' actigraphy devices,
+whilst allowing for both sleep and circadian rhythm analyses." />
+<meta name="twitter:card" content="summary" />
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -47,8 +58,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">ACTman</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">ACTman</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.0.3</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -65,6 +80,7 @@
       <ul class="nav navbar-nav navbar-right">
         
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -72,26 +88,33 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>ACTman - Actigraphy Manager</h1>
+    
+    <div class="hidden name"><code>actman.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>ACTman manages actigraphy data whilst offering pre-processing and analyses options.
 This initial version supports the 'Actiwatch 2' and 'MotionWatch 8' actigraphy devices,
 whilst allowing for both sleep and circadian rhythm analyses.</p>
     
+    </div>
 
     <pre class="usage"><span class='fu'>ACTman</span>(<span class='kw'>workdir</span> <span class='kw'>=</span> <span class='st'>"C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2"</span>,
-  <span class='kw'>sleepdatadir</span> <span class='kw'>=</span> <span class='st'>"C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/Actogram &amp; Sleep analysis"</span>,
+  <span class='kw'>sleepdatadir</span> <span class='kw'>=</span> <span class='fu'>paste</span>(<span class='st'>"C:/Bibliotheek/Studie/PhD/Publishing/"</span>,
+  <span class='st'>"ACTman/R-part/Actogram &amp; Sleep analysis"</span>, <span class='kw'>sep</span> <span class='kw'>=</span> <span class='st'>""</span>),
   <span class='kw'>myACTdevice</span> <span class='kw'>=</span> <span class='st'>"Actiwatch2"</span>, <span class='kw'>iwantsleepanalysis</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>plotactogram</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>selectperiod</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>startperiod</span>, <span class='no'>daysperiod</span>,
-  <span class='kw'>movingwindow</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>movingwindow.size</span> <span class='kw'>=</span> <span class='fl'>14</span>, <span class='kw'>lengthcheck</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>na_omit</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+  <span class='kw'>plotactogram</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>selectperiod</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>startperiod</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>daysperiod</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>endperiod</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>movingwindow</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>movingwindow.size</span> <span class='kw'>=</span> <span class='fl'>14</span>, <span class='kw'>movingwindow.jump</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>circadian_analysis</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>nparACT_compare</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>na_omit</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>na_impute</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>missings_report</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>lengthcheck</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
@@ -112,7 +135,7 @@ whilst allowing for both sleep and circadian rhythm analyses.</p>
     </tr>
     <tr>
       <th>plotactogram</th>
-      <td><p>Boolean value indicating whether an actogram has to be plotted.</p></td>
+      <td><p>Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE.</p></td>
     </tr>
     <tr>
       <th>selectperiod</th>
@@ -127,6 +150,10 @@ whilst allowing for both sleep and circadian rhythm analyses.</p>
       <td><p>An optional vector specifying the length in days of the period.</p></td>
     </tr>
     <tr>
+      <th>endperiod</th>
+      <td><p>An optional argument that is a date string (format: "2016-10-03 00:00:00"), denoting the end of the data subset to be analyzed. Only used if daysperiod is not specified.</p></td>
+    </tr>
+    <tr>
       <th>movingwindow</th>
       <td><p>Boolean value indicating whether a moving window should be utilised.</p></td>
     </tr>
@@ -135,18 +162,38 @@ whilst allowing for both sleep and circadian rhythm analyses.</p>
       <td><p>An optional vector specifying the length in days of the moving window. Default is 14 days.</p></td>
     </tr>
     <tr>
-      <th>lengthcheck</th>
-      <td><p>Boolean value indicating whether data recorded after 14 days should be included.</p></td>
+      <th>movingwindow.jump</th>
+      <td><p>An optional vector specifying the length of the jumps with which the moving window is shifted each iteration. Default is 1 day.</p></td>
+    </tr>
+    <tr>
+      <th>circadian_analysis</th>
+      <td><p>Boolean value indicating whether non-parametric circadian rhythm analysis should be performed.</p></td>
+    </tr>
+    <tr>
+      <th>nparACT_compare</th>
+      <td><p>Boolean value indicating that comparison with another actigraphy R package should be performed. If TRUE, the values for IS, IV, RA, L5, L5_starttime, M10, and M10_starttime of the nparACT_base_loop function are recorded in the returned overview variable.</p></td>
     </tr>
     <tr>
       <th>na_omit</th>
       <td><p>Boolean value indicating whether NA's should be omitted.</p></td>
     </tr>
+    <tr>
+      <th>na_impute</th>
+      <td><p>Boolean value indicating whether NA's should be imputed.</p></td>
+    </tr>
+    <tr>
+      <th>missings_report</th>
+      <td><p>Boolean value indicating whether missings promt should appear.</p></td>
+    </tr>
+    <tr>
+      <th>lengthcheck</th>
+      <td><p>Boolean value. If TRUE, the dataset is shortened to the start date plus 14 days, and observations more than 14 days after the start date are removed.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>nothing</p>
+    <p>if iwantsleepanalysis, this returns the sleepdata overview, else if movingwindow, it returns the moving window results, and otherwise it returns the actdata overview.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -157,7 +204,7 @@ whilst allowing for both sleep and circadian rhythm analyses.</p>
                     <span class='kw'>plotactogram</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
                     <span class='kw'>selectperiod</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
                     <span class='kw'>startperiod</span> <span class='kw'>=</span> <span class='st'>"2016-10-03 00:00:00"</span>,
-                    <span class='kw'>daysperiod</span> <span class='kw'>=</span> <span class='fl'>14</span>, <span class='kw'>movingwindow</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>lengthcheck</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))
+                    <span class='kw'>daysperiod</span> <span class='kw'>=</span> <span class='fl'>14</span>, <span class='kw'>movingwindow</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>circadian_analysis</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>))
 <span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -185,5 +232,8 @@ whilst allowing for both sleep and circadian rhythm analyses.</p>
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+
