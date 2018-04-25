@@ -200,7 +200,8 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   TEST.df.L5[(which(is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"] <- TEST.df.L5[(which(!is.na(TEST.df.L5[, "L5_starttime"]))), "L5_starttime"][1] # Replace NA with first non-NA value
 
   ## Paste "1970-01-01" in front of L5_starttimes to cancel out day-differences
-  L5.temp <- as.POSIXct(paste("1970-01-01", format(as.POSIXct(TEST.df.L5[, "L5_starttime"], origin = "1970-01-01"), "%H:%M:%S")))
+  # Commented out because this variable is never used:
+  # L5.temp <- as.POSIXct(paste("1970-01-01", format(as.POSIXct(TEST.df.L5[, "L5_starttime"], origin = "1970-01-01"), "%H:%M:%S")))
 
   ## Assign corrected L5_starttime, and assign to result
   L5_starttime <- (as.POSIXct(CRV.data[CRV.data.locmidnight[f], "Date"]) + (mean(unlist(TEST_L5_starttimes), na.action = na.pass, na.rm = T) * secshour))
