@@ -2,7 +2,7 @@ FROM roqua/opencpu-base
 
 WORKDIR /ACTman
 
-RUN apt-get update && apt-get -f install -y openssl libcurl4-openssl-dev curl libxml2-dev libssl-dev libcairo-dev
+RUN apt-get update && apt-get -f install -y openssl libcurl4-openssl-dev curl libxml2-dev libssl-dev libcairo-dev libnlopt-dev
 
 ADD ./inst/bash/install-package-dependencies.sh /ACTman/inst/bash/install-package-dependencies.sh
 
