@@ -17,4 +17,4 @@ dependencies:
 test:
   override:
     - ./inst/bash/check_code_conventions.sh
-    -  docker run compsy/actman-test R CMD check /ACTman/ACTman_1.0-0.tar.gz --no-manual --no-build-vignettes
+    -  docker run compsy/actman-test R CMD check /ACTman/ACTman_1.0-3.tar.gz --no-manual --no-build-vignettes
