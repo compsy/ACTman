@@ -11,7 +11,11 @@ Authors@R: c(person("Kunkels,","Y. K.",role = c("aut","cre"),
     email = "ando.emerencia@gmail.com"))
 BugReports: https://github.com/compsy/ACTman/issues
 Maintainer: Yoram Kunkels <y.k.kunkels@umcg.nl>
-Description: Reads Actigraphy data
+Description: ACTman manages actigraphy data whilst offering
+    pre-processing and analyses options. This initial version
+    supports the 'Actiwatch 2' and 'MotionWatch 8' actigraphy
+    devices, whilst allowing for both sleep and circadian
+    rhythm analyses.
 License: MIT + file LICENSE
 Suggests:
     testthat,
@@ -21,4 +25,6 @@ Imports:
     stats,
     nparACT,
     gridExtra,
+    mice
+Depends: R (>= 2.10)
 RoxygenNote: 6.0.1

@@ -4,12 +4,16 @@
 \alias{sleepdata_overview}
 \title{sleepdata_overview}
 \usage{
-sleepdata_overview(workdir, actdata)
+sleepdata_overview(workdir, actdata, i, lengthcheck)
 }
 \arguments{
 \item{workdir}{The directory where the sleep files are located.}
 
 \item{actdata}{The activity data.}
+
+\item{i}{The index of the current file in ACTdata.files}
+
+\item{lengthcheck}{Boolean value. If TRUE, the dataset is shortened to the start date plus 14 days, and observations more than 14 days after the start date are removed.}
 }
 \value{
 Returns a sleepdata overview.
