@@ -50,6 +50,10 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   ## Exception for lengtcheck in number ook LOOP iterations
   if (lengthcheck) {
     loop_steps <- 14
+    if (nrow(data.sleeplog) < 14) {
+      print("ERROR: we need at least 14 days of sleeplog. Terminating program.")
+      stop('ERROR: we need at least 14 days of sleeplog. Terminating program.')
+    }
   } else {
     loop_steps <- nrow(data.sleeplog)
   }
