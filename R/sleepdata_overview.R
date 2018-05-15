@@ -299,4 +299,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   ## Set working directory back to main working directory:
   setwd(workdir_temp)
   rm(workdir_temp)
+
+  # Return a result
+  sleepdata.overview
 }
