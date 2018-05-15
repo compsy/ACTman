@@ -245,7 +245,9 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     TimeInBed <- (rownr.gotup - rownr.bedtime) / 60 # The total elapsed time between the "Lights Out" and "Got Up" times
     AssumedSleep <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
-    ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
+    # The same, but with more rounding errors:
+    #ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
+    ActualSleep <- length(which(aaa.assumedsleeptime$WakeSleep == 0)) / 60.0
 
     # Commented out because not used:
     ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
