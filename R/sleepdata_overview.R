@@ -189,6 +189,12 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
     }
 
+    # Sanity check to make sure that we wake up after going to bed
+    if (rownr.bedtime >= rownr.gotup || rownr.sleep.start >= rownr.gotup || rownr.bedtime > rownr.gotup) {
+      message("Warning: sanity checks for bedtime, gotup, and/or sleep start failed")
+      message("Skipping current day!")
+      next()
+    }
 
     ## Get sleeptime
     aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + (4 * 60)), ] # A (4 * 60) minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
