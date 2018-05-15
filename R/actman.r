@@ -146,14 +146,18 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         print("")
 
         ## If epochs are 30 sec. instead of 60 sec., bin them together to form 60 sec. epochs.
-        # ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ":00", x = ACTdata.1$B)), ]
         ACTdata.TEMP <- ACTdata.1[(grepl(pattern = ".*(?<!:30)$", x = ACTdata.1$B, perl = TRUE)), ]
 
-
-        #! >> Error doordat selecteren op ":00" niet alle 30 sec epochs verwijderd;
-        #! >> e.g. "16:00:30" bevat zowel ":00" als ":30"!
-        # ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ":30", x = ACTdata.1$B)), ]$C)
-        ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + as.numeric(ACTdata.1[(grepl(pattern = ".*(?<!:30)$", x = ACTdata.1$B, perl = TRUE)), ]$C)
+        halfminute_data <- as.numeric(ACTdata.1[(grepl(pattern = ".*(?<=:30)$", x = ACTdata.1$B, perl = TRUE)), ]$C)
+        if (length(grep(pattern = ":30$", x = ACTdata.1$B[1]))) {
+          # if it starts wtih :30, throw first val away
+          halfminute_data <- tail(halfminute_data, n = -1)
+        }
+        if (length(grep(pattern = ":00$", x = ACTdata.1$B[length(ACTdata.1$B)]))) {
+          # if it ends on a full minute, add a zero value
+          halfminute_data <- c(halfminute_data, 0)
+        }
+        ACTdata.TEMP$C <- as.numeric(ACTdata.TEMP$C) + halfminute_data
         # #! Workaround for aforementioned issue
         # ACTdata.TEMP <- ACTdata.TEMP[ - which(grepl("00:30", ACTdata.TEMP$B)), ]
 
@@ -162,6 +166,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
         ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
         rm(ACTdata.TEMP) # Remove temporary data object
+        rm(halfminute_data)
 
       } else {
           ## Make no changes if 60 sec. bins
@@ -171,7 +176,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print("")
       }
     }
-
 
     ## Step 2.2: Managing the Data---------------------------------------------------------------
 
