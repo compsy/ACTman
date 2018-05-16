@@ -199,6 +199,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     ## Get sleeptime
     aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + (4 * 60)), ] # A (4 * 60) minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
 
+
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
     #  Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
     sleep.end. <- aaa.sleeptime[which(aaa.sleeptime$wakeup.chance >= 2 & dplyr::lead(aaa.sleeptime$wakeup.chance > 2)), ]
@@ -221,7 +222,18 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
     rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
 
-
+    # Calculate sleep end:
+    tempp <- aaa.sleeptime[which(head(aaa.sleeptime, n = (-4 * 60))$wakeup.chance <= 2), ]
+    sleepend <- tail(tempp, n = 1) # sleepend = last element of temp
+    if (is.null(sleepend)) { # if we don't find anytyhing, use sleeplog got up time
+      sleepend <- aaa.sleeptime[rownr.gotup, ]
+    }
+    sleep.end.ando <- sleepend$Time
+    rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
+    # cat("sleep end ando: ",sleep.end.ando, ", sleep end: ",sleep.end,"\n")
+    # cat("rownrando: ",rownr.sleep.end.ando,", rownryoram: ",rownr.sleep.end,"\n")
+    sleep.end <- sleep.end.ando
+    rownr.sleep.end <- rownr.sleep.end.ando
     #! debug
     # print(paste("rownr.sleep.end:", rownr.sleep.end))
 
