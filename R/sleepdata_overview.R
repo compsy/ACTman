@@ -230,8 +230,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     }
     sleep.end.ando <- sleepend$Time
     rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
-    # cat("sleep end ando: ",sleep.end.ando, ", sleep end: ",sleep.end,"\n")
-    # cat("rownrando: ",rownr.sleep.end.ando,", rownryoram: ",rownr.sleep.end,"\n")
+    # Use new method:
     sleep.end <- sleep.end.ando
     rownr.sleep.end <- rownr.sleep.end.ando
     #! debug
