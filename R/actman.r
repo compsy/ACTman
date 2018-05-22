@@ -290,7 +290,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
       # if (!require('mice')) { install.packages('mice', dep = TRUE)}; library('mice')
       # if (!require('pscl')) { install.packages('pscl', dep = TRUE)}; library('pscl')
       # if (!require('accelmissing')) { install.packages('accelmissing', dep = TRUE)}; library('accelmissing')
-      tempData <- mice::mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m = 5, maxit = 50, meth = 'pmm', seed = 500)
+      tempData <- mice::mice(matrix(data = c(ACTdata.1.sub$Activity, rep.int(x = 0, times = (ACTdata.overview[i, "numberofobs"]))), ncol = 2), m = 5, maxit = 50, meth = "pmm", seed = 500)
       tempData2 <- mice::complete(tempData, 1)
       ACTdata.1.sub$Activity <- tempData2$V1
     }
@@ -468,10 +468,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ACTdata.overview[i, "r2.IS"] <- r2$IS
         ACTdata.overview[i, "r2.IV"] <- r2$IV
         ACTdata.overview[i, "r2.RA"] <- round(r2$RA, 2)
-        ACTdata.overview[i, "r2.L5"] <- round(r2$L5, 2)
-        ACTdata.overview[i, "r2.L5_starttime"] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
+        ACTdata.overview[i, "r2.L5"] <- r2$L5
+        ACTdata.overview[i, "r2.L5_starttime"] <- r2$L5_starttime
         ACTdata.overview[i, "r2.M10"] <- round(r2$M10, 2)
-        ACTdata.overview[i, "r2.M10_starttime"] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
+        ACTdata.overview[i, "r2.M10_starttime"] <- r2$M10_starttime
       }
     }
     ## If a comparison with another actigraphy R package is required, run nparACT_base_loop{nparACT}:
