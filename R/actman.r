@@ -80,8 +80,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                                  "missings_perc" = NA, "IS" = NA, "IV" = NA, "RA" = NA, "L5" = NA, "L5_starttime" = NA, "M10" = NA,
                                  "M10_starttime" = NA, "r2.IS" = NA, "r2.IV" = NA, "r2.RA" = NA, "r2.L5" = NA,
                                  "r2.L5_starttime" = NA, "r2.M10" = NA, "r2.M10_starttime" = NA, "last5act.active" = NA,
-                                 "lengthcheck" = NA, "start_time_nparcalc" = NA, "end_time_nparcalc" = NA, "start_time_nparACT" = NA,
-                                 "end_time_nparACT" = NA)
+                                 "lengthcheck" = NA)
 
   ## Initiate parameters:
   i <- 1 # set i
@@ -456,13 +455,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ## Use the nparcalc{ACTman} function to calculate circadian rhythm variables over
         ## the whole period:
 
-        ## Runtime analysis start nparcalc:
-        ACTdata.overview[i, "start_time_nparcalc"] <- Sys.time()
-
         r2 <- nparcalc(myACTdevice = myACTdevice, movingwindow = movingwindow, CRV.data = CRV.data, ACTdata.1.sub = ACTdata.1.sub)
-
-        ## Runtime analysis end nparcalc:
-        ACTdata.overview[i, "end_time_nparcalc"] <- Sys.time()
 
         ## Attach r2 output to overview
         ACTdata.overview[i, "r2.IS"] <- r2$IS
@@ -477,14 +470,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## If a comparison with another actigraphy R package is required, run nparACT_base_loop{nparACT}:
     if (nparACT_compare) {
 
-      ## Runtime analysis start nparcalc:
-      ACTdata.overview[i, "start_time_nparACT"] <- Sys.time()
-
       ## Use nparACT Package to calculate circadian rhythm variables:
       r <- nparACT::nparACT_base_loop(path = newdir, SR = 1/60, fulldays = T, plot = T)
-
-      ## Runtime analysis end nparcalc:
-      ACTdata.overview[i, "end_time_nparACT"] <- Sys.time()
 
       ## Attach nparACT output to overview
       ACTdata.overview[i, "IS"] <- r$IS
@@ -521,7 +508,6 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     if (iwantsleepanalysis) {
       sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub, i = i, lengthcheck = lengthcheck)
     }
-
 
     ## Actogram:
     ## Use the plot_actogram{ACTman} function to plot an Actogram of the whole period.
