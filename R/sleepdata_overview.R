@@ -50,6 +50,10 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   ## Exception for lengtcheck in number ook LOOP iterations
   if (lengthcheck) {
     loop_steps <- 14
+    if (nrow(data.sleeplog) < 14) {
+      print("ERROR: we need at least 14 days of sleeplog. Terminating program.")
+      stop('ERROR: we need at least 14 days of sleeplog. Terminating program.')
+    }
   } else {
     loop_steps <- nrow(data.sleeplog)
   }
@@ -185,9 +189,16 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
     }
 
+    # Sanity check to make sure that we wake up after going to bed
+    if (rownr.bedtime >= rownr.gotup || rownr.sleep.start >= rownr.gotup || rownr.bedtime > rownr.gotup) {
+      message("Warning: sanity checks for bedtime, gotup, and/or sleep start failed")
+      message("Skipping current day!")
+      next()
+    }
 
     ## Get sleeptime
     aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + (4 * 60)), ] # A (4 * 60) minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
+
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
     #  Changed "aaa.sleeptime$wakeup.chance == 2" to "aaa.sleeptime$wakeup.chance >= 2" to circumvent error
@@ -211,7 +222,17 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
     rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
 
-
+    # Calculate sleep end:
+    tempp <- aaa.sleeptime[which(head(aaa.sleeptime, n = (-4 * 60))$wakeup.chance <= 2), ]
+    sleepend <- tail(tempp, n = 1) # sleepend = last element of temp
+    if (is.null(sleepend)) { # if we don't find anytyhing, use sleeplog got up time
+      sleepend <- aaa.sleeptime[rownr.gotup, ]
+    }
+    sleep.end.ando <- sleepend$Time
+    rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
+    # Use new method:
+    sleep.end <- sleep.end.ando
+    rownr.sleep.end <- rownr.sleep.end.ando
     #! debug
     # print(paste("rownr.sleep.end:", rownr.sleep.end))
 
@@ -235,7 +256,9 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     TimeInBed <- (rownr.gotup - rownr.bedtime) / 60 # The total elapsed time between the "Lights Out" and "Got Up" times
     AssumedSleep <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
-    ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
+    # The same, but with more rounding errors:
+    #ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
+    ActualSleep <- length(which(aaa.assumedsleeptime$WakeSleep == 0)) / 60.0
 
     # Commented out because not used:
     ActualSleepPerc <- (ActualSleep / AssumedSleep) * 100 # Actual sleep time expressed as a percentage of the assumed sleep time
@@ -299,4 +322,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   ## Set working directory back to main working directory:
   setwd(workdir_temp)
   rm(workdir_temp)
+
+  # Return a result
+  sleepdata.overview
 }
