@@ -270,7 +270,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Handling of Missing Data (NA's):
     ## Write Missings values (total number of missings and percentage of total data missing)
     ## to overview file:
-    ACTdata.overview[i, "missings"] <- table(is.na(ACTdata.1.sub))["TRUE"]  # write missings to overview
+    ACTdata.overview[i, "missings"] <- sum(is.na(ACTdata.1.sub$Activity))  # write missings to overview
     ACTdata.overview[i, "missings_perc"] <- round(ACTdata.overview[i, "missings"] / ACTdata.overview[i, "numberofobs"], 3) # write missings percentage to overview
     ## Report missings in console:
     print("Task: Reporting NA's")
@@ -386,6 +386,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     colnames(CRV.data) <- c("Date", "Time", "Activity")
 
 
+    sleepdata.overview <- NULL
     ## Moving/Rolling Window
     ## Check first if Moving Window is required, as this requires it's own analysis calls.
     #! Add Sleep-analysis for Rolling Window!
@@ -584,9 +585,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   if (iwantsleepanalysis) {
     sleepdata.overview
   } else if (movingwindow) {
-    View(rollingwindow.results)
+    rollingwindow.results
   } else {
-    View(ACTdata.overview)
+    ACTdata.overview
   }
 }
 

@@ -14,3 +14,4 @@ result2 <- ACTman(workdir = "/Users/ando/Documents/actman/new",
                   sleepdatadir = "/Users/ando/Documents/actman/new",
                   iwantsleepanalysis = TRUE,
                   myACTdevice = "MW8")
+View(result2)
