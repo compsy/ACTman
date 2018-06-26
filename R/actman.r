@@ -386,6 +386,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
 
     sleepdata.overview <- NULL
+    rollingwindow.results <- NA
     ## Moving/Rolling Window
     ## Check first if Moving Window is required, as this requires it's own analysis calls.
     #! Add Sleep-analysis for Rolling Window!
@@ -395,7 +396,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ## Initialise parameters:
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 9))
+        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 10))
         ## Set number of iterations at number of rows of (data - windowsize) / (minutes per day (1440) * jump)
         for (i in 1:((floor(((n - window) / jump))) + 1)) {
           ## Take data as 1 till windowsize for first iteration, for further iterations take
@@ -423,10 +424,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           rollingwindow.results[i, 4] <- r2$IV
           rollingwindow.results[i, 5] <- round(r2$RA, 2)
           rollingwindow.results[i, 6] <- round(r2$L5, 2)
-          rollingwindow.results[i, 7] <- as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))
+          rollingwindow.results[i, 7] <- r2$L5_starttime
           rollingwindow.results[i, 8] <- round(r2$M10, 2)
-          rollingwindow.results[i, 9] <- as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))
-          colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime")
+          rollingwindow.results[i, 9] <- r2$M10_starttime
+          rollingwindow.results[i, 10] <- r2$Variance
+          colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime", "Variance")
 
           ## Report the calculated circadian results in console:
           print("---------------------------------------------------------------------------------")
@@ -439,13 +441,16 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print(paste("IV: ", r2$IV))
           print(paste("RA: ", round(r2$RA, 2)))
           print(paste("L5: ", round(r2$L5, 2)))
-          print(paste("L5_starttime: ", as.character(strftime(r2$L5_starttime, format = "%H:%M:%S"))))
+          print(paste("L5_starttime: ", r2$L5_starttime))
           print(paste("M10: ", round(r2$M10, 2)))
-          print(paste("M10_starttime: ", as.character(strftime(r2$M10_starttime, format = "%H:%M:%S"))))
+          print(paste("M10_starttime: ", r2$M10_starttime))
+          print(paste("Variance: ", r2$Variance))
           print("---------------------------------------------------------------------------------")
 
         }
         rollingwindow.results # Needed for output in .CSV
+
+        rollingwindow.results <- rollingwindow.results
       }
       ## Assign results from rolling window:
       rollingwindow.results <- rollingwindow(x = CRV.data, window = (1440 * (movingwindow.size)), jump = (1440 * (movingwindow.jump)))
@@ -513,7 +518,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Actogram:
     ## Use the plot_actogram{ACTman} function to plot an Actogram of the whole period.
     if (plotactogram != FALSE) {
-      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram)
+      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram, rollingwindow.results = rollingwindow.results)
     }
 
 
@@ -581,7 +586,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 #'
 #' @name ACTdata.1
 #' @docType data
-#' @author Yoram Kunkels \email{y.k.kunkels@umcg.nl}
+#' @author Yoram K. Kunkels \email{y.k.kunkels@umcg.nl}
 #' @references \url{exampledata.com}
 #' @keywords data
 NULL

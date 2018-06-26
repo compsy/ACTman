@@ -26,7 +26,7 @@
 #' @importFrom graphics barplot
 #' @importFrom graphics par
 #' @importFrom stats na.omit
-plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
+plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow.results) {
 
 ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
@@ -82,6 +82,107 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram) {
            rbind(eval(parse(text = paste("day", j.plot, sep = ""))), eval(parse(text =  paste("day", (j.plot + 1), sep = "")))))
   }
 
+
+  ### Work in Progress ------------------------------------------------------------------------------
+  #! TEST for moving window plot
+  ## combine all days in 1 plot
+
+  ## Runner
+  # ACTman::ACTman(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/TEST-RESULTS",
+  #                myACTdevice = "MW8", lengthcheck = F, nparACT_compare = F, iwantsleepanalysis = F,
+  #                circadian_analysis = T, plotactogram = "24h", movingwindow = TRUE, movingwindow.size = 7)
+
+  ## Initialise empty matrix for timestamps and activity counts
+  LOLkat <- matrix(NA, nrow = (1440 * ndays.plot), ncol = 2)
+
+  ## Assign timestamps and activity counts to matrix
+  for (k.plot in 1:ndays.plot) {
+
+     if(k.plot == 1){
+      LOLkat[k.plot:1440, 1] <- eval(parse(text = paste("day", k.plot, "[ , 1]", sep = "")))
+      LOLkat[k.plot:1440, 2] <- eval(parse(text = paste("day", k.plot, "[ , 2]", sep = "")))
+    } else{
+      LOLkat[((((k.plot - 1) * 1440) + 1):(k.plot * 1440)), 1] <- eval(parse(text = paste("day", k.plot, "[ , 1]", sep = "")))
+      LOLkat[((((k.plot - 1) * 1440) + 1):(k.plot * 1440)), 2] <- eval(parse(text = paste("day", k.plot, "[ , 2]", sep = "")))
+    }
+
+  }
+
+
+
+
+  ## Create barplot
+  bp2 <- barplot(as.numeric(LOLkat[,2]), plot = FALSE)
+
+  ## Obtain barplot range
+  bp2_ylim <- range(as.numeric(LOLkat[,2]))
+  roundup_power_10 <- function(x) 10 ^ ceiling(log10(x))
+  bp2_ylim_upper <- roundup_power_10(max(bp2_ylim))
+
+  ## Plot barplot
+  barplot(as.numeric(LOLkat[,2]), ylim = c(0, bp2_ylim_upper))
+
+
+  ## Create labels
+  x_labels2 <- substr(LOLkat[ ,1], 1, 10)
+  l.plot_n <- length(unique(substr(LOLkat[ ,1], 1, 10)[!substr(LOLkat[ ,1], 1, 10) == "0"]))
+  x_labels_pos2_start <- matrix(NA, nrow = l.plot_n, ncol = 1)
+
+  ## Obtain label positions
+  for(l.plot in 1:l.plot_n){
+    x_labels_pos2_start[l.plot, ] <- which.max(x_labels2 == unique(substr(LOLkat[ ,1], 1, 10)[!substr(LOLkat[ ,1], 1, 10) == "0"])[l.plot])
+  }
+
+
+  ## Assign start and end dates
+  LOLkat_startdate <- x_labels2[x_labels_pos2_start][1] # Activity data start date
+  LOLkat_enddate <- x_labels2[x_labels_pos2_start][length(x_labels2[x_labels_pos2_start])] # Activity data end date
+
+  ## Create axis and vertical day lines
+  axis(side = 1, at = bp2[1 + x_labels_pos2_start], labels = x_labels2[x_labels_pos2_start], las = 2, cex.axis = 0.8)
+  abline(v = bp2[1 + x_labels_pos2_start], col = "blue")
+
+
+
+  #! debug
+  rollingwindow.results <<- rollingwindow.results
+  LOLkat <<- LOLkat
+
+  ## Assign moving window results (remove first obs to account for non-24h day)
+  rollingwindow.results <- rollingwindow.results[2:nrow(rollingwindow.results), ]
+
+  ## Asssign occurences when days from plotted actigraphy data co-occur with days from the moving window results
+  matched_dates <- paste(x_labels2[x_labels_pos2_start], "00:00:00") %in% rollingwindow.results$endtime
+
+  ## Assign x-coordinates for moving window results
+  plot_points_x <- bp2[1 + x_labels_pos2_start][matched_dates]
+
+  ## Plot results for moving window on existing barplot at designated x-coordinates
+  plotme <- "IV"
+
+  if(plotme == "Variance"){
+      if(nrow(rollingwindow.results) != length(plot_points_x)){
+          points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme] / 50),
+                 type = "l", col = "red")
+      } else{points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] / 50),
+                     type = "l", col = "red")}
+  }else{
+    if(nrow(rollingwindow.results) != length(plot_points_x)){
+      points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme] * 5000),
+             type = "l", col = "red")
+    } else{points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * 5000),
+                  type = "l", col = "red")}
+  }
+
+  ## Create right axis for moving window results
+  axis(side = 4, labels = seq(0, 1, 0.1), at = seq(0, bp2_ylim_upper, (bp2_ylim_upper / 10)))
+
+  ## Create Title
+  mtext(paste("Total Activity data with", plotme, "moving window"), line = 1, cex = 1.0)
+  mtext(paste("start date:", LOLkat_startdate, "end date:", LOLkat_enddate), line = 0, cex = 0.8)
+
+
+  ### /Work in Progress ------------------------------------------------------------------------------
 
 
   if (plotactogram ==  "48h") {

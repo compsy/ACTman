@@ -143,7 +143,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   for(aa in 1:1440){
     selection_mat[aa, ] <- TRUE
     mean(CRV.data[selection_mat, "Activity"])
-    averageday[aa, 2] <- mean(CRV.data[selection_mat, "Activity"])
+    averageday[aa, 2] <- mean(CRV.data[selection_mat, "Activity"], na.rm = TRUE) # added "na.rm = TRUE" for moving window
     selection_mat <- matrix(FALSE, 1440)
   }
 
@@ -179,7 +179,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   ## Loop for calculating mean activity in 600 minute intervals ~ 10 hours
   for (hh in 1:(nrow(averageday) - 600)) {
-    averageday_loc_M10[hh] <- mean(as.numeric(averageday[c(hh:(599 + hh)), 2]))
+    averageday_loc_M10[hh] <- mean(as.numeric(averageday[c(hh:(599 + hh)), 2]), na.rm = TRUE)
   }
 
   M10_starttime <- averageday[which.max(averageday_loc_M10), 1]
@@ -202,9 +202,16 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   RA <- Amp / (L5 + M10)
   result$RA <- RA
 
+  ##---------------------------------------------------------------------------------------------------------
+
+  ## Variance
+  Variance <- round(var(CRV.data[, "Activity"], na.rm = TRUE), 2)
+  result$Variance <- Variance
+
   ## Assign data to results
   result$CRV_data <- CRV.data
 
   ## Return the list with all result values.
   result
 }
+
