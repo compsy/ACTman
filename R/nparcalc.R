@@ -140,7 +140,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   selection_mat <- matrix(FALSE, 1440)
 
-  for(aa in 1:1440){
+  for (aa in 1:1440) {
     selection_mat[aa, ] <- TRUE
     mean(CRV.data[selection_mat, "Activity"])
     averageday[aa, 2] <- mean(CRV.data[selection_mat, "Activity"], na.rm = TRUE) # added "na.rm = TRUE" for moving window
