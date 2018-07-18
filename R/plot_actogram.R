@@ -98,10 +98,10 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   ## Assign timestamps and activity counts to matrix
   for (k.plot in 1:ndays.plot) {
 
-     if(k.plot == 1){
+     if (k.plot == 1) {
       LOLkat[k.plot:1440, 1] <- eval(parse(text = paste("day", k.plot, "[ , 1]", sep = "")))
       LOLkat[k.plot:1440, 2] <- eval(parse(text = paste("day", k.plot, "[ , 2]", sep = "")))
-    } else{
+    } else {
       LOLkat[((((k.plot - 1) * 1440) + 1):(k.plot * 1440)), 1] <- eval(parse(text = paste("day", k.plot, "[ , 1]", sep = "")))
       LOLkat[((((k.plot - 1) * 1440) + 1):(k.plot * 1440)), 2] <- eval(parse(text = paste("day", k.plot, "[ , 2]", sep = "")))
     }
@@ -112,25 +112,25 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
 
 
   ## Create barplot
-  bp2 <- barplot(as.numeric(LOLkat[,2]), plot = FALSE)
+  bp2 <- barplot(as.numeric(LOLkat[, 2]), plot = FALSE)
 
   ## Obtain barplot range
-  bp2_ylim <- range(as.numeric(LOLkat[,2]))
+  bp2_ylim <- range(as.numeric(LOLkat[, 2]))
   roundup_power_10 <- function(x) 10 ^ ceiling(log10(x))
   bp2_ylim_upper <- roundup_power_10(max(bp2_ylim))
 
   ## Plot barplot
-  barplot(as.numeric(LOLkat[,2]), ylim = c(0, bp2_ylim_upper))
+  barplot(as.numeric(LOLkat[, 2]), ylim = c(0, bp2_ylim_upper))
 
 
   ## Create labels
-  x_labels2 <- substr(LOLkat[ ,1], 1, 10)
-  l.plot_n <- length(unique(substr(LOLkat[ ,1], 1, 10)[!substr(LOLkat[ ,1], 1, 10) == "0"]))
+  x_labels2 <- substr(LOLkat[, 1], 1, 10)
+  l.plot_n <- length(unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"]))
   x_labels_pos2_start <- matrix(NA, nrow = l.plot_n, ncol = 1)
 
   ## Obtain label positions
-  for(l.plot in 1:l.plot_n){
-    x_labels_pos2_start[l.plot, ] <- which.max(x_labels2 == unique(substr(LOLkat[ ,1], 1, 10)[!substr(LOLkat[ ,1], 1, 10) == "0"])[l.plot])
+  for (l.plot in 1:l.plot_n) {
+    x_labels_pos2_start[l.plot, ] <- which.max(x_labels2 == unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"])[l.plot])
   }
 
 
@@ -160,18 +160,22 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   ## Plot results for moving window on existing barplot at designated x-coordinates
   plotme <- "IV"
 
-  if(plotme == "Variance"){
-      if(nrow(rollingwindow.results) != length(plot_points_x)){
+  if (plotme == "Variance") {
+      if (nrow(rollingwindow.results) != length(plot_points_x)) {
           points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme] / 50),
                  type = "l", col = "red")
-      } else{points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] / 50),
-                     type = "l", col = "red")}
-  }else{
-    if(nrow(rollingwindow.results) != length(plot_points_x)){
+      } else{
+        points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] / 50),
+                     type = "l", col = "red")
+      }
+  } else {
+    if (nrow(rollingwindow.results) != length(plot_points_x)) {
       points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme] * 5000),
              type = "l", col = "red")
-    } else{points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * 5000),
-                  type = "l", col = "red")}
+    } else {
+      points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * 5000),
+                  type = "l", col = "red")
+    }
   }
 
   ## Create right axis for moving window results

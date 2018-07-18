@@ -1,9 +1,12 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 .git
-.gitignore
+^.gitignore$
 ^circle.yml$
 ^Dockerfile$
 ^scripts$
 ^test.Dockerfile$
 ^todo.md$
+.circleci
+docker_configs
+^Dockerfile$
