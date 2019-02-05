@@ -310,7 +310,7 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
       fix(sleeplog)
     }
     if (missings_prompt_answer == "q") {
-      break()
+      stop("User hit q to stop program.")
     }
 
     ## Check if sleeplog times end in ":00" insted of ":30" (otherwise "rownr.Gotup is NA!" Error)
