@@ -52,14 +52,14 @@
 #' @importFrom utils write.table
 #'
 #' @export
-ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata2",
+ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata",
                    sleepdatadir = paste("C:/Bibliotheek/Studie/PhD/Publishing/",
                                         "ACTman/R-part/Actogram & Sleep analysis", sep = ""),
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
                    selectperiod = FALSE, startperiod = NULL, daysperiod = FALSE, endperiod = NULL,
                    movingwindow = FALSE, movingwindow.size = 14, movingwindow.jump = 1,
                    circadian_analysis = TRUE, nparACT_compare = FALSE, na_omit = FALSE, na_impute = FALSE,
-                   missings_report = TRUE, lengthcheck = TRUE) {
+                   missings_report = TRUE, lengthcheck = TRUE, i_want_EWS = FALSE) {
 
   ## Step 1: Basic Operations-----------------------------------------------------------------
 
@@ -71,6 +71,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   ACTdata.files <- sort(list.files(getwd(), pattern = pattern_file))
   if (any((grep(pattern = "sleeplog", x = ACTdata.files)))) {
     ACTdata.files <- ACTdata.files[-(grep(pattern = "sleeplog", x = ACTdata.files))] # Remove any sleeplogs from data listing
+  }
+  if (any((grep(pattern = "markers", x = ACTdata.files)))) {
+    ACTdata.files <- ACTdata.files[-(grep(pattern = "markers", x = ACTdata.files))] # Remove any markers files from data listing
   }
 
   ## Initialise overview:
@@ -94,6 +97,13 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     stop(paste("The number of start periods does not match the number of data files found:", startperiod, length(ACTdata.files)))
   }
 
+  if(".mtn" %in% substr(list.files(getwd()), nchar(list.files(getwd()))-4+1, nchar(list.files(getwd())))){
+    message(paste("There is at least 1 unsupported Actigraphy file format present in the working directory!
+                  Please convert, stash, or remove these unsupported files before rerunning:"))
+    print(list.files(getwd())[grep(".mtn", list.files(getwd()))])
+    stop()
+  }
+
 
   ## Step 2: Main ACTman Loop------------------------------------------------------------------------
   ## Description: ...
@@ -101,8 +111,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   for (i in 1:length(ACTdata.files)) {
 
     ## Test for user-defined arguments:
-    if (myACTdevice != "MW8" && myACTdevice != "Actiwatch2" ) {
-      stop(paste("Unknown value for myACTdevice (should be Actiwatch2 or MW8):", myACTdevice))
+    if (myACTdevice != "MW8" && myACTdevice != "Actiwatch2") {
+      stop(paste("Unknown value for myACTdevice (should be MW8, Actiwatch2):", myACTdevice))
     }
 
     print(paste("*** Start of Dataset", i, "***"))
@@ -125,6 +135,15 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     } else if (myACTdevice == "MW8") {
 
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
+
+      if(all(is.na(ACTdata.1$B)) && all(is.na(ACTdata.1$C))){ ## Note! If TRUE ACTdata.1 is (suddenly) tab-seperated!
+
+        ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"), sep = "\t")
+
+      }
+
+
+
 
       if (any(ACTdata.1[, 1] == "Raw data:")) {
         ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
@@ -168,11 +187,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         rm(halfminute_data)
 
       } else {
-          ## Make no changes if 60 sec. bins
-          print("Detecting Epoch Length.......")
-          print("Normal 60 sec. Epochs detected")
-          print("No changes made")
-          print("")
+        ## Make no changes if 60 sec. bins
+        print("Detecting Epoch Length.......")
+        print("Normal 60 sec. Epochs detected")
+        print("No changes made")
+        print("")
       }
     }
 
@@ -279,7 +298,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## If user-defined argument "na_omit" is TRUE, then use na.omit{stats} to row-wise delete NA's:
     if (na_omit) {
       print("Row-wise removal of NA's as user defined na.omit = TRUE")
-      ACTdata.1.sub <- na.omit(ACTdata.1.sub)
+      ACTdata.1.sub <- na.omit(ACTdata.1.sub) #! Creates error because many NA's!!!!
       print("All NA's removed!")
     }
     ## If user-defined argument "na_impute" is TRUE, then use mice{mice} to impute missings through
@@ -318,9 +337,9 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print("Continue analysis with > 0.01% missings")
           print("")
         } else {
-            message("Unknown input!")
-            ({break()})
-          }
+          message("Unknown input!")
+          ({break()})
+        }
       }
     }
 
@@ -396,7 +415,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ## Initialise parameters:
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 10))
+        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 21))
         ## Set number of iterations at number of rows of (data - windowsize) / (minutes per day (1440) * jump)
         for (i in 1:((floor(((n - window) / jump))) + 1)) {
           ## Take data as 1 till windowsize for first iteration, for further iterations take
@@ -427,8 +446,23 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           rollingwindow.results[i, 7] <- r2$L5_starttime
           rollingwindow.results[i, 8] <- round(r2$M10, 2)
           rollingwindow.results[i, 9] <- r2$M10_starttime
-          rollingwindow.results[i, 10] <- r2$Variance
-          colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime", "M10", "M10_starttime", "Variance")
+          rollingwindow.results[i, 10] <- r2$Mean
+          rollingwindow.results[i, 11] <- r2$Variance
+          rollingwindow.results[i, 12] <- r2$SD
+          rollingwindow.results[i, 13] <- r2$CoV
+          rollingwindow.results[i, 14] <- r2$Skewness
+          rollingwindow.results[i, 15] <- r2$Kurtosis
+          rollingwindow.results[i, 16] <- r2$Autocorr
+          rollingwindow.results[i, 17] <- r2$Autocorr_lag2
+          rollingwindow.results[i, 18] <- r2$Autocorr_lag3
+          rollingwindow.results[i, 19] <- r2$Autocorr_lag60
+          rollingwindow.results[i, 20] <- r2$Autocorr_lag120
+          rollingwindow.results[i, 21] <- r2$Time_to_Recovery
+          colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime",
+                                               "M10", "M10_starttime", "Mean", "Variance", "SD",
+                                               "Coeff_of_Var", "Skewness", "Kurtosis", "Autocorr_lag1",
+                                               "Autocorr_lag2", "Autocorr_lag3", "Autocorr_lag60",
+                                               "Autocorr_lag120", "Time_to_Recovery")
 
           ## Report the calculated circadian results in console:
           print("---------------------------------------------------------------------------------")
@@ -437,6 +471,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print(paste("End time:", CRV.data[nrow(CRV.data), "Date"]))
           print(paste("nOBS:", nrow(CRV.data)))
           print("")
+          print("Circadian Rhythm Variables")
           print(paste("IS: ", r2$IS))
           print(paste("IV: ", r2$IV))
           print(paste("RA: ", round(r2$RA, 2)))
@@ -444,7 +479,20 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print(paste("L5_starttime: ", r2$L5_starttime))
           print(paste("M10: ", round(r2$M10, 2)))
           print(paste("M10_starttime: ", r2$M10_starttime))
+          print("")
+          print("Early-Warning Signals")
+          print(paste("Mean: ", r2$Mean))
           print(paste("Variance: ", r2$Variance))
+          print(paste("SD: ", r2$SD))
+          print(paste("Coefficient of Variation: ", r2$CoV))
+          print(paste("Skewness: ", r2$Skewness))
+          print(paste("Kurtosis: ", r2$Kurtosis))
+          print(paste("Autocorr at-lag-1: ", r2$Autocorr))
+          print(paste("Autocorr at-lag-2: ", r2$Autocorr_lag2))
+          print(paste("Autocorr at-lag-3: ", r2$Autocorr_lag3))
+          print(paste("Autocorr at-lag-60: ", r2$Autocorr_lag60))
+          print(paste("Autocorr at-lag-120: ", r2$Autocorr_lag120))
+          print(paste("Time_to_Recovery: ", r2$Time_to_Recovery))
           print("---------------------------------------------------------------------------------")
 
         }
@@ -499,9 +547,22 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     setwd(file.path(workdir_temp, "Results"))
 
     ## Write rollingwindow.results to .CSV
+    # if (movingwindow) {
+    #   write.table(rollingwindow.results,
+    #               file = paste("rollingwindow-results", i, ".csv", sep = ""),
+    #               row.names = F, sep = ",")
+    # }
+
     if (movingwindow) {
-      write.table(rollingwindow.results, file = paste("rollingwindow-results", i, ".csv", sep = ""), row.names = F, sep = ",")
+      write.table(rollingwindow.results,
+                  file = paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 4)),
+                               "-rollingwindow-results.csv", sep = ""),
+                  row.names = F, sep = ",")
     }
+
+
+    paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 4)),
+          "-sleepresults.csv", sep = "")
 
     ## Set working directory back to main working directory:
     setwd(workdir_temp)
@@ -512,13 +573,15 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Use the sleepdata_overview{ACTman} function to calculate sleep variables over
     ## the whole period.
     if (iwantsleepanalysis) {
-      sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub, i = i, lengthcheck = lengthcheck)
+      # sleepdata.overview <- sleepdata_overview(workdir = sleepdatadir, actdata = ACTdata.1.sub, i = i, lengthcheck = lengthcheck)
+      sleepdata.overview <- sleepdata_overview(workdir = workdir, actdata = ACTdata.1.sub, i = i, lengthcheck = lengthcheck, ACTdata.files = ACTdata.files)
     }
 
     ## Actogram:
     ## Use the plot_actogram{ACTman} function to plot an Actogram of the whole period.
     if (plotactogram != FALSE) {
-      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram, rollingwindow.results = rollingwindow.results)
+      plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram,
+                    rollingwindow.results = rollingwindow.results, i_want_EWS = i_want_EWS)
     }
 
 
@@ -561,7 +624,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   ## Write results of circadian analysis to .CSV
   if (circadian_analysis) {
-      write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",", row.names = F)
+    write.table(ACTdata.1.sub.expvars, file = "ACTdata_circadian_res.csv", sep = ",", row.names = F)
   }
 
   ## Write ACTdata.overview to .CSV

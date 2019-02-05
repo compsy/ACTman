@@ -6,13 +6,14 @@
 #' @param actdata The activity data.
 #' @param i The index of the current file in ACTdata.files
 #' @param lengthcheck Boolean value. If TRUE, the dataset is shortened to the start date plus 14 days, and observations more than 14 days after the start date are removed.
+#' @param ACTdata.files The current file in ACTdata.files
 #'
 #' @return Returns a sleepdata overview.
 #'
 #' @importFrom stats na.omit
 #' @importFrom utils read.csv
 #' @importFrom utils write.csv
-sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
+sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) {
   # Voeg fragmentation index toe!
 
   ## Step 1: Basic Operations.----------------------------------------------------------------------------
@@ -29,8 +30,101 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
   ## Read sleeplog
-  data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
-  data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
+  if(length(list.files(pattern = "sleeplog.csv")) == 0 &
+     length(list.files(pattern = "markers.csv")) == 0 ){ # Sanity Check
+    message("No sleeplog or Event marker file found in working directory!")
+    message("Please provide sleeplog or Event marker file!")
+    message("Also please make sure that the name of the sleeplog file ends in 'sleeplog.csv'!")
+    message("")
+    message("Stopping sleep-analyses...")
+    stop()
+  }
+
+
+  if(length(list.files(pattern = "sleeplog.csv")) == 0 &
+     length(list.files(pattern = "markers.csv")) == 1 ){ # Check for Marker file
+    message("Only Event marker file found in working directory!")
+    message("Generating sleeplog from marker file!")
+
+
+    # # Run sleeplog_from_markers.R
+    # workdir <- getwd()
+    # # debug(sleeplog_from_markers)
+    # sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+  }
+
+
+  if(length(list.files(pattern = "sleeplog.csv")) == 0 &
+     length(list.files(pattern = "markers.csv")) > 1 ){ # Check for Marker file
+    message("Multiple marker files found in working directory!")
+    # message("Searching for person-specific marker file!")
+    #
+    # which_ppns_log <- pmatch((paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 8)))),
+    #                          list.files(pattern = "markers.csv"))
+    #
+    # message("Person-specific marker file found!")
+    message("Generating sleeplog from marker file!")
+
+
+    # # Run sleeplog_from_markers.R
+    # workdir <- getwd()
+    # # debug(sleeplog_from_markers)
+    # sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+
+
+    # workdir <- getwd()
+    # sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+    # workdir <- sleepdatadir
+  }
+
+
+
+  if(length(list.files(pattern = "sleeplog.csv")) != 0 &
+     length(list.files(pattern = "markers.csv")) != 0 ){ # Check for Marker file
+    message("Both marker file AND Sleeplog found in working directory!")
+
+    message("Checking for person-specific markers and/or sleeplog!")
+
+    which_ppns_markers <- pmatch((paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 8)))),
+                                                      list.files(pattern = "markers.csv")) # markers of this ppn
+
+    which_ppns_sleeplog <- pmatch((paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 8)))),
+                                 list.files(pattern = "sleeplog.csv")) #sleeplog of this ppn
+
+
+    #
+    # if(is.na(which_ppns_markers) && !is.na(which_ppns_sleeplog))
+
+    ## If there is a sleeplog AND this sleeplog belongs to this ppn
+    if(length(list.files(pattern = "sleeplog.csv")) != 0 && !is.na(which_ppns_sleeplog)){
+
+      data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
+
+    }else{sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+
+      which_ppns_sleeplog <- pmatch((paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 8)))),
+                                    list.files(pattern = "sleeplog.csv")) #sleeplog of this ppn
+
+          data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
+         }
+
+
+    message("Selecting sleeplog only!")
+
+  }
+
+      # Run sleeplog_from_markers.R
+      workdir <- getwd()
+      # debug(sleeplog_from_markers)
+      sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+
+      data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
+
+
+      data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
+
+
+
 
   # Recreate data$Time var for this module
   data$Time <- strftime(data$Date, format = "%H:%M:%S")
@@ -58,14 +152,18 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     loop_steps <- nrow(data.sleeplog)
   }
 
-  ## LOOP for Calculatins Sleep Variables
+  ## LOOP for Calculating Sleep Variables
+  #! Extended aa by 1440 min for sameday Bedtime Gotup (sometimes Bedtime is more in the future than
+  #! old version supported - i.e. Bedtime falling outside aaa)
   for (a in 1:loop_steps) {
 
     if (a == 1) {
       # aaa <- data[1:(end.night.1 + 1440), ] #! 17-4-18: was "aaa <- data[1:(end.night.1), ]" (!!)
       aaa <- data[1:(end.night.1), ]
     } else {
-      aaa <- data[(end.night.1 + (1 + (1440 * (a - 2)))):(end.night.1 + (1440 * (a - 1))), ]
+      # aaa <- data[(end.night.1 + (1 + (1440 * (a - 2)))):(end.night.1 + (1440 * (a - 1))), ]
+
+      aaa <- data[(end.night.1 + (1 + (1440 * (a - 2)))):((end.night.1 + (1440 * (a - 1))) + 1440), ] #extended aaa
     }
 
     aaa$Date <- as.POSIXct(aaa$Date)
@@ -84,25 +182,61 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     aaa$MobileImmobile <- ifelse(aaa$Activity..MW.counts. > 3, 1, 0) # 1 is mobile, 0 is immobile
 
     ## Now calculate sleep start from a certain point in the data (based on sleep log)
-    bedtime <- paste((as.character(data.sleeplog.sub$BedTime[a])), ":00", sep = "")
+    Bedtime <- paste((as.character(data.sleeplog.sub$Bedtime[a])), ":00", sep = "")
 
-    if (nchar(bedtime) > 8) {
-      bedtime <- substr(bedtime, 1, nchar(bedtime) - 3)
+    if (nchar(Bedtime) > 8) {
+      Bedtime <- substr(Bedtime, 1, nchar(Bedtime) - 3)
     }
 
-    #debug
-    print(paste("rownr.bedtime is:", which(aaa$Time == bedtime)[1]))
 
-    rownr.bedtime <- which(aaa$Time == bedtime)[1]
+    # #debug
+    # print(paste("rownr.Bedtime is:", which(aaa$Time == Bedtime)[1]))
 
+    rownr.Bedtime <- which(aaa$Time == Bedtime)[1]
 
-    gotup <- paste((as.character(data.sleeplog.sub$GotUp[a])), ":00", sep = "")
+    Gotup <- paste((as.character(data.sleeplog.sub$Gotup[a])), ":00", sep = "")
 
-    if (nchar(gotup) > 8) {
-      gotup <- substr(gotup, 1, nchar(gotup) - 3)
+    if (nchar(Gotup) > 8) {
+      Gotup <- substr(Gotup, 1, nchar(Gotup) - 3)
     }
 
-    rownr.gotup <- which(aaa$Time == gotup)[1]
+    rownr.Gotup <- which(aaa$Time == Gotup)[1] #! this might cause errors when [1]'st Gotup is before Bedtime
+
+
+
+    if(is.na(substr(aaa[rownr.Gotup, "Date"], 1, 10)) || is.na(substr(aaa[rownr.Bedtime, "Date"], 1, 10))){
+
+      message("NA in rownr. of Bedtime or Gotup!")
+      message("Skip current day!")
+      next()
+
+    }
+
+    sameday_loc <- 0
+    #! sameday bedtime and gotup!
+    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)){
+
+      # message("Selected Bedtime not on the day before Gotup!")
+
+      sameday_loc <- which(data.sleeplog[, "Date"] == substr(aaa[rownr.Bedtime, "Date"], 1, 10))
+
+      if(sameday_loc > 1 && length(sameday_loc) >= 1){
+
+        rownr.Gotup <- which(aaa$Time == Gotup)[2]
+
+        # rownr.Bedtime <- which(aaa$Time == Bedtime)[2]
+
+        # sameday_loc2 <- which(data.sleeplog[, "Date"] == substr(aaa[rownr.Bedtime, "Date"], 1, 10))
+        #
+        # data.sleeplog[(sameday_loc2 - 1), "Date"]
+
+      }
+
+    }
+
+
+    # rownr.Bedtime <- which(aaa$Time == Bedtime)[1]
+
 
     ## Calculation should indicate the moment of sleep start and 10 consecutive non-active epochs. 1 epoch can have activity.
 
@@ -126,39 +260,48 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     ##debug
     # print("##--------------------------------------------------")
     # print(paste("Iteration No.:", a))
-    # print(paste("rownr.gotup:", rownr.gotup))
-    # print(paste("rownr.bedtime:", rownr.bedtime))
+    # print(paste("rownr.Gotup:", rownr.Gotup))
+    # print(paste("rownr.Bedtime:", rownr.Bedtime))
 
-    ## Exception for when rownr.gotup is NA
-    if (is.na(rownr.gotup)) {
+    ## Exception for when rownr.Gotup is NA
+    if (is.na(rownr.Gotup)) {
 
-      message("rownr.gotup is NA!")
+      message("rownr.Gotup is NA!")
       message("Skipping current day!")
       next()
 
     }
 
-    # rownr.bedtime <- which(aaa$Time == bedtime)[1]
-    # print(rownr.bedtime)
+    # rownr.Bedtime <- which(aaa$Time == Bedtime)[1]
+    # print(rownr.Bedtime)
 
-    ## Exception for when rownr.bedtime is NA
-    if (is.na(rownr.bedtime)) {
+    ## Exception for when rownr.Bedtime is NA
+    if (is.na(rownr.Bedtime)) {
 
-      message("rownr.bedtime is NA!")
+      message("rownr.Bedtime is NA!")
       message("Skipping current day!")
       next()
 
     }
 
 
-    #! rownr.sleep.start is NA when obs with sleep.chance < 2 is NOT in aaa.bedtime (!!)
-    aaa.bedtime <- aaa[rownr.bedtime:rownr.gotup, ] # This includes only the time in which the subject is in bed handpicked in this sample based on lights out (00:17) / got up (7:59) data
+    #! rownr.sleep.start is NA when obs with sleep.chance < 2 is NOT in aaa.Bedtime (!!)
+    aaa.Bedtime <- aaa[rownr.Bedtime:rownr.Gotup, ] # This includes only the time in which the subject is in bed handpicked in this sample based on lights out (00:17) / got up (7:59) data
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
-    sleep.start. <- aaa.bedtime[which(aaa.bedtime$sleep.chance < 2), ]
+    sleep.start. <- aaa.Bedtime[which(aaa.Bedtime$sleep.chance < 2), ]
     ## First row now contains the start of sleep.
     sleep.start <- as.character(sleep.start.$Time[1])
-    rownr.sleep.start <- which(aaa$Time == sleep.start)[1]
+    # rownr.sleep.start <- which(aaa$Time == sleep.start)[1] #! [1] causes error when sameday(?)
+
+    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)){
+
+      rownr.sleep.start <- which(aaa$Time == sleep.start)[2] #! [1] causes error when sameday(?)
+
+    }else{rownr.sleep.start <- which(aaa$Time == sleep.start)[1]}
+
+
+
 
     ## Calculate wake up time
     aaa$wakeup.chance <- (dplyr::lag(aaa$epoch.sleep.chance, n = 1L) +
@@ -169,35 +312,51 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     )
 
 
-    ##--------------------------------------------------
-    #! debug
-    print(paste("rownr.sleep.start:", rownr.sleep.start))
+    # ##--------------------------------------------------
+    # #! debug
+    # print(paste("rownr.sleep.start:", rownr.sleep.start))
+    # print("")
+    # print(paste("Gotup:", aaa[rownr.Gotup, "Date"]))
+    # print(paste("Bedtime: ", aaa[rownr.Bedtime, "Date"]))
 
     ## Exception for when rownr.sleep.start is NA
     if (is.na(rownr.sleep.start)) {
 
       message("Warning: rownr.sleep.start is NA!")
-      message("Cause: obs with sleep.chance < 2 is NOT in aaa.bedtime")
-      message("Action: Take bedtime from sleeplog instead")
+      message("Cause: obs with sleep.chance < 2 is NOT in aaa.Bedtime")
+      message("Action: Take Bedtime from sleeplog instead")
       # message("Skipping current day!")
       # next()
       # stop()
 
-      #! rownr.sleep.start is NA when obs with sleep.chance < 2 is NOT in aaa.bedtime (!!)
-      #! Take bedtime from sleeplog instead (!!)
-      rownr.sleep.start <- rownr.bedtime
+      #! rownr.sleep.start is NA when obs with sleep.chance < 2 is NOT in aaa.Bedtime (!!)
+      #! Take Bedtime from sleeplog instead (!!)
+      rownr.sleep.start <- rownr.Bedtime
 
     }
 
+
+
+
+
+    #! caused error skipping lots of days with "5016 ALL.csv" file!
+    #! in this file from 2017-08-19 onwards negative sleep & sleep efficiency
     # Sanity check to make sure that we wake up after going to bed
-    if (rownr.bedtime >= rownr.gotup || rownr.sleep.start >= rownr.gotup || rownr.bedtime > rownr.gotup) {
-      message("Warning: sanity checks for bedtime, gotup, and/or sleep start failed")
+    if (rownr.Bedtime >= rownr.Gotup || rownr.sleep.start >= rownr.Gotup || rownr.Bedtime > rownr.Gotup) {
+      message("Warning: sanity checks for Bedtime, Gotup, and/or sleep start failed")
+
+      print(paste("Gotup:", aaa[rownr.Gotup, "Date"]))
+      print(paste("Bedtime: ", aaa[rownr.Bedtime, "Date"]))
+
+      print(paste("Bedtime later than Gotup:", aaa[rownr.Bedtime, "Date"] >= aaa[rownr.Gotup, "Date"]))
+      print(paste("Bedtime earlier than Gotup:", aaa[rownr.Bedtime, "Date"] <= aaa[rownr.Gotup, "Date"]))
+
       message("Skipping current day!")
       next()
     }
 
     ## Get sleeptime
-    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.gotup + (4 * 60)), ] # A (4 * 60) minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the GotUp time the sleep end is somewhere near the gotup, instead of in the middle of the night.
+    aaa.sleeptime <- aaa[rownr.sleep.start:(rownr.Gotup + (4 * 60)), ] # A (4 * 60) minute extra window is included, for when a subject filled the diary incorrectly (with a too early time). This makes sure that if sleep actually ended after the Gotup time the sleep end is somewhere near the Gotup, instead of in the middle of the night.
 
 
     ## Now create a function which returns first $Time after certain time (lights out in sleep log)
@@ -219,14 +378,14 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     }
 
     sleep.end.row <- as.numeric(rownames(sleep.end.new[nrow(sleep.end.new), ]))
-    sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)])
-    rownr.sleep.end <- ifelse(sleep.end.row > rownr.gotup, rownr.gotup, sleep.end.row)
+    sleep.end <- as.character(aaa$Time[ifelse(sleep.end.row > rownr.Gotup, rownr.Gotup, sleep.end.row)])
+    rownr.sleep.end <- ifelse(sleep.end.row > rownr.Gotup, rownr.Gotup, sleep.end.row)
 
     # Calculate sleep end:
     tempp <- aaa.sleeptime[which(head(aaa.sleeptime, n = (-4 * 60))$wakeup.chance <= 2), ]
     sleepend <- tail(tempp, n = 1) # sleepend = last element of temp
     if (is.null(sleepend)) { # if we don't find anytyhing, use sleeplog got up time
-      sleepend <- aaa.sleeptime[rownr.gotup, ]
+      sleepend <- aaa.sleeptime[rownr.Gotup, ]
     }
     sleep.end.ando <- sleepend$Time
     rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
@@ -237,14 +396,14 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     # print(paste("rownr.sleep.end:", rownr.sleep.end))
 
     ## Exception for when rownr.sleep.end is NA
-    if (is.na(rownr.sleep.end)) {
+    if (is.na(rownr.sleep.end) || (length(rownr.sleep.end)==0)) {
 
       message("rownr.sleep.end is NA!")
       message("Skipping current day!")
       next()
 
       #! Take sleep.end from sleeplog instead (!!)
-      # rownr.sleep.end <- rownr.gotup
+      rownr.sleep.end <- rownr.Gotup
 
     }
 
@@ -252,9 +411,41 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     ## END OF Step 2: Calculate sleep for night1.------------------------------------------------------------------------
 
     ## Step 3: Calculate sleep analysis data.----------------------------------------------------------------------------
-    aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ] # Subframe the assumed sleep time, -1 is done otherwise it includes the first wake bout.
-    TimeInBed <- (rownr.gotup - rownr.bedtime) / 60 # The total elapsed time between the "Lights Out" and "Got Up" times
-    AssumedSleep <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
+
+    test <- 1
+
+    aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ]
+
+    # if(nrow(aaa[rownr.sleep.start:(rownr.sleep.end - 1), ]) > 1440){
+    if(nrow(aaa.assumedsleeptime) > 1440){
+
+      message("nrow assumedsleeptime > 1440!!!!!!!!")
+
+      aaa.assumedsleeptime <- aaa[(which(aaa$Time == Bedtime)[1]:which(aaa$Time == sleepend$Time)[1]), ]
+
+    }#else{aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ]}
+
+
+
+    # sleepend$Time
+    # which(aaa$Time == Bedtime)[1]
+    # which(aaa$Time == sleepend$Time)[1]
+
+    # aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ] # Subframe the assumed sleep time, -1 is done otherwise it includes the first wake bout.
+
+    # aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ] # Subframe the assumed sleep time, -1 is done otherwise it includes the first wake bout.
+
+
+    TimeInBed <- (nrow(aaa.assumedsleeptime) / 60) # The total elapsed time between the "Lights Out" and "Got Up" times
+    TimeInBed_false <- (rownr.Gotup - rownr.Bedtime) / 60 # The total elapsed time between the "Lights Out" and "Got Up" times
+
+
+    AssumedSleep_false <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
+    # AssumedSleep <- (rownr.sleep.end - rownr.sleep.start) / 60 # The total elapsed time between the "Fell Asleep" and "Woke Up" times.
+
+    AssumedSleep <- (TimeInBed - (TimeInBed_false - AssumedSleep_false))
+
+
     WakeEpochs <- sum(aaa.assumedsleeptime$WakeSleep == 1) # Number of epochs scored as "awake"
     # The same, but with more rounding errors:
     #ActualSleep <- ((AssumedSleep * 60) - WakeEpochs) / 60 # The total time spent in sleep according to the epoch-by-epoch wake/sleep scores.
@@ -265,7 +456,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
     ActualWakeTime <- WakeEpochs / 60 # Total time spent in wake according to the epoch-by-epoch wake/sleep scores.
     ActualWakePerc <- 100 - ActualSleepPerc # Actual sleep time expressed as a percentage of the assumed sleep time.
     SleepEfficiency <- (ActualSleep/TimeInBed) * 100 # Actual sleep time expressed as a percentage of time in bed.
-    SleepLatency <- (rownr.sleep.start - rownr.bedtime) / 60 # The time between "Lights Out" and "Fell Asleep"
+    SleepLatency <- (rownr.sleep.start - rownr.Bedtime) / 60 # The time between "Lights Out" and "Fell Asleep"
 
 
     # To add:
@@ -294,8 +485,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
 
     # Attach Sleep Analysis output to overview
     sleepdata.overview[a, "date"] <- as.character(data.sleeplog[a, "Date"])
-    sleepdata.overview[a, "bedtime_sleeplog"] <- bedtime
-    sleepdata.overview[a, "gotup_sleeplog"] <- gotup
+    sleepdata.overview[a, "Bedtime_sleeplog"] <- Bedtime
+    sleepdata.overview[a, "Gotup_sleeplog"] <- Gotup
     sleepdata.overview[a, "sleep.start"] <- sleep.start
     sleepdata.overview[a, "sleep.end"] <- sleep.end
     sleepdata.overview[a, "timeinbed"] <- round(TimeInBed, 2)
@@ -317,7 +508,11 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck) {
   setwd(file.path(workdir_temp, "Results"))
 
   ## Write sleepdata output as .CSV into "Results" directory:
-  write.csv(sleepdata.overview, file = paste("sleepdata", i, ".csv", sep = ""))
+  # write.csv(sleepdata.overview, file = paste("sleepdata", i, ".csv", sep = ""))
+
+  write.csv(sleepdata.overview, file = paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 4)),
+                                             "-sleep-results.csv", sep = ""))
+
 
   ## Set working directory back to main working directory:
   setwd(workdir_temp)

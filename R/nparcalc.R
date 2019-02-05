@@ -20,6 +20,8 @@
 #' @importFrom stats na.pass
 #' @importFrom utils tail
 #' @importFrom stats aggregate
+#' @importFrom moments skewness
+#' @importFrom moments kurtosis
 nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = NULL) {
 
   ## Step 1: Basic Operations-------------------------------------------------------------------
@@ -32,7 +34,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   if (ncol(CRV.data) > 2) {
     CRV.data$Date <- paste(CRV.data$Date, " ", CRV.data$Time)
     CRV.data <- CRV.data[, -2]
-  ## Else, just assign correct column names.
+    ## Else, just assign correct column names.
   } else {
     colnames(CRV.data) <- c("Date", "Activity")
   }
@@ -140,7 +142,9 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   selection_mat <- matrix(FALSE, 1440)
 
+
   for (aa in 1:1440) {
+
     selection_mat[aa, ] <- TRUE
     mean(CRV.data[selection_mat, "Activity"])
     averageday[aa, 2] <- mean(CRV.data[selection_mat, "Activity"], na.rm = TRUE) # added "na.rm = TRUE" for moving window
@@ -204,9 +208,50 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   ##---------------------------------------------------------------------------------------------------------
 
+  ## EWS Part
+
+  ## Mean
+  Mean <- round(mean(CRV.data[, "Activity"], na.rm = TRUE), 2)
+  result$Mean <- Mean
+
   ## Variance
   Variance <- round(var(CRV.data[, "Activity"], na.rm = TRUE), 2)
   result$Variance <- Variance
+
+  ## Standard Deviation
+  SD <- round(sd(CRV.data[, "Activity"], na.rm = TRUE), 2)
+  result$SD <- SD
+
+  ## Coefficient of Variation
+  CoV <- round(((sd(CRV.data[, "Activity"], na.rm = TRUE) / mean(CRV.data[, "Activity"], na.rm = TRUE)) * 100), 2)
+  result$CoV <- CoV
+
+  ## Skewness
+  Skewness <- moments::skewness(CRV.data[, "Activity"], na.rm = TRUE)
+  result$Skewness <- round(Skewness, 2)
+
+  ## Kurtosis
+  Kurtosis <- moments::kurtosis(CRV.data[, "Activity"], na.rm = TRUE)
+  result$Kurtosis <- round(Kurtosis, 2)
+
+  ## Autocorrelation at lag-1, lag-2, lag-3, etc.
+  Autocorr <- acf(x = CRV.data[, "Activity"], lag.max = 120, na.action = na.pass, plot = FALSE)
+  result$Autocorr <- round(Autocorr$acf[2], 2)
+  result$Autocorr_lag2 <- round(Autocorr$acf[3], 2)
+  result$Autocorr_lag3 <- round(Autocorr$acf[4], 2)
+  result$Autocorr_lag60 <- round(Autocorr$acf[61], 2)
+  result$Autocorr_lag120 <- round(Autocorr$acf[121], 2)
+
+  ## Time to recovery (if not recovered within timeframe assign max_lag))
+  if(length(which(Autocorr$acf < 0.2)) != 0){
+
+      result$Time_to_Recovery <- which(Autocorr$acf < 0.2)[1]
+
+  } else {
+
+      result$Time_to_Recovery <- 120
+
+  }
 
   ## Assign data to results
   result$CRV_data <- CRV.data
@@ -214,4 +259,3 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   ## Return the list with all result values.
   result
 }
-
