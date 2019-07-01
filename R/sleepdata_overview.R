@@ -22,9 +22,12 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
   # oldworkdir <- getwd()
   # setwd(workdir)
 
+  # print(ACTdata.files)
+
   # Load data
   data <- actdata
   # TEMPdat <<- data
+  data.sleeplog <- NA
 
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
@@ -39,6 +42,20 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     message("Stopping sleep-analyses...")
     stop()
   }
+
+
+  # When only sleeplog found
+  if(length(list.files(pattern = "sleeplog.csv")) >= 1 &
+     length(list.files(pattern = "markers.csv")) == 0 ){ # Check for Marker file
+    message("Sleeplog file found in working directory!")
+
+
+    data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i], sep = "\t")
+    #
+    # data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
+
+  }
+
 
 
   if(length(list.files(pattern = "sleeplog.csv")) == 0 &
@@ -113,15 +130,19 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
   }
 
-      # Run sleeplog_from_markers.R
-      workdir <- getwd()
-      # debug(sleeplog_from_markers)
-      sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
-
-      data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
 
 
-      data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
+
+
+  # # Run sleeplog_from_markers.R
+      # workdir <- getwd()
+      # # debug(sleeplog_from_markers)
+      # sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+      #
+      # data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
+      #
+      #
+      # data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
 
 
 
@@ -182,7 +203,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     aaa$MobileImmobile <- ifelse(aaa$Activity..MW.counts. > 3, 1, 0) # 1 is mobile, 0 is immobile
 
     ## Now calculate sleep start from a certain point in the data (based on sleep log)
-    Bedtime <- paste((as.character(data.sleeplog.sub$Bedtime[a])), ":00", sep = "")
+    Bedtime <- paste((as.character(data.sleeplog$Bedtime[a])), ":00", sep = "")
 
     if (nchar(Bedtime) > 8) {
       Bedtime <- substr(Bedtime, 1, nchar(Bedtime) - 3)
@@ -194,7 +215,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
     rownr.Bedtime <- which(aaa$Time == Bedtime)[1]
 
-    Gotup <- paste((as.character(data.sleeplog.sub$Gotup[a])), ":00", sep = "")
+    Gotup <- paste((as.character(data.sleeplog$Gotup[a])), ":00", sep = "")
 
     if (nchar(Gotup) > 8) {
       Gotup <- substr(Gotup, 1, nchar(Gotup) - 3)
