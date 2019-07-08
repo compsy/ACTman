@@ -20,13 +20,14 @@
 #' @param i The index of the current file in ACTdata.files
 #' @param plotactogram Value indicating if and what kind of actogram has to be plotted. Can be either '48h', '24h', or FALSE
 #'
+#'
 #' @importFrom grDevices dev.off
 #' @importFrom grDevices pdf
 #' @importFrom graphics axis
 #' @importFrom graphics barplot
 #' @importFrom graphics par
 #' @importFrom stats na.omit
-plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow.results) {
+plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow.results, i_want_EWS) {
 
 ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
@@ -69,9 +70,12 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   }
 
   ## Define the range so all plots will be equal height (ylim)
-  ylimit <- range(na.omit(c(day1$Activity, day2$Activity, day3$Activity, day4$Activity, day5$Activity,
-                            day6$Activity, day7$Activity, day8$Activity, day9$Activity, day10$Activity,
-                            day11$Activity, day12$Activity, day13$Activity, day14$Activity)))
+  ylimit_TEMP <- ls()[setdiff(grep("day", ls()), c(grep("rest", ls()), grep("start", ls()), grep("plot", ls())))]
+  ylimit <- range(na.omit(eval(parse(text = ylimit_TEMP))[, "Activity"]))
+
+    # ylimit <- range(na.omit(c(day1$Activity, day2$Activity, day3$Activity, day4$Activity, day5$Activity,
+  #                           day6$Activity, day7$Activity, day8$Activity, day9$Activity, day10$Activity,
+  #                           day11$Activity, day12$Activity, day13$Activity, day14$Activity))) #! Obsolete
 
 
   ### Part 4: Combining Days & 48 hour Doubleplot -----------------------------------------------------------
@@ -92,7 +96,19 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   #                myACTdevice = "MW8", lengthcheck = F, nparACT_compare = F, iwantsleepanalysis = F,
   #                circadian_analysis = T, plotactogram = "24h", movingwindow = TRUE, movingwindow.size = 7)
 
-  ## Initialise empty matrix for timestamps and activity counts
+
+if(i_want_EWS == TRUE && is.na(rollingwindow.results)){
+
+  message("Cannot create EWS plot without rolling window results")
+  message("Please make sure that both 'i_want-EWS' AND 'movingwindow' arguments are TRUE")
+  message("Quitting...")
+  stop()
+
+}
+
+
+if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activity counts
+
   LOLkat <- matrix(NA, nrow = (1440 * ndays.plot), ncol = 2)
 
   ## Assign timestamps and activity counts to matrix
@@ -109,13 +125,21 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   }
 
 
+  # plotme <- "Time_to_Recovery"
+  plotme <- colnames(rollingwindow.results)[10:21]
 
+  for(EWS_count in 1:length(plotme)){
+
+
+  ## Initialise .PDF plot in A4 size (11.7 x 8.3 inches)
+  png(paste("Actigraphy EWS Plot - ", plotme[EWS_count], ".png"), width = 842, height = 595, units = "px")
 
   ## Create barplot
   bp2 <- barplot(as.numeric(LOLkat[, 2]), plot = FALSE)
 
   ## Obtain barplot range
-  bp2_ylim <- range(as.numeric(LOLkat[, 2]))
+  # bp2_ylim <- range(as.numeric(LOLkat[, 2]))
+  bp2_ylim <- range(na.omit(as.numeric(LOLkat[, 2])))
   roundup_power_10 <- function(x) 10 ^ ceiling(log10(x))
   bp2_ylim_upper <- roundup_power_10(max(bp2_ylim))
 
@@ -128,9 +152,18 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   l.plot_n <- length(unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"]))
   x_labels_pos2_start <- matrix(NA, nrow = l.plot_n, ncol = 1)
 
+
+  l.plot <- 0
   ## Obtain label positions
   for (l.plot in 1:l.plot_n) {
+
+    ## Assure l.plot is not NA, otherwise assign last non-NA value
+    if(is.na(unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"])[l.plot])){
+      l.plot <- max(which(is.na(unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"])) == FALSE))
+    }
+
     x_labels_pos2_start[l.plot, ] <- which.max(x_labels2 == unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"])[l.plot])
+
   }
 
 
@@ -157,33 +190,75 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   ## Assign x-coordinates for moving window results
   plot_points_x <- bp2[1 + x_labels_pos2_start][matched_dates]
 
-  ## Plot results for moving window on existing barplot at designated x-coordinates
-  plotme <- "IV"
 
-  if (plotme == "Variance") {
-      if (nrow(rollingwindow.results) != length(plot_points_x)) {
-          points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme] / 50),
-                 type = "l", col = "red")
-      } else{
-        points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] / 50),
-                     type = "l", col = "red")
-      }
-  } else {
-    if (nrow(rollingwindow.results) != length(plot_points_x)) {
-      points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme] * 5000),
-             type = "l", col = "red")
-    } else {
-      points(x = plot_points_x, (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * 5000),
-                  type = "l", col = "red")
-    }
+  # # plotme <- "Time_to_Recovery"
+  # plotme <- colnames(rollingwindow.results)[10:21]
+  #
+  # for(EWS_count in 1:length(plotme)){
+
+  ## Plot results for moving window on existing barplot at designated x-coordinates
+  #! N.b. Scaling should be made dynamic!
+  # plotme <- "Time_to_Recovery"
+  scaling_var <- (bp2_ylim_upper / max(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))
+
+  ## Plotting "plotme" EWS over actogram
+    ## Create right axis for EWS measure
+
+  ## Exception for when length(at) != length(labels)
+  #! Added na.omit() functions for when "to is not finite" error.
+  if(length(seq(0, round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))),
+                by = (round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))) / 2)))
+     == length(c(0, (bp2_ylim_upper / 2), bp2_ylim_upper))){
+
+    axis(side = 4,
+         labels = seq(0, round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))),
+                      by = (round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))) / 2)),
+         at = c(0, (bp2_ylim_upper / 2), bp2_ylim_upper))
+
+  }else{
+
+    axis(side = 4,
+         labels = c(0, (bp2_ylim_upper / 2), bp2_ylim_upper),
+         at = c(0, (bp2_ylim_upper / 2), bp2_ylim_upper))
+
   }
 
-  ## Create right axis for moving window results
-  axis(side = 4, labels = seq(0, 1, 0.1), at = seq(0, bp2_ylim_upper, (bp2_ylim_upper / 10)))
+    ## Plot EWS over actogram (exceptions for when length of x- and y-values differ)
+    if(length(plot_points_x) < length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
+                                       * scaling_var))){
+
+        # print("DEBUG--------------------------------------------------------------------------")
+        # print(length(plot_points_x))
+        # print(length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * scaling_var)))
+
+        points(x = plot_points_x, type = "l", col = "red",
+               y = (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
+                    * scaling_var)[1:length(plot_points_x)])
+
+    } else if(length(plot_points_x) > length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * scaling_var))){
+
+      points(x = plot_points_x[1:length(rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]])],
+             type = "l", col = "red", y = (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
+                                           * scaling_var))
+
+    } else if(length(plot_points_x) == length((rollingwindow.results[(1:(nrow(rollingwindow.results))),
+                                                                     plotme[EWS_count]] * scaling_var))){
+
+      points(x = plot_points_x, type = "l", col = "red",
+             y = (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]] * scaling_var))
+     }
 
   ## Create Title
-  mtext(paste("Total Activity data with", plotme, "moving window"), line = 1, cex = 1.0)
+  mtext(paste("Total Activity data with", plotme[EWS_count], "moving window"), line = 1, cex = 1.0)
   mtext(paste("start date:", LOLkat_startdate, "end date:", LOLkat_enddate), line = 0, cex = 0.8)
+
+  dev.off()
+  }
+
+  # dev.off()
+
+
+}
 
 
   ### /Work in Progress ------------------------------------------------------------------------------
@@ -240,8 +315,12 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
 
       par(mfrow = c(14, 1)) # Set parameters for plots
       par(mar = c(0.5, 4, 0.5, 4)) # Set margins
-      bp <- barplot(day1$Activity, ylim = ylimit, ylab = "Dag 1", plot = F)
-      barplot(day1$Activity, ylim = ylimit, ylab = "Dag 1", plot = T)
+      bp <- barplot(day1$Activity, ylim = ylimit,
+                    ylab = substr(day1$Date[(which(day1$Date == "0")[length(which(day1$Date == "0"))] + 1)], 6, 10),
+                    plot = F)
+      barplot(day1$Activity, ylim = ylimit,
+              ylab = substr(day1$Date[(which(day1$Date == "0")[length(which(day1$Date == "0"))] + 1)], 6, 10),
+              plot = T)
       # abline(v = day2start+75, lty = 2) # Add start line (+75 = marge)
 
       x_labels <- substr(day2$Date, nchar(day2$Date) - 8 + 1, nchar(day2$Date))
@@ -254,7 +333,9 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
       for (k.plot in 2:(ndays.plot - 1)) {
 
         barplot(eval(parse(text = paste("day", k.plot, "$Activity", sep = ""))),
-                ylim = ylimit, ylab = paste("Day", k.plot))
+                ylim = ylimit,
+                ylab = substr((eval(parse(text = paste("day", k.plot, "$Date", sep = ""))))[1], 6, 10)
+                )
 
         # axis(side = 1, at = (x_labels_pos), labels = x_labels)
         axis(side = 1, at = bp[1 + x_labels_pos], labels = x_labels)
