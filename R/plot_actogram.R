@@ -1,15 +1,8 @@
 ##############################################################################
 ### ACTman{plot_actogram}                                                  ###
 ### Script authors: Yoram Kunkels, Stefan Knapen, & Ando Emerencia         ###
-### Most recent Update: 21-12-2017                                         ###
-### Goal: plot activity counts over time, with 24 hour lines (or 48 hours) ###
-###                                                                        ###
-### To add: Grey part before start, Title,                                 ###
-### Export to PDF function, Days more clearly written                      ###
 ###========================================================================###
-### Revision History:                                                      ###
-### 16-04-2018: Added x-axis hours & 24h Plotting                          ###
-###~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@###
+
 
 #' plot_actogram
 #'
@@ -177,12 +170,17 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
 
 
 
-  #! debug
-  rollingwindow.results <<- rollingwindow.results
-  LOLkat <<- LOLkat
+  # #! debug
+  # rollingwindow.results <<- rollingwindow.results
+  # LOLkat <<- LOLkat
+  print(paste("!!!!!!!!!!!!!!!", getwd(), "!!!!!!!!!!!!!!!"))
+  write.csv(LOLkat, file = "spectral_out.csv")
 
   ## Assign moving window results (remove first obs to account for non-24h day)
+  #! Might cause shrinking EWS plots!
+  if(EWS_count == 1){
   rollingwindow.results <- rollingwindow.results[2:nrow(rollingwindow.results), ]
+  }
 
   ## Asssign occurences when days from plotted actigraphy data co-occur with days from the moving window results
   matched_dates <- paste(x_labels2[x_labels_pos2_start], "00:00:00") %in% rollingwindow.results$endtime
