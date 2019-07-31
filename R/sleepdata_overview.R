@@ -33,8 +33,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
   ## Read sleeplog
-  if(length(list.files(pattern = "sleeplog.csv")) == 0 &
-     length(list.files(pattern = "markers.csv")) == 0 ){ # Sanity Check
+  if (length(list.files(pattern = "sleeplog.csv")) == 0 &&
+     length(list.files(pattern = "markers.csv")) == 0) { # Sanity Check
     message("No sleeplog or Event marker file found in working directory!")
     message("Please provide sleeplog or Event marker file!")
     message("Also please make sure that the name of the sleeplog file ends in 'sleeplog.csv'!")
@@ -45,8 +45,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
   # When only sleeplog found
-  if(length(list.files(pattern = "sleeplog.csv")) >= 1 &
-     length(list.files(pattern = "markers.csv")) == 0 ){ # Check for Marker file
+  if (length(list.files(pattern = "sleeplog.csv")) >= 1 &&
+     length(list.files(pattern = "markers.csv")) == 0) { # Check for Marker file
     message("Sleeplog file found in working directory!")
 
 
@@ -58,8 +58,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
 
-  if(length(list.files(pattern = "sleeplog.csv")) == 0 &
-     length(list.files(pattern = "markers.csv")) == 1 ){ # Check for Marker file
+  if (length(list.files(pattern = "sleeplog.csv")) == 0 &&
+     length(list.files(pattern = "markers.csv")) == 1) { # Check for Marker file
     message("Only Event marker file found in working directory!")
     message("Generating sleeplog from marker file!")
 
@@ -71,8 +71,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
   }
 
 
-  if(length(list.files(pattern = "sleeplog.csv")) == 0 &
-     length(list.files(pattern = "markers.csv")) > 1 ){ # Check for Marker file
+  if (length(list.files(pattern = "sleeplog.csv")) == 0 &&
+     length(list.files(pattern = "markers.csv")) > 1) { # Check for Marker file
     message("Multiple marker files found in working directory!")
     # message("Searching for person-specific marker file!")
     #
@@ -96,8 +96,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
 
-  if(length(list.files(pattern = "sleeplog.csv")) != 0 &
-     length(list.files(pattern = "markers.csv")) != 0 ){ # Check for Marker file
+  if (length(list.files(pattern = "sleeplog.csv")) != 0 &&
+     length(list.files(pattern = "markers.csv")) != 0) { # Check for Marker file
     message("Both marker file AND Sleeplog found in working directory!")
 
     message("Checking for person-specific markers and/or sleeplog!")
@@ -110,14 +110,15 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
     #
-    # if(is.na(which_ppns_markers) && !is.na(which_ppns_sleeplog))
+    # if (is.na(which_ppns_markers) && !is.na(which_ppns_sleeplog))
 
     ## If there is a sleeplog AND this sleeplog belongs to this ppn
-    if(length(list.files(pattern = "sleeplog.csv")) != 0 && !is.na(which_ppns_sleeplog)){
+    if (length(list.files(pattern = "sleeplog.csv")) != 0 && !is.na(which_ppns_sleeplog)) {
 
       data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
 
-    }else{sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+    } else {
+      sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
 
       which_ppns_sleeplog <- pmatch((paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 8)))),
                                     list.files(pattern = "sleeplog.csv")) #sleeplog of this ppn
@@ -225,7 +226,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
 
-    if(is.na(substr(aaa[rownr.Gotup, "Date"], 1, 10)) || is.na(substr(aaa[rownr.Bedtime, "Date"], 1, 10))){
+    if (is.na(substr(aaa[rownr.Gotup, "Date"], 1, 10)) || is.na(substr(aaa[rownr.Bedtime, "Date"], 1, 10))) {
 
       message("NA in rownr. of Bedtime or Gotup!")
       message("Skip current day!")
@@ -235,13 +236,13 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
     sameday_loc <- 0
     #! sameday bedtime and gotup!
-    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)){
+    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)) {
 
       # message("Selected Bedtime not on the day before Gotup!")
 
       sameday_loc <- which(data.sleeplog[, "Date"] == substr(aaa[rownr.Bedtime, "Date"], 1, 10))
 
-      if(sameday_loc > 1 && length(sameday_loc) >= 1){
+      if (sameday_loc > 1 && length(sameday_loc) >= 1) {
 
         rownr.Gotup <- which(aaa$Time == Gotup)[2]
 
@@ -315,11 +316,12 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     sleep.start <- as.character(sleep.start.$Time[1])
     # rownr.sleep.start <- which(aaa$Time == sleep.start)[1] #! [1] causes error when sameday(?)
 
-    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)){
+    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)) {
 
       rownr.sleep.start <- which(aaa$Time == sleep.start)[2] #! [1] causes error when sameday(?)
 
-    }else{rownr.sleep.start <- which(aaa$Time == sleep.start)[1]}
+    } else {
+      rownr.sleep.start <- which(aaa$Time == sleep.start)[1]}
 
 
 
@@ -417,7 +419,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     # print(paste("rownr.sleep.end:", rownr.sleep.end))
 
     ## Exception for when rownr.sleep.end is NA
-    if (is.na(rownr.sleep.end) || (length(rownr.sleep.end)==0)) {
+    if (is.na(rownr.sleep.end) || (length(rownr.sleep.end) == 0)) {
 
       message("rownr.sleep.end is NA!")
       message("Skipping current day!")
@@ -437,8 +439,8 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
     aaa.assumedsleeptime <- aaa[rownr.sleep.start:(rownr.sleep.end - 1), ]
 
-    # if(nrow(aaa[rownr.sleep.start:(rownr.sleep.end - 1), ]) > 1440){
-    if(nrow(aaa.assumedsleeptime) > 1440){
+    # if (nrow(aaa[rownr.sleep.start:(rownr.sleep.end - 1), ]) > 1440) {
+    if (nrow(aaa.assumedsleeptime) > 1440) {
 
       message("nrow assumedsleeptime > 1440!!!!!!!!")
 
