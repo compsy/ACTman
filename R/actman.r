@@ -415,7 +415,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         ## Initialise parameters:
         out <- data.frame()
         n <- nrow(x)
-        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 21))
+        rollingwindow.results <- as.data.frame(matrix(nrow = (floor(((n - window) / jump))), ncol = 26))
         ## Set number of iterations at number of rows of (data - windowsize) / (minutes per day (1440) * jump)
         for (i in 1:((floor(((n - window) / jump))) + 1)) {
           ## Take data as 1 till windowsize for first iteration, for further iterations take
@@ -433,6 +433,31 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           } else if (ncol(CRV.data) == 2) {
             colnames(CRV.data) <- c("Date", "Activity")
           }
+
+
+
+          ## Source spectral script
+          #! WORK IN PROGRESS
+          ## Go to "Results" directory:
+          workdir_temp <- getwd()
+          # dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
+          setwd(file.path(workdir, "Results"))
+
+          ## Write spectral_out
+          write.csv(out, file = "spectral_out.csv")
+
+
+          ## Source Spectral Actigraphy v3 script
+          #! THIS WILL ONLY WORK ON YOUR LOCAL MACHINE!!! RE-WRITE TO MAKE source() DYNAMIC!!!!!!!
+          setwd(file.path(workdir))
+          source(file = "D:/Bibliotheek/Studie/PhD/Publishing/Actigraphy & Bipolar/ActiBip_R/Spectral Actigraphy v4.R")
+
+
+          ## Set working directory back to main working directory:
+          setwd(workdir_temp)
+          rm(workdir_temp)
+          #! /WORK IN PROGRESS
+
 
           ## Use the nparcalc{ACTman} function to calculate circadian rhythm variables over
           ## the selected period within the window. Write results to rollingwindow.results.
@@ -457,12 +482,19 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           rollingwindow.results[i, 18] <- r2$Autocorr_lag3
           rollingwindow.results[i, 19] <- r2$Autocorr_lag60
           rollingwindow.results[i, 20] <- r2$Autocorr_lag120
-          rollingwindow.results[i, 21] <- r2$Time_to_Recovery
+          rollingwindow.results[i, 21] <- r2$Autocorr_lag1440
+          rollingwindow.results[i, 22] <- r2$Autocorr_lag720
+          rollingwindow.results[i, 23] <- r2$Autocorr_lag360
+          rollingwindow.results[i, 24] <- r2$Autocorr_lag180
+          rollingwindow.results[i, 25] <- r2$Autocorr_lag90
+          rollingwindow.results[i, 26] <- r2$Time_to_Recovery
           colnames(rollingwindow.results) <- c("starttime", "endtime", "IS", "IV", "RA", "L5", "L5_starttime",
                                                "M10", "M10_starttime", "Mean", "Variance", "SD",
                                                "Coeff_of_Var", "Skewness", "Kurtosis", "Autocorr_lag1",
                                                "Autocorr_lag2", "Autocorr_lag3", "Autocorr_lag60",
-                                               "Autocorr_lag120", "Time_to_Recovery")
+                                               "Autocorr_lag120", "Autocorr_lag1440", "Autocorr_lag720",
+                                               "Autocorr_lag360", "Autocorr_lag180", "Autocorr_lag90",
+                                               "Time_to_Recovery")
 
           ## Report the calculated circadian results in console:
           print("---------------------------------------------------------------------------------")
@@ -492,6 +524,11 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           print(paste("Autocorr at-lag-3: ", r2$Autocorr_lag3))
           print(paste("Autocorr at-lag-60: ", r2$Autocorr_lag60))
           print(paste("Autocorr at-lag-120: ", r2$Autocorr_lag120))
+          print(paste("Autocorr at-lag-1440 (24h): ", r2$Autocorr_lag1440))
+          print(paste("Autocorr at-lag-720 (12h): ", r2$Autocorr_lag720))
+          print(paste("Autocorr at-lag-360 (8h): ", r2$Autocorr_lag360))
+          print(paste("Autocorr at-lag-180 (6h): ", r2$Autocorr_lag180))
+          print(paste("Autocorr at-lag-90 (4.8h): ", r2$Autocorr_lag90))
           print(paste("Time_to_Recovery: ", r2$Time_to_Recovery))
           print("---------------------------------------------------------------------------------")
 

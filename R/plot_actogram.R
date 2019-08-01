@@ -119,7 +119,7 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
 
 
   # plotme <- "Time_to_Recovery"
-  plotme <- colnames(rollingwindow.results)[10:21]
+  plotme <- colnames(rollingwindow.results)[10:26]
 
   for(EWS_count in 1:length(plotme)){
 
@@ -137,7 +137,8 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
   bp2_ylim_upper <- roundup_power_10(max(bp2_ylim))
 
   ## Plot barplot
-  barplot(as.numeric(LOLkat[, 2]), ylim = c(0, bp2_ylim_upper))
+  ## Also set x- and ylim here
+  barplot(as.numeric(LOLkat[, 2]), ylim = c((-bp2_ylim_upper * 2.0), bp2_ylim_upper))
 
 
   ## Create labels
@@ -169,15 +170,7 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
   abline(v = bp2[1 + x_labels_pos2_start], col = "blue")
 
 
-
-  # #! debug
-  # rollingwindow.results <<- rollingwindow.results
-  # LOLkat <<- LOLkat
-  print(paste("!!!!!!!!!!!!!!!", getwd(), "!!!!!!!!!!!!!!!"))
-  write.csv(LOLkat, file = "spectral_out.csv")
-
   ## Assign moving window results (remove first obs to account for non-24h day)
-  #! Might cause shrinking EWS plots!
   if(EWS_count == 1){
   rollingwindow.results <- rollingwindow.results[2:nrow(rollingwindow.results), ]
   }
@@ -196,7 +189,6 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
 
   ## Plot results for moving window on existing barplot at designated x-coordinates
   #! N.b. Scaling should be made dynamic!
-  # plotme <- "Time_to_Recovery"
   scaling_var <- (bp2_ylim_upper / max(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))
 
   ## Plotting "plotme" EWS over actogram
@@ -216,18 +208,14 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
   }else{
 
     axis(side = 4,
-         labels = c(0, (bp2_ylim_upper / 2), bp2_ylim_upper),
-         at = c(0, (bp2_ylim_upper / 2), bp2_ylim_upper))
+         labels = c((-bp2_ylim_upper), (-(bp2_ylim_upper / 2)), 0, (bp2_ylim_upper / 2), bp2_ylim_upper),
+         at = c((-bp2_ylim_upper), (-(bp2_ylim_upper / 2)), 0, (bp2_ylim_upper / 2), bp2_ylim_upper))
 
   }
 
     ## Plot EWS over actogram (exceptions for when length of x- and y-values differ)
     if(length(plot_points_x) < length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
                                        * scaling_var))){
-
-        # print("DEBUG--------------------------------------------------------------------------")
-        # print(length(plot_points_x))
-        # print(length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * scaling_var)))
 
         points(x = plot_points_x, type = "l", col = "red",
                y = (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
@@ -252,9 +240,6 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
 
   dev.off()
   }
-
-  # dev.off()
-
 
 }
 

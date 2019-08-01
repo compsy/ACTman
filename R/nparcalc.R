@@ -235,12 +235,17 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   result$Kurtosis <- round(Kurtosis, 2)
 
   ## Autocorrelation at lag-1, lag-2, lag-3, etc.
-  Autocorr <- acf(x = CRV.data[, "Activity"], lag.max = 120, na.action = na.pass, plot = FALSE)
+  Autocorr <- acf(x = CRV.data[, "Activity"], lag.max = 1440, na.action = na.pass, plot = FALSE)
   result$Autocorr <- round(Autocorr$acf[2], 2)
   result$Autocorr_lag2 <- round(Autocorr$acf[3], 2)
   result$Autocorr_lag3 <- round(Autocorr$acf[4], 2)
   result$Autocorr_lag60 <- round(Autocorr$acf[61], 2)
   result$Autocorr_lag120 <- round(Autocorr$acf[121], 2)
+  result$Autocorr_lag1440 <- round(Autocorr$acf[1441], 2)
+  result$Autocorr_lag720 <- round(Autocorr$acf[721], 2)
+  result$Autocorr_lag360 <- round(Autocorr$acf[361], 2)
+  result$Autocorr_lag180 <- round(Autocorr$acf[181], 2)
+  result$Autocorr_lag90 <- round(Autocorr$acf[91], 2)
 
   ## Time to recovery (if not recovered within timeframe assign max_lag))
   if(length(which(Autocorr$acf < 0.2)) != 0){
