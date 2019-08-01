@@ -171,7 +171,7 @@ if (i_want_EWS == TRUE) {  # ## Initialise empty matrix for timestamps and activ
 
 
   ## Assign moving window results (remove first obs to account for non-24h day)
-  if (EWS_count == 1){
+  if (EWS_count == 1) {
   rollingwindow.results <- rollingwindow.results[2:nrow(rollingwindow.results), ]
   }
 
