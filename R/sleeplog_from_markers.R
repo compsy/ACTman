@@ -18,7 +18,7 @@
 #' @importFrom utils read.csv
 #' @importFrom utils write.csv
 #'
-sleeplog_from_markers <- function(workdir, i, ACTdata.files){
+sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
 
   ## Set wd
   setwd(workdir)
@@ -43,13 +43,13 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
 
 
-  # if(ncol(mb_data) == 3){
+  # if (ncol(mb_data) == 3) {
   #   mb_data <- read.csv(mb_files)
   # }
-  if(ncol(mb_data) == 1){
+  if (ncol(mb_data) == 1) {
     mb_data <- read.delim(mb_files)
   }
-  # if(ncol(mb_data) != 1 & ncol(mb_data) != 3){
+  # if (ncol(mb_data) != 1 & ncol(mb_data) != 3) {
   #   message("Marker Button file does not contain expected number of rows (1 or 3)!")
   #   message("Is your file in comma- or tab-seperated format?")
   # }
@@ -87,15 +87,15 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
 
   ## Fill in initial Bedtimes and Gotups
-  for(a in 1:nrow(mb_data)){
+  for (a in 1:nrow(mb_data)) {
 
-      if(as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") >  as.POSIXct("04:00:00", format = "%H:%M:%S") &&
-         as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") <  as.POSIXct("14:00:00", format = "%H:%M:%S")){
+      if (as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") >  as.POSIXct("04:00:00", format = "%H:%M:%S") &&
+         as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") <  as.POSIXct("14:00:00", format = "%H:%M:%S")) {
 
         mb_data[a, "Morning_evening"] <- "Gotup"
 
-      } else if(as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") >  as.POSIXct("14:00:00", format = "%H:%M:%S") &&
-                as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") <  (as.POSIXct("04:00:00", format = "%H:%M:%S") + (1440 * 60))){
+      } else if (as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") >  as.POSIXct("14:00:00", format = "%H:%M:%S") &&
+                as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") <  (as.POSIXct("04:00:00", format = "%H:%M:%S") + (1440 * 60))) {
 
         mb_data[a, "Morning_evening"] <- "Bedtime"
 
@@ -109,11 +109,11 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
 
 
-  for(a in 1:nrow(mb_data)){
+  for (a in 1:nrow(mb_data)) {
 
-    if((mb_data[a, "Morning_evening"] == 0) && (mb_data[(a - 1), "Morning_evening"] == "Gotup") &&
+    if ((mb_data[a, "Morning_evening"] == 0) && (mb_data[(a - 1), "Morning_evening"] == "Gotup") &&
        (mb_data[(a + 1), "Morning_evening"] == "Gotup") && (as.POSIXct(mb_data[a, "Time"], format = "%H:%M:%S") <
-                                                            as.POSIXct("05:00:00", format = "%H:%M:%S"))){
+                                                            as.POSIXct("05:00:00", format = "%H:%M:%S"))) {
 
       mb_data[a, "Morning_evening"] <- "Bedtime"
       mb_data[a, "sleep_after_midnight"] <- 1
@@ -125,20 +125,20 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
 
 
-  for(a in 1:(nrow(mb_data) - 1)){
+  for (a in 1:(nrow(mb_data) - 1)) {
 
-    if((mb_data[a, "Morning_evening"] == "Gotup") &&
+    if ((mb_data[a, "Morning_evening"] == "Gotup") &&
        identical(mb_data[a, "Morning_evening"], mb_data[(a + 1), "Morning_evening"]) &&
-       identical(mb_data[a, "Date"], mb_data[(a + 1), "Date"])){
+       identical(mb_data[a, "Date"], mb_data[(a + 1), "Date"])) {
 
       mb_data[a, "Remove"] <- 1
 
     }
 
 
-    if((mb_data[a, "Morning_evening"] == "Bedtime") &&
+    if ((mb_data[a, "Morning_evening"] == "Bedtime") &&
        identical(mb_data[a, "Morning_evening"], mb_data[(a + 1), "Morning_evening"]) &&
-       identical(mb_data[a, "Date"], mb_data[(a + 1), "Date"])){
+       identical(mb_data[a, "Date"], mb_data[(a + 1), "Date"])) {
 
       mb_data[a, "Remove"] <- 1
 
@@ -149,9 +149,9 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
 
   ## Edit Dates of "sleep_after_midnight" occurences to previous day
-  for(a in 1:(nrow(mb_data))){
+  for (a in 1:(nrow(mb_data))) {
 
-    if(mb_data[a, "sleep_after_midnight"] == 1){
+    if (mb_data[a, "sleep_after_midnight"] == 1) {
 
       mb_data[a, "Date"] <- mb_data[(a - 1), "Date"]
 
@@ -163,10 +163,10 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
 
   ## Remove incorrect markers & temp columns
- #! mb_data <- mb_data[-(which(mb_data$Remove == 1)),] #! source of empty sleeplogfiles?
-  mb_data <- mb_data[(which(mb_data$Remove == 0)),]
+ #! mb_data <- mb_data[-(which(mb_data$Remove == 1)), ] #! source of empty sleeplogfiles?
+  mb_data <- mb_data[(which(mb_data$Remove == 0)), ]
 
- mb_data <- mb_data[, c("Date", "Time", "Morning_evening", "sleep_after_midnight")]
+  mb_data <- mb_data[, c("Date", "Time", "Morning_evening", "sleep_after_midnight")]
 
 
 
@@ -180,9 +180,9 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
 
   #! Exception for unequal length
-  if (length(sleeplog[, "Date"]) != length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))){
+  if (length(sleeplog[, "Date"]) != length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))) {
 
-    if(length(sleeplog[, "Date"]) > length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))){
+    if (length(sleeplog[, "Date"]) > length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))) {
 
       # Find lenght diff between sleeplog and subset from mb_data
       sleeplog_diff <- abs(length(sleeplog[, "Date"]) - length(as.character(sort(rep(unique(mb_data[, "Date"]), 1)))))
@@ -192,45 +192,51 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
     }
 
-  }else{sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1)))}
+  } else {
+    sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1)))
+  }
 
 
 
 
 
 #! changed index_value 'i' to 'b'
-  for(b in 1:nrow(sleeplog)){
+  for (b in 1:nrow(sleeplog)) {
 
-    if(sleeplog[b, "Date"] %in% mb_data[, "Date"]){
+    if (sleeplog[b, "Date"] %in% mb_data[, "Date"]) {
 
-      mb_TEMP <- mb_data[which(mb_data[, "Date"] == sleeplog[b, "Date"]),]
+      mb_TEMP <- mb_data[which(mb_data[, "Date"] == sleeplog[b, "Date"]), ]
 
 
-      if("Gotup" %in% mb_TEMP[, "Morning_evening"]){
+      if ("Gotup" %in% mb_TEMP[, "Morning_evening"]) {
 
           #! Exception for more than one Gotup times
-          if(length(as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Gotup"), "Time"])) > 1){
+          if (length(as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Gotup"), "Time"])) > 1) {
 
             sleeplog[b, "Gotup"] <- min(as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Gotup"), "Time"]))
 
-          }else{sleeplog[b, "Gotup"] <- as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Gotup"), "Time"])}
+          } else {
+            sleeplog[b, "Gotup"] <- as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Gotup"), "Time"])}
 
-      }else{message(paste("Gotup time is missing at day", sleeplog[b, "Date"], "!!"))}
+      } else {
+        message(paste("Gotup time is missing at day", sleeplog[b, "Date"], "!!"))}
 
 
 
-      if("Bedtime" %in% mb_TEMP[, "Morning_evening"]){
+      if ("Bedtime" %in% mb_TEMP[, "Morning_evening"]) {
 
         #! Exception for more than one Gotup times
-        if(length(as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Bedtime"), "Time"])) > 1){
+        if (length(as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Bedtime"), "Time"])) > 1) {
 
           sleeplog[b, "Bedtime"] <- min(as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Bedtime"), "Time"]))
 
-        }else{sleeplog[b, "Bedtime"] <- as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Bedtime"), "Time"])}
+        } else {
+          sleeplog[b, "Bedtime"] <- as.character(mb_TEMP[which(mb_TEMP[, "Morning_evening"] == "Bedtime"), "Time"])}
 
 
 
-      }else{message(paste("Bedtime time is missing at day", sleeplog[b, "Date"], "!!"))}
+      } else {
+        message(paste("Bedtime time is missing at day", sleeplog[b, "Date"], "!!"))}
 
     }
 
@@ -242,7 +248,7 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
 
   ## Check for missings and give user control
   #! Mean option was changed to median!!
-  if(sum(is.na(sleeplog)) != 0){
+  if (sum(is.na(sleeplog)) != 0) {
 
     message(paste("Warning:", sum(is.na(sleeplog)), "markers are missing!"))
 
@@ -266,19 +272,19 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
       # sleeplog_TEMP <- (as.POSIXct(sleeplog[, "Bedtime"], format = "%H:%M:%S") + (60 * 60 * 12))
       sleeplog_TEMP <- (as.POSIXct(sleeplog[, "Bedtime"], format = "%H:%M:%S"))
 
-      if(TRUE %in% is.na(sleeplog[, "Gotup"])){
+      if (TRUE %in% is.na(sleeplog[, "Gotup"])) {
         sleeplog[is.na(sleeplog[, "Gotup"]), "Gotup"] <- substr(median(as.POSIXct(sleeplog[, "Gotup"], format = "%H:%M:%S"), na.rm = TRUE), start = 12, stop = 19)
       }
 
-      if(TRUE %in% is.na(sleeplog[, "Bedtime"])){
+      if (TRUE %in% is.na(sleeplog[, "Bedtime"])) {
         sleeplog[is.na(sleeplog[, "Bedtime"]), "Bedtime"] <- substr(median(as.POSIXct(sleeplog_TEMP, format = "%H:%M:%S"), na.rm = TRUE), start = 12, stop = 19)
       }
 
     }
 
-    # if (missings_prompt_answer == "n"){
+    # if (missings_prompt_answer == "n") {
     #
-    #   for (missings_count in 1:sum(is.na(sleeplog[, "Gotup"]))){
+    #   for (missings_count in 1:sum(is.na(sleeplog[, "Gotup"]))) {
     #
     #     Gotup_missing_index <- which(is.na(sleeplog[, "Gotup"]) == TRUE)
     #     Gotup_nonmissings_index <- which(is.na(sleeplog[, "Gotup"]) == FALSE)
@@ -290,7 +296,7 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
     #
     #   }
     #
-    #   for (missings_count2 in 1:sum(is.na(sleeplog[, "Bedtime"]))){
+    #   for (missings_count2 in 1:sum(is.na(sleeplog[, "Bedtime"]))) {
     #
     #     Bedtime_missing_index <- which(is.na(sleeplog[, "Bedtime"]) == TRUE)
     #     Bedtime_nonmissings_index <- which(is.na(sleeplog[, "Bedtime"]) == FALSE)
@@ -314,7 +320,7 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files){
     }
 
     ## Check if sleeplog times end in ":00" insted of ":30" (otherwise "rownr.Gotup is NA!" Error)
-    if(length(grep(pattern = ":00", x = sleeplog)) < nrow(sleeplog)){
+    if (length(grep(pattern = ":00", x = sleeplog)) < nrow(sleeplog)) {
       message("Non-full minutes detected in sleeplog times!")
       message("Rounding sleeplog times to full minutes (':00')")
       message("")

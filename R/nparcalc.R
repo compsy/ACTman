@@ -248,7 +248,7 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
   result$Autocorr_lag90 <- round(Autocorr$acf[91], 2)
 
   ## Time to recovery (if not recovered within timeframe assign max_lag))
-  if(length(which(Autocorr$acf < 0.2)) != 0){
+  if (length(which(Autocorr$acf < 0.2)) != 0) {
 
       result$Time_to_Recovery <- which(Autocorr$acf < 0.2)[1]
 

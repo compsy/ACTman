@@ -97,7 +97,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     stop(paste("The number of start periods does not match the number of data files found:", startperiod, length(ACTdata.files)))
   }
 
-  if(".mtn" %in% substr(list.files(getwd()), nchar(list.files(getwd()))-4+1, nchar(list.files(getwd())))){
+  if (".mtn" %in% substr(list.files(getwd()), nchar(list.files(getwd())) - 4 + 1, nchar(list.files(getwd())))) {
     message(paste("There is at least 1 unsupported Actigraphy file format present in the working directory!
                   Please convert, stash, or remove these unsupported files before rerunning:"))
     print(list.files(getwd())[grep(".mtn", list.files(getwd()))])
@@ -136,7 +136,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
 
-      if(all(is.na(ACTdata.1$B)) && all(is.na(ACTdata.1$C))){ ## Note! If TRUE ACTdata.1 is (suddenly) tab-seperated!
+      if (all(is.na(ACTdata.1$B)) && all(is.na(ACTdata.1$C))) { ## Note! If TRUE ACTdata.1 is (suddenly) tab-seperated!
 
         ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = FALSE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"), sep = "\t")
 

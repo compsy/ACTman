@@ -90,7 +90,7 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   #                circadian_analysis = T, plotactogram = "24h", movingwindow = TRUE, movingwindow.size = 7)
 
 
-if(i_want_EWS == TRUE && is.na(rollingwindow.results)){
+if (i_want_EWS == TRUE && is.na(rollingwindow.results)) {
 
   message("Cannot create EWS plot without rolling window results")
   message("Please make sure that both 'i_want-EWS' AND 'movingwindow' arguments are TRUE")
@@ -100,7 +100,7 @@ if(i_want_EWS == TRUE && is.na(rollingwindow.results)){
 }
 
 
-if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activity counts
+if (i_want_EWS == TRUE) {  # ## Initialise empty matrix for timestamps and activity counts
 
   LOLkat <- matrix(NA, nrow = (1440 * ndays.plot), ncol = 2)
 
@@ -121,7 +121,7 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
   # plotme <- "Time_to_Recovery"
   plotme <- colnames(rollingwindow.results)[10:26]
 
-  for(EWS_count in 1:length(plotme)){
+  for (EWS_count in 1:length(plotme)) {
 
 
   ## Initialise .PDF plot in A4 size (11.7 x 8.3 inches)
@@ -152,7 +152,7 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
   for (l.plot in 1:l.plot_n) {
 
     ## Assure l.plot is not NA, otherwise assign last non-NA value
-    if(is.na(unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"])[l.plot])){
+    if (is.na(unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"])[l.plot])) {
       l.plot <- max(which(is.na(unique(substr(LOLkat[, 1], 1, 10)[!substr(LOLkat[, 1], 1, 10) == "0"])) == FALSE))
     }
 
@@ -185,7 +185,7 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
   # # plotme <- "Time_to_Recovery"
   # plotme <- colnames(rollingwindow.results)[10:21]
   #
-  # for(EWS_count in 1:length(plotme)){
+  # for(EWS_count in 1:length(plotme)) {
 
   ## Plot results for moving window on existing barplot at designated x-coordinates
   #! N.b. Scaling should be made dynamic!
@@ -196,16 +196,16 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
 
   ## Exception for when length(at) != length(labels)
   #! Added na.omit() functions for when "to is not finite" error.
-  if(length(seq(0, round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))),
+  if (length(seq(0, round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))),
                 by = (round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))) / 2)))
-     == length(c(0, (bp2_ylim_upper / 2), bp2_ylim_upper))){
+     == length(c(0, (bp2_ylim_upper / 2), bp2_ylim_upper))) {
 
     axis(side = 4,
          labels = seq(0, round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))),
                       by = (round(max(na.omit(rollingwindow.results[(1:(nrow(rollingwindow.results) - 1)), plotme[EWS_count]]))) / 2)),
          at = c(0, (bp2_ylim_upper / 2), bp2_ylim_upper))
 
-  }else{
+  } else {
 
     axis(side = 4,
          labels = c((-bp2_ylim_upper), (-(bp2_ylim_upper / 2)), 0, (bp2_ylim_upper / 2), bp2_ylim_upper),
@@ -214,21 +214,21 @@ if(i_want_EWS == TRUE){  # ## Initialise empty matrix for timestamps and activit
   }
 
     ## Plot EWS over actogram (exceptions for when length of x- and y-values differ)
-    if(length(plot_points_x) < length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
-                                       * scaling_var))){
+    if (length(plot_points_x) < length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
+                                       * scaling_var))) {
 
         points(x = plot_points_x, type = "l", col = "red",
                y = (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
                     * scaling_var)[1:length(plot_points_x)])
 
-    } else if(length(plot_points_x) > length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * scaling_var))){
+    } else if (length(plot_points_x) > length((rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme] * scaling_var))) {
 
       points(x = plot_points_x[1:length(rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]])],
              type = "l", col = "red", y = (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]]
                                            * scaling_var))
 
-    } else if(length(plot_points_x) == length((rollingwindow.results[(1:(nrow(rollingwindow.results))),
-                                                                     plotme[EWS_count]] * scaling_var))){
+    } else if (length(plot_points_x) == length((rollingwindow.results[(1:(nrow(rollingwindow.results))),
+                                                                     plotme[EWS_count]] * scaling_var))) {
 
       points(x = plot_points_x, type = "l", col = "red",
              y = (rollingwindow.results[(1:(nrow(rollingwindow.results))), plotme[EWS_count]] * scaling_var))
