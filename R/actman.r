@@ -618,7 +618,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Use the plot_actogram{ACTman} function to plot an Actogram of the whole period.
     if (plotactogram != FALSE) {
       plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram,
-                    rollingwindow.results = rollingwindow.results, i_want_EWS = i_want_EWS)
+                    rollingwindow.results = rollingwindow.results, i_want_EWS = i_want_EWS,
+                    ACTdata.files = ACTdata.files)
     }
 
 
