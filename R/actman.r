@@ -450,7 +450,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           ## Source Spectral Actigraphy v3 script
           #! THIS WILL ONLY WORK ON YOUR LOCAL MACHINE!!! RE-WRITE TO MAKE source() DYNAMIC!!!!!!!
           setwd(file.path(workdir))
-          source(file = "D:/Bibliotheek/Studie/PhD/Publishing/Actigraphy & Bipolar/ActiBip_R/Spectral Actigraphy v4.R")
+          source(file = "D:/Bibliotheek/Studie/PhD/Publishing/Actigraphy & Bipolar/ActiBip_R/Spectral Actigraphy v5.R")
 
 
           ## Set working directory back to main working directory:
