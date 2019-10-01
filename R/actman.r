@@ -52,7 +52,7 @@
 #' @importFrom utils write.table
 #'
 #' @export
-ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part/mydata",
+ACTman <- function(workdir = "C:/mydata",
                    sleepdatadir = paste("C:/Bibliotheek/Studie/PhD/Publishing/",
                                         "ACTman/R-part/Actogram & Sleep analysis", sep = ""),
                    myACTdevice = "Actiwatch2", iwantsleepanalysis = FALSE, plotactogram = FALSE,
@@ -111,8 +111,8 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
   for (i in 1:length(ACTdata.files)) {
 
     ## Test for user-defined arguments:
-    if (myACTdevice != "MW8" && myACTdevice != "Actiwatch2") {
-      stop(paste("Unknown value for myACTdevice (should be MW8, Actiwatch2):", myACTdevice))
+    if (myACTdevice != "MW8" && myACTdevice != "Actiwatch2" && myACTdevice != "Actical") {
+      stop(paste("Unknown value for myACTdevice (should be MW8, Actiwatch2, or Actical):", myACTdevice))
     }
 
     print(paste("*** Start of Dataset", i, "***"))
@@ -142,14 +142,73 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
       }
 
-
-
-
       if (any(ACTdata.1[, 1] == "Raw data:")) {
         ACTdata.1 <- as.data.frame(ACTdata.1[((which(ACTdata.1[, 1] == "Raw data:")) + 2):nrow(ACTdata.1), ])
       } else {
         ACTdata.1 <- read.csv(paste(ACTdata.files[i]), header = TRUE, fill = TRUE, stringsAsFactors = FALSE, col.names = c("A", "B", "C"))
       }
+
+    } else if (myACTdevice == "Actical"){
+
+      ## Read in data
+      ACTdata.1 <- read.csv(ACTdata.files[i], sep = ";")
+
+
+      ## Start of colnames before raw data (this row contains 'Epoch#')
+      colnames_startrow <- (which(ACTdata.1 == "Epoch#", arr.ind=TRUE)[1])
+
+
+      ## which row precedes raw data (row before this contains '(4=vigorous)')?
+      data_startrow <- (which(ACTdata.1 == "(4=vigorous)", arr.ind=TRUE)[1] + 1)
+
+
+      ## Get last column of colnames
+      data_colnames_lastcol <- (which(ACTdata.1 == "Event Marker", arr.ind=TRUE)[2])
+
+
+      # Extract colnames
+      data_colnames <- as.matrix(ACTdata.1[(colnames_startrow:(data_startrow - 1)), 1:data_colnames_lastcol])
+
+
+      ## Loop for collapsing and assigning columnnames
+      data_colnames_TEMP <- matrix(NA, nrow = 1, ncol = ncol(data_colnames))
+
+      for(col_count in 1:ncol(data_colnames)){
+
+        data_colnames_TEMP[, col_count] <- paste(data_colnames[, col_count], collapse = "")
+
+      }
+      data_colnames <- data_colnames_TEMP
+      rm(data_colnames_TEMP)
+
+
+      ## Remove header
+      ACTdata.1 <- ACTdata.1[(data_startrow:nrow(ACTdata.1)), ]
+
+
+      ## Select only required columns
+      ACTdata.1 <- ACTdata.1[, (1:ncol(data_colnames))]
+
+
+      ## Add column names
+      colnames(ACTdata.1) <- data_colnames
+
+
+      ## Select only columns for Date, Time, and Activity counts
+      ACTdata.1 <- ACTdata.1[, c("Date", "Time", "ActivityCounts")]
+
+
+      # ## Column bind Date and Time into DateTime
+      # TEST_TEMP <- as.data.frame(ACTdata.1)
+      # TEST_TEMP$DateTime <- paste(TEST_TEMP$Date, TEST_TEMP$Time)
+      # TEST_TEMP <- TEST_TEMP[, c("DateTime", "ActivityCounts")]
+
+      ## Make matrix
+      # ACTdata.1 <- as.matrix(TEST_TEMP)
+      # ACTdata.1 <- as.matrix(ACTdata.1)
+
+    }
+
 
       ## Make a copy of the original data to work on:
       ACTdata.1.sub <- ACTdata.1
@@ -193,7 +252,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
         print("No changes made")
         print("")
       }
-    }
+
 
     ## Step 2.2: Managing the Data---------------------------------------------------------------
 
@@ -201,7 +260,21 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ACTdata.1.sub$Date <- gsub(pattern = "/20", replacement = "/", x = ACTdata.1.sub$Date) # Take only last two year digits
     ACTdata.1.sub$Date <- paste(ACTdata.1.sub$Date, ACTdata.1.sub$Time) # Merge Date Time
 
-    if (grepl("-", ACTdata.1.sub$Date[1])) { # Reformat Date
+    if (myACTdevice == "Actical"){
+
+      month_char1 <- substr(ACTdata.1.sub$Date, 4, 6)
+      month_char2 <- paste(toupper(substr(month_char1, 1, 1)), substr(month_char1, 2, nchar(month_char1)), sep="") # month jan, feb, etc to numeric
+      month_char3 <- paste0(0, match(month_char2, month.abb))
+
+      ACTdata.1.sub$Date <- paste0(substr(ACTdata.1.sub$Date, 1, 3), month_char3, substr(ACTdata.1.sub$Date, 7, nrow(ACTdata.1.sub)))
+
+      time_ind <- which(nchar(substr(ACTdata.1.sub$Date, 10, nrow(ACTdata.1.sub))) < 5)
+
+      ACTdata.1.sub$Date[time_ind] <- paste0(substr(ACTdata.1.sub$Date[time_ind], 1, 9), 0, substr(ACTdata.1.sub$Date[time_ind], 10, 14), ":", 0, 0)
+
+
+
+    } else if (grepl("-", ACTdata.1.sub$Date[1])) { # Reformat Date
       ACTdata.1.sub$Date <- strptime(ACTdata.1.sub$Date, "%Y-%m-%d %H:%M:%S")
     } else {
       ACTdata.1.sub$Date <- strptime(ACTdata.1.sub$Date, "%d/%m/%y %H:%M:%S")
@@ -401,7 +474,13 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     ## Read managed dataset for analyses and functionalities:
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")),
                            stringsAsFactors = FALSE)
-    colnames(CRV.data) <- c("Date", "Time", "Activity")
+
+    # colnames(CRV.data) <- c("Date", "Time", "Activity") # Actical only 2 columns here
+    if (ncol(CRV.data) > 2) {
+      colnames(CRV.data) <- c("Date", "Time", "Activity")
+    } else if (ncol(CRV.data) == 2) {
+      colnames(CRV.data) <- c("Date", "Activity")
+    }
 
 
     sleepdata.overview <- NULL
