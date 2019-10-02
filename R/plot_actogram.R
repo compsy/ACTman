@@ -27,7 +27,7 @@
 #' @importFrom graphics barplot
 #' @importFrom graphics par
 #' @importFrom stats na.omit
-plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow.results, i_want_EWS) {
+plot_actogram <- function(workdir, ACTdata.1.sub, myACTdevice, i, plotactogram, rollingwindow.results, i_want_EWS, ACTdata.files) {
 
 ### Part 1: Basic Operations ----------------------------------------------------------------------------
 
@@ -40,6 +40,21 @@ plot_actogram <- function(workdir, ACTdata.1.sub, i, plotactogram, rollingwindow
   act_data <- ACTdata.1.sub # Copy data for editing required for plotting
   act_data <- within(act_data, Date <- as.character(act_data$Date)) # Date as character for plotting
   ndays.plot <- round(abs(as.numeric(round(as.POSIXct(act_data$Date[1]) - as.POSIXct(act_data$Date[nrow(act_data)]), 2))))
+
+
+  #! Exception for Actical
+  if (myACTdevice == "Actical"){
+
+    ndays.plot <- round(abs(as.POSIXct(strptime(act_data$Date[1],format="%d-%m-%Y %H:%M:%S")) -
+                            as.POSIXct(strptime(act_data$Date[nrow(act_data)],format="%d-%m-%Y %H:%M:%S"))), 2)
+
+  }
+
+
+  # as.POSIXct()
+  # 1- act_data$Date[nrow(act_data)]
+
+  # dates <- format(as.Date(act_data$Date[1],format="%d-%m-%Y %H:%M:%S"),format="%d-%m-%y")
 
 
 ### Part 2: 1st day Selection & Midnight Detection 2nd day  ---------------------------------------------------
@@ -285,20 +300,23 @@ if (i_want_EWS == TRUE) {  # ## Initialise empty matrix for timestamps and activ
       axis(side = 1, at = bp[1 + x_labels_pos[ c(FALSE, TRUE)]], labels = FALSE, col.ticks = "red")
 
 
+      if (ndays.plot >= 3){
+
       ## Filling in plot with loop for other days
       for (k.plot in 2:(ndays.plot - 1)) {
 
-        barplot(eval(parse(text = paste("day.", k.plot, ".", (k.plot + 1), "$Activity", sep = ""))),
-                ylim = ylimit, ylab = paste("Day", k.plot))
+            barplot(eval(parse(text = paste("day.", k.plot, ".", (k.plot + 1), "$Activity", sep = ""))),
+                    ylim = ylimit, ylab = paste("Day", k.plot))
 
-        x_labels <- substr(day.2.3$Date, nchar(day.2.3$Date) - 8 + 1, nchar(day.2.3$Date))
-        x_labels_pos <- grep("00:00", x_labels)
-        x_labels <- x_labels[x_labels_pos]
-        x_labels <- substr(x_labels, start = 1, stop = 5)
+            x_labels <- substr(day.2.3$Date, nchar(day.2.3$Date) - 8 + 1, nchar(day.2.3$Date))
+            x_labels_pos <- grep("00:00", x_labels)
+            x_labels <- x_labels[x_labels_pos]
+            x_labels <- substr(x_labels, start = 1, stop = 5)
 
-        axis(side = 1, at = bp[1 + x_labels_pos[ c(TRUE, FALSE)]], labels = x_labels[ c(TRUE, FALSE)])
-        axis(side = 1, at = bp[1 + x_labels_pos[ c(FALSE, TRUE)]], labels = FALSE, col.ticks = "red")
-      }
+            axis(side = 1, at = bp[1 + x_labels_pos[ c(TRUE, FALSE)]], labels = x_labels[ c(TRUE, FALSE)])
+            axis(side = 1, at = bp[1 + x_labels_pos[ c(FALSE, TRUE)]], labels = FALSE, col.ticks = "red")
+          }
+      } #else {break()}
 
       dev.off()
 
@@ -311,7 +329,8 @@ if (i_want_EWS == TRUE) {  # ## Initialise empty matrix for timestamps and activ
   if (plotactogram == "24h") {
 
     ## Initialise .PDF plot in A4 size (11.7 x 8.3 inches)
-    pdf(paste("Actigraphy Data - 24h Plot", i, ".pdf"), width = 11.7, height = 8.3)
+    pdf(paste("Actigraphy Data - 24h Plot", substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 4)),
+              ".pdf"), width = 11.7, height = 8.3)
 
       par(mfrow = c(14, 1)) # Set parameters for plots
       par(mar = c(0.5, 4, 0.5, 4)) # Set margins

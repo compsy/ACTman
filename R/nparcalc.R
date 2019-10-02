@@ -57,6 +57,12 @@ nparcalc <- function(myACTdevice, movingwindow, CRV.data, ACTdata.1.sub, out = N
 
   }
 
+  #! Exception for Actical team
+  #! Do not stop at last 00:00:00 as there is not much data, thus stop at last obs
+  if (myACTdevice == "Actical"){CRV.data.end <- nrow(CRV.data)}
+
+
+
   ## Assign dataset for circadian rhythm analysis to be dataset "CRV.data" with a period of the
   ## aforementioned start and end date/times:
   CRV.data <- CRV.data[CRV.data.start:CRV.data.end, ]

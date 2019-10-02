@@ -150,20 +150,62 @@ ACTman <- function(workdir = "C:/mydata",
 
     } else if (myACTdevice == "Actical"){
 
-      ## Read in data
-      ACTdata.1 <- read.csv(ACTdata.files[i], sep = ";")
+
+      #! Check if Actical software saved csv files with EITHER ","-seperators OR ";"-seperator (???)
+      substrRight <- function(x, n){
+        substr(x, nchar(x)-n+1, nchar(x))
+      }
+
+      Actical_seperator <- substrRight(x = (as.character(
+        # read.csv(ACTdata.files[i])[1,1]
+        read.csv(ACTdata.files[i], sep = ",", col.names = paste0(rep("V", 53), 1:53), header = F)[1,1]
+        )), n = 1)
+
+
+      if (Actical_seperator == ";"){
+
+        ## Read in data
+        ACTdata.1 <- read.csv(ACTdata.files[i], sep = ";")
+
+      } else if (Actical_seperator == ")"){
+
+        ## Read in data
+        ACTdata.1 <- read.csv(ACTdata.files[i], sep = ",", col.names = paste0(rep("V", 53), 1:53), header = F)
+
+      } else {
+
+        warning("Actical data seperator not recognized, should be either ';' or ','\nStopping process...")
+        stop()
+
+        }
+
+
 
 
       ## Start of colnames before raw data (this row contains 'Epoch#')
       colnames_startrow <- (which(ACTdata.1 == "Epoch#", arr.ind=TRUE)[1])
 
-
       ## which row precedes raw data (row before this contains '(4=vigorous)')?
       data_startrow <- (which(ACTdata.1 == "(4=vigorous)", arr.ind=TRUE)[1] + 1)
 
-
       ## Get last column of colnames
       data_colnames_lastcol <- (which(ACTdata.1 == "Event Marker", arr.ind=TRUE)[2])
+
+
+      # ## Make exception for when Actical csv file suddenly decides to use other seperator (!)
+      # if (is.na(colnames_startrow)){
+      #
+      #   ## Start of colnames before raw data
+      #   colnames_startrow <- ((which((ACTdata.1 == "------------------- Epoch-by-Epoch Data --------------------"), arr.ind=TRUE)[1]) + 1)
+      #
+      #   ## which row precedes raw data
+      #   data_startrow <- (which(ACTdata.1 == ",,,,,,,,(4=vigorous)", arr.ind=TRUE)[1] + 1)
+      #
+      #   # ## Get last column of colnames
+      #   # data_colnames_lastcol <- (which(ACTdata.1 == "Event Marker", arr.ind=TRUE)[2])
+      #
+      # }
+
 
 
       # Extract colnames
@@ -198,6 +240,10 @@ ACTman <- function(workdir = "C:/mydata",
       ACTdata.1 <- ACTdata.1[, c("Date", "Time", "ActivityCounts")]
 
 
+      ## Add missing ":00" to time variable
+      ACTdata.1$Time <- paste0(ACTdata.1$Time, ":00")
+
+
       # ## Column bind Date and Time into DateTime
       # TEST_TEMP <- as.data.frame(ACTdata.1)
       # TEST_TEMP$DateTime <- paste(TEST_TEMP$Date, TEST_TEMP$Time)
@@ -213,7 +259,10 @@ ACTman <- function(workdir = "C:/mydata",
       ## Make a copy of the original data to work on:
       ACTdata.1.sub <- ACTdata.1
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
-      ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
+      ACTdata.1.sub$Activity <- as.numeric(levels(ACTdata.1.sub$Activity))[ACTdata.1.sub$Activity]
+
+      #! as.numeric on factors is meaningless! Us on levels as done above.
+      # ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
 
       ## Test for 30 sec. bins:
       if (any(grepl(pattern = ":30", x = ACTdata.1$B[1:2]))) {
@@ -264,7 +313,25 @@ ACTman <- function(workdir = "C:/mydata",
 
       month_char1 <- substr(ACTdata.1.sub$Date, 4, 6)
       month_char2 <- paste(toupper(substr(month_char1, 1, 1)), substr(month_char1, 2, nchar(month_char1)), sep="") # month jan, feb, etc to numeric
-      month_char3 <- paste0(0, match(month_char2, month.abb))
+
+
+      #! Exceptions for when month is specified with non-English abbreviations
+      # if (month_char2[1] == "Mrt"){month_char2 <- rep("Mar", length(month_char2))}
+      # if (month_char2[1] == "Okt"){month_char2 <- rep("Oct", length(month_char2))}
+
+      if ("Mrt" %in% month_char2){month_char2[which(month_char2 == "Mrt")] <- "Mar"}
+      if ("Mei" %in% month_char2){month_char2[which(month_char2 == "Mei")] <- "May"}
+      if ("Okt" %in% month_char2){month_char2[which(month_char2 == "Okt")] <- "Oct"}
+
+
+      if (match(month_char2, month.abb)[1] < 10){
+
+        month_char3 <- paste0(0, match(month_char2, month.abb))
+
+      } else {month_char3 <- match(month_char2, month.abb)}
+
+
+
 
       ACTdata.1.sub$Date <- paste0(substr(ACTdata.1.sub$Date, 1, 3), month_char3, substr(ACTdata.1.sub$Date, 7, nrow(ACTdata.1.sub)))
 
@@ -433,6 +500,15 @@ ACTman <- function(workdir = "C:/mydata",
       print("Last 5 Activity Counts, before Correction:")
       print(ACTdata.1.sub.last5act)
       ACTdata.1.sub <- ACTdata.1.sub[1:max(which(ACTdata.1.sub$Activity >= (5 * length(ACTdata.1.sub.last5act)))), ] # Shortens data untill reached last activity
+
+      # exception for when there remains less than 10 obs
+      if (nrow(ACTdata.1.sub) < 10){
+
+        warning("Less than 10 obs. remain after removing trailing, zero-value obs.")
+        next()
+
+      }
+
       ACTdata.1.sub.last5act <- ACTdata.1.sub$Activity[(nrow(ACTdata.1.sub) - 4):nrow(ACTdata.1.sub)] # Last 5 activity counts in dataset
       ACTdata.overview$last5act.active[i] <- FALSE
       print("Last 5 Activity Counts, after Correction:")
@@ -660,7 +736,8 @@ ACTman <- function(workdir = "C:/mydata",
     ## Use the plot_actogram{ACTman} function to plot an Actogram of the whole period.
     if (plotactogram != FALSE) {
       plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram,
-                    rollingwindow.results = rollingwindow.results, i_want_EWS = i_want_EWS)
+                    myACTdevice = myACTdevice, rollingwindow.results = rollingwindow.results, i_want_EWS = i_want_EWS,
+                    ACTdata.files = ACTdata.files)
     }
 
 
