@@ -423,8 +423,39 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
           ## ((iteration - 1) * (minutes per day * jump)) plus windowsize.
           if (i == 1) {
             out <- x[i:window, ]
+
+            ## spectral
+            #! check if ok
+                dir.create(file.path(workdir, "Results"), showWarnings = FALSE) #! might cause double dir warning
+                setwd(file.path(workdir, "Results"))
+
+                ## Write spectral_out
+                write.csv(out, file = "spectral_out.csv")
+
+
+                ## Source Spectral Actigraphy v3 script
+                #! THIS WILL ONLY WORK ON YOUR LOCAL MACHINE!!! RE-WRITE TO MAKE source() DYNAMIC!!!!!!!
+                setwd(file.path(workdir))
+                source(file = "D:/Bibliotheek/Studie/PhD/Publishing/Actigraphy & Bipolar/ActiBip_R/Spectral Actigraphy v5.R")
+
+
           } else {
             out <- x[((i - 1) * jump):(((i - 1) * jump) + window), ]
+
+                ## spectral
+                #! check if ok
+                dir.create(file.path(workdir, "Results"), showWarnings = FALSE) #! might cause double dir warning
+                setwd(file.path(workdir, "Results"))
+
+                ## Write spectral_out
+                write.csv(out, file = "spectral_out.csv")
+
+
+                ## Source Spectral Actigraphy v3 script
+                #! THIS WILL ONLY WORK ON YOUR LOCAL MACHINE!!! RE-WRITE TO MAKE source() DYNAMIC!!!!!!!
+                setwd(file.path(workdir))
+                source(file = "D:/Bibliotheek/Studie/PhD/Publishing/Actigraphy & Bipolar/ActiBip_R/Spectral Actigraphy v5.R")
+
           }
           ## Write selected period to dataset (CRV.data) and add relevant column names:
           CRV.data <- out
@@ -436,27 +467,29 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
 
 
-          ## Source spectral script
-          #! WORK IN PROGRESS
-          ## Go to "Results" directory:
-          workdir_temp <- getwd()
-          # dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
-          setwd(file.path(workdir, "Results"))
-
-          ## Write spectral_out
-          write.csv(out, file = "spectral_out.csv")
-
-
-          ## Source Spectral Actigraphy v3 script
-          #! THIS WILL ONLY WORK ON YOUR LOCAL MACHINE!!! RE-WRITE TO MAKE source() DYNAMIC!!!!!!!
-          setwd(file.path(workdir))
-          source(file = "D:/Bibliotheek/Studie/PhD/Publishing/Actigraphy & Bipolar/ActiBip_R/Spectral Actigraphy v5.R")
-
-
-          ## Set working directory back to main working directory:
-          setwd(workdir_temp)
-          rm(workdir_temp)
-          #! /WORK IN PROGRESS
+          # ## Source spectral script
+          # #! WORK IN PROGRESS
+          # ## Go to "Results" directory:
+          # # workdir_temp <- getwd()
+          # # dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE) #! might cause double dir warning
+          # # setwd(file.path(workdir_temp, "Results"))
+          # dir.create(file.path(workdir, "Results"), showWarnings = FALSE) #! might cause double dir warning
+          # setwd(file.path(workdir, "Results"))
+          #
+          # ## Write spectral_out
+          # write.csv(out, file = "spectral_out.csv")
+          #
+          #
+          # ## Source Spectral Actigraphy v3 script
+          # #! THIS WILL ONLY WORK ON YOUR LOCAL MACHINE!!! RE-WRITE TO MAKE source() DYNAMIC!!!!!!!
+          # setwd(file.path(workdir))
+          # source(file = "D:/Bibliotheek/Studie/PhD/Publishing/Actigraphy & Bipolar/ActiBip_R/Spectral Actigraphy v5.R")
+          #
+          #
+          # ## Set working directory back to main working directory:
+          # setwd(workdir_temp)
+          # rm(workdir_temp)
+          # #! /WORK IN PROGRESS
 
 
           ## Use the nparcalc{ACTman} function to calculate circadian rhythm variables over
@@ -619,7 +652,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     if (plotactogram != FALSE) {
       plot_actogram(workdir = workdir, ACTdata.1.sub = ACTdata.1.sub, i = i, plotactogram = plotactogram,
                     rollingwindow.results = rollingwindow.results, i_want_EWS = i_want_EWS,
-                    ACTdata.files = ACTdata.files)
+                    ACTdata.files = ACTdata.files, myACTdevice = myACTdevice)
     }
 
 
@@ -657,7 +690,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
 
   ## Create "Results" directory:
   workdir_temp <- getwd()
-  dir.create(file.path(workdir_temp, "Results"), showWarnings = FALSE)
+  dir.create(file.path(workdir_temp, "Results"), showWarnings = TRUE)
   setwd(file.path(workdir_temp, "Results"))
 
   ## Write results of circadian analysis to .CSV
