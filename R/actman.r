@@ -259,7 +259,16 @@ ACTman <- function(workdir = "C:/mydata",
       ## Make a copy of the original data to work on:
       ACTdata.1.sub <- ACTdata.1
       colnames(ACTdata.1.sub) <- c("Date", "Time", "Activity")
-      ACTdata.1.sub$Activity <- as.numeric(levels(ACTdata.1.sub$Activity))[ACTdata.1.sub$Activity]
+
+      ## Exception for when ACTdata.1.sub$Activity suddenly decides to be NA
+      #! Needs to be implemented in MASTER!
+      if(is.na(as.numeric(levels(ACTdata.1.sub$Activity))[ACTdata.1.sub$Activity][1])){
+
+        ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
+
+      }else{ACTdata.1.sub$Activity <- as.numeric(levels(ACTdata.1.sub$Activity))[ACTdata.1.sub$Activity]}
+
+
 
       #! as.numeric on factors is meaningless! Us on levels as done above.
       # ACTdata.1.sub$Activity <- as.numeric(ACTdata.1.sub$Activity)
@@ -309,10 +318,36 @@ ACTman <- function(workdir = "C:/mydata",
     ACTdata.1.sub$Date <- gsub(pattern = "/20", replacement = "/", x = ACTdata.1.sub$Date) # Take only last two year digits
     ACTdata.1.sub$Date <- paste(ACTdata.1.sub$Date, ACTdata.1.sub$Time) # Merge Date Time
 
+
     if (myACTdevice == "Actical"){
+
+      ## First exception for when day-number has only one number (e.g. 1-1-1900 instead of 10-1-1900)
+      date_index <- which(nchar(trimws(substr(ACTdata.1.sub$Date, 1, 9))) == 8)
+      ACTdata.1.sub$Date[date_index] <- paste0("0", ACTdata.1.sub$Date[date_index])
+
+
+      # ## Second exception for when day-number has only one number (e.g. 1-1-1900 instead of 10-1-1900)
+      # #! updated
+      # if (grepl("-", substr(ACTdata.1.sub$Date, 4, 6))){
+      #
+      #   ACTdata.1.sub$Date[which(grepl("-", substr(ACTdata.1.sub$Date, 4, 6)) == TRUE)] <- paste0("0", ACTdata.1.sub$Date)
+      #
+      # }
 
       month_char1 <- substr(ACTdata.1.sub$Date, 4, 6)
       month_char2 <- paste(toupper(substr(month_char1, 1, 1)), substr(month_char1, 2, nchar(month_char1)), sep="") # month jan, feb, etc to numeric
+
+
+      ## Exception for when empty trailing (NA) rows are included in ACTdata.1.sub
+      if (TRUE %in% nchar(month_char2) < 3){
+
+        ACTdata.1.sub <- ACTdata.1.sub[nchar(month_char2) > 2, ]
+
+        month_char1 <- substr(ACTdata.1.sub$Date, 4, 6)
+        month_char2 <- paste(toupper(substr(month_char1, 1, 1)), substr(month_char1, 2, nchar(month_char1)), sep="") # month jan, feb, etc to numeric
+
+      }
+
 
 
       #! Exceptions for when month is specified with non-English abbreviations
@@ -326,10 +361,25 @@ ACTman <- function(workdir = "C:/mydata",
 
       if (match(month_char2, month.abb)[1] < 10){
 
-        month_char3 <- paste0(0, match(month_char2, month.abb))
+
+        char_drop <- which(match(month_char2, month.abb) >= 10)
+
+
+        ## Exception for when both single digit months (i.e., sep: 9th month) and double digit months (e.g., okt; 10th month)
+        ## are in the same dataset
+        if (length(char_drop) == 0){
+
+          month_char3 <- paste0(0, match(month_char2, month.abb))
+
+        } else {
+
+          month_char3 <- c(paste0(0, match(month_char2, month.abb)[-char_drop]),
+                           paste0(match(month_char2, month.abb)[char_drop]))
+
+        }
+
 
       } else {month_char3 <- match(month_char2, month.abb)}
-
 
 
 
