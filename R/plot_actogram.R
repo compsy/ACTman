@@ -61,9 +61,12 @@ plot_actogram <- function(workdir, ACTdata.1.sub, myACTdevice, i, plotactogram, 
 
   ## Midnight Detection 2nd day
   day2start <- ((which(substr(act_data$Date, start = 12, stop = 19) == "00:00:00")[1]) - 1) # Start of day2 at midnight.
+  #! Exception for when day2start == 0
+  if(day2start == 0){day2start <- ((which(substr(act_data$Date, start = 12, stop = 19) == "00:00:00")[2]) - 1)}
 
   ## 1st Day selection
   day1 <- act_data[1:day2start, ]
+  temp_day1 <<- day1
   day1.rest <- 1440 - day2start
 
   ## Filling in period before 1st day selection to get full 24h in 1st day
