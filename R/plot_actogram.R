@@ -141,7 +141,7 @@ if (i_want_EWS == TRUE) {  # ## Initialise empty matrix for timestamps and activ
 
 
   # plotme <- "Time_to_Recovery"
-  plotme <- colnames(rollingwindow.results)[10:21]
+  plotme <- colnames(rollingwindow.results)[c(3:6, 8, 10:15, 19:21)]
 
   for (EWS_count in 1:length(plotme)) {
 
