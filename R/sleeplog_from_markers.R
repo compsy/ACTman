@@ -47,7 +47,8 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
   #   mb_data <- read.csv(mb_files)
   # }
   if (ncol(mb_data) == 1) {
-    mb_data <- read.delim(mb_files)
+    # mb_data <- read.delim(mb_files)
+    mb_data <- read.csv(mb_files, sep = ';')
   }
   # if (ncol(mb_data) != 1 & ncol(mb_data) != 3) {
   #   message("Marker Button file does not contain expected number of rows (1 or 3)!")
@@ -64,6 +65,11 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
 
   ## Remove header
   mb_data <- mb_data[((grep("^Name/Type", mb_data[, 1]) + 1):nrow(mb_data)), ]
+
+
+  ## Remove footer
+  mb_data <- mb_data[(1:(which(grepl("Sleep Analysis", mb_data[, 1])) - 2)), (1:3)]
+
 
   ## Frequencies of marker presses per day
   mb_data_datefreq <- as.data.frame(table(unlist(mb_data$Date)))

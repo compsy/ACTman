@@ -65,9 +65,9 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
     # # Run sleeplog_from_markers.R
-    # workdir <- getwd()
-    # # debug(sleeplog_from_markers)
-    # sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+    workdir <- getwd()
+    # debug(sleeplog_from_markers)
+    sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
   }
 
 

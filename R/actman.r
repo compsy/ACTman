@@ -395,6 +395,7 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
                 file = paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt"))
 
 
+
     ## Step 2.4: Initialising analyses and funtionalities--------------------------------------
     ## Description: .....
 
@@ -402,6 +403,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     CRV.data <- read.table(file = file.path(newdir, paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt")),
                            stringsAsFactors = FALSE)
     colnames(CRV.data) <- c("Date", "Time", "Activity")
+
+
+    # #! DETREND (dev feature)
+    # CRV.data$V3 <- detrend(CRV.data$V3, tt = "linear")
 
 
     sleepdata.overview <- NULL
