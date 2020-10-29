@@ -58,17 +58,23 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
 
-  if (length(list.files(pattern = "sleeplog.csv")) == 0 &&
-     length(list.files(pattern = "markers.csv")) == 1) { # Check for Marker file
-    message("Only Event marker file found in working directory!")
-    message("Generating sleeplog from marker file!")
+  # if (length(list.files(pattern = "sleeplog.csv")) == 0 &&
+  #    length(list.files(pattern = "markers.csv")) == 1) { # Check for Marker file
+  #   message("Only Event marker file found in working directory!")
+  #   message("Generating sleeplog from marker file!")
+  #
+  #
+  #   # # Run sleeplog_from_markers.R
+  #   workdir <- getwd()
+  #   # debug(sleeplog_from_markers)
+  #   sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+  #
+  #   # which_ppns_sleeplog <- pmatch((paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 8)))),
+  #   #                               list.files(pattern = "sleeplog.csv")) #sleeplog of this ppn
+  #   # data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
+  #   # loop_steps <- nrow(data.sleeplog)
+  # }
 
-
-    # # Run sleeplog_from_markers.R
-    workdir <- getwd()
-    # debug(sleeplog_from_markers)
-    sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
-  }
 
 
   if (length(list.files(pattern = "sleeplog.csv")) == 0 &&
@@ -135,15 +141,16 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
 
 
-  # # Run sleeplog_from_markers.R
-      # workdir <- getwd()
-      # # debug(sleeplog_from_markers)
-      # sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
-      #
-      # data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
-      #
-      #
-      # data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
+  # Run sleeplog_from_markers.R
+  workdir <- getwd()
+  # debug(sleeplog_from_markers)
+  sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+
+  data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[i])
+
+
+  data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
+  loop_steps <- nrow(data.sleeplog)
 
 
 
