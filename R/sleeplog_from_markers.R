@@ -70,6 +70,23 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
   ## Add colnames
   colnames(mb_data) <- c("Name/Type", "Date", "Time")
 
+
+
+  ##UPDATED##
+
+  CCC <- as.POSIXct(mb_data[, "Date"], format = "%d/%m/%Y")
+  DDD <- as.POSIXct(CCC, format = "%Y/%m/%d")
+
+  YYY <- as.POSIXct(mb_data[1, "Date"], format = "%d/%m/%Y")
+
+  ZZZ <- as.POSIXct(mb_data[nrow(mb_data), "Date"], format = "%d/%m/%Y")
+
+  ##END UPDATED##
+
+
+
+
+
   ## Frequencies of marker presses per day
   mb_data_datefreq <- as.data.frame(table(unlist(mb_data$Date)))
   mb_data_datefreq <- mb_data_datefreq[!(mb_data_datefreq$Freq == 0), ]
@@ -172,35 +189,44 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
   mb_data <- mb_data[(which(mb_data$Remove == 0)), ]
 
   mb_data <- mb_data[, c("Date", "Time", "Morning_evening", "sleep_after_midnight")]
+  mb_data[, "Date"] <- as.character(as.POSIXct(mb_data[, "Date"], format = "%d/%m/%Y"))
 
 
-
-   ## Initialise sleeplog
-  sleeplog_nrow <- nrow(mb_data_datefreq)
-  # sleeplog <- matrix(nrow = (sleeplog_nrow * 2), ncol = 3) #! Gve error when using abel file
+  ## UPDATED SLEEPLOG CODE ##
+  ## Initialise sleeplog
+  sleeplog_nrow <- (as.numeric(ZZZ - YYY) + 1)
   sleeplog <- matrix(nrow = sleeplog_nrow, ncol = 3)
-  # colnames(sleeplog) <- c("Date", "Time", "Gotup")
   colnames(sleeplog) <- c("Date", "Gotup", "Bedtime")
-  # sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1)))
+  sleeplog[, "Date"] <- as.character(YYY + (0:as.numeric(ZZZ - YYY) * (1440 * 60)))
+  ## END of UPDATED SLEEPLOG CODE ##
+
+        #! ERROR SLEEPLOG DOES NOT CONTAIN DAYS ON WHICH marker button WAS NOT PRESSED
+        #  ## Initialise sleeplog
+        # sleeplog_nrow <- nrow(mb_data_datefreq)
+        # # sleeplog <- matrix(nrow = (sleeplog_nrow * 2), ncol = 3) #! Gve error when using abel file
+        # sleeplog <- matrix(nrow = sleeplog_nrow, ncol = 3)
+        # # colnames(sleeplog) <- c("Date", "Time", "Gotup")
+        # colnames(sleeplog) <- c("Date", "Gotup", "Bedtime")
+        # # sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1)))
 
 
-  #! Exception for unequal length
-  if (length(sleeplog[, "Date"]) != length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))) {
-
-    if (length(sleeplog[, "Date"]) > length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))) {
-
-      # Find lenght diff between sleeplog and subset from mb_data
-      sleeplog_diff <- abs(length(sleeplog[, "Date"]) - length(as.character(sort(rep(unique(mb_data[, "Date"]), 1)))))
-
-      sleeplog[((1 + sleeplog_diff):sleeplog_nrow), "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1)))
-
-
-    }
-
-  } else {
-    # sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1))) #! BUG
-    sleeplog[, "Date"] <- as.character((rep(unique(mb_data[, "Date"]), 1))) #! FIX
-  }
+  # #! Exception for unequal length
+  # if (length(sleeplog[, "Date"]) != length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))) {
+  #
+  #   if (length(sleeplog[, "Date"]) > length(as.character(sort(rep(unique(mb_data[, "Date"]), 1))))) {
+  #
+  #     # Find lenght diff between sleeplog and subset from mb_data
+  #     sleeplog_diff <- abs(length(sleeplog[, "Date"]) - length(as.character(sort(rep(unique(mb_data[, "Date"]), 1)))))
+  #
+  #     sleeplog[((1 + sleeplog_diff):sleeplog_nrow), "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1)))
+  #
+  #
+  #   }
+  #
+  # } else {
+  #   # sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1))) #! BUG
+  #   sleeplog[, "Date"] <- as.character((rep(unique(mb_data[, "Date"]), 1))) #! FIX
+  # }
 
 
 
@@ -246,7 +272,11 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
 
     }
 
-    rm(mb_TEMP)
+
+    if(exists("mb_TEMP")){
+      rm(mb_TEMP)
+    }
+
   }
 
 
@@ -343,4 +373,5 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
             file = paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 4)),
                                        "-sleeplog.csv", sep = ""),
             row.names = FALSE)
+
 }

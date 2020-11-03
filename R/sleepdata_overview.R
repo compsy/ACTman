@@ -69,13 +69,12 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     message("Generating sleeplog from marker file!")
 
 
-
     # # Run sleeplog_from_markers.R
     # workdir <- getwd()
     # # debug(sleeplog_from_markers)
     sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
-    data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
-    loop_steps <- nrow(data.sleeplog)
+    # data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
+    # loop_steps <- nrow(data.sleeplog)
   }
 
 
