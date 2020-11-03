@@ -32,6 +32,11 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
   # data$Activity..MW.counts. <- as.numeric(as.character(data$Activity..MW.counts.)) #Use when data <- ACTdata.1 !!!
   data$Activity..MW.counts. <- as.numeric(as.character(data$Activity))
 
+  which_ppns_sleeplog <- pmatch((paste(substr(ACTdata.files[i], 1, (nchar(ACTdata.files[i]) - 8)))),
+                                list.files(pattern = "sleeplog.csv")) #sleeplog of this ppn
+
+
+
   ## Read sleeplog
   if (length(list.files(pattern = "sleeplog.csv")) == 0 &&
      length(list.files(pattern = "markers.csv")) == 0) { # Sanity Check
@@ -64,10 +69,13 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     message("Generating sleeplog from marker file!")
 
 
+
     # # Run sleeplog_from_markers.R
     # workdir <- getwd()
     # # debug(sleeplog_from_markers)
-    # sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+    sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
+    data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
+    loop_steps <- nrow(data.sleeplog)
   }
 
 
@@ -116,6 +124,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     if (length(list.files(pattern = "sleeplog.csv")) != 0 && !is.na(which_ppns_sleeplog)) {
 
       data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
+      loop_steps <- nrow(data.sleeplog)
 
     } else {
       sleeplog_from_markers(workdir = workdir, i = i, ACTdata.files = ACTdata.files)
@@ -124,6 +133,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
                                     list.files(pattern = "sleeplog.csv")) #sleeplog of this ppn
 
           data.sleeplog <- read.csv(file = list.files(pattern = "sleeplog.csv")[which_ppns_sleeplog])
+          loop_steps <- nrow(data.sleeplog)
          }
 
 

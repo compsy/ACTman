@@ -49,6 +49,11 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
   if (ncol(mb_data) == 1) {
     mb_data <- read.delim(mb_files)
   }
+  if (ncol(mb_data) == 1) {
+    mb_data <- read.csv(mb_files, sep = ";")
+  }
+
+
   # if (ncol(mb_data) != 1 & ncol(mb_data) != 3) {
   #   message("Marker Button file does not contain expected number of rows (1 or 3)!")
   #   message("Is your file in comma- or tab-seperated format?")
@@ -56,14 +61,14 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
 
 
 
-
-  ##
-  #! Probable Bug: tab-seperated (sep = '\t') file instead if comma?
-
-  colnames(mb_data) <- c("Name/Type", "Date", "Time")
-
   ## Remove header
   mb_data <- mb_data[((grep("^Name/Type", mb_data[, 1]) + 1):nrow(mb_data)), ]
+
+  ## Remove footer
+  mb_data <- mb_data[(1:(which(grepl("Sleep Analysis", mb_data[, 1])) - 2)), (1:3)]
+
+  ## Add colnames
+  colnames(mb_data) <- c("Name/Type", "Date", "Time")
 
   ## Frequencies of marker presses per day
   mb_data_datefreq <- as.data.frame(table(unlist(mb_data$Date)))
@@ -193,7 +198,8 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
     }
 
   } else {
-    sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1)))
+    # sleeplog[, "Date"] <- as.character(sort(rep(unique(mb_data[, "Date"]), 1))) #! BUG
+    sleeplog[, "Date"] <- as.character((rep(unique(mb_data[, "Date"]), 1))) #! FIX
   }
 
 
