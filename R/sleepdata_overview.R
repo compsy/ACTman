@@ -145,7 +145,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
       #
       # data.sleeplog.sub <- data.sleeplog[, c(1, 2, 3)]
 
-
+  #View(data.sleeplog)
 
 
   # Recreate data$Time var for this module
@@ -224,7 +224,10 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
     rownr.Gotup <- which(aaa$Time == Gotup)[1] #! this might cause errors when [1]'st Gotup is before Bedtime
 
-
+    #! this fixes those errors
+    if (!is.na(rownr.Bedtime) && !is.na(rownr.Gotup) && rownr.Gotup < rownr.Bedtime) {
+      rownr.Gotup <- which(aaa$Time == Gotup)[2]
+    }
 
     if (is.na(substr(aaa[rownr.Gotup, "Date"], 1, 10)) || is.na(substr(aaa[rownr.Bedtime, "Date"], 1, 10))) {
 
@@ -316,14 +319,11 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     sleep.start <- as.character(sleep.start.$Time[1])
     # rownr.sleep.start <- which(aaa$Time == sleep.start)[1] #! [1] causes error when sameday(?)
 
-    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)) {
+    rownr.sleep.start <- which(aaa$Time == sleep.start)[1]
 
-      rownr.sleep.start <- which(aaa$Time == sleep.start)[2] #! [1] causes error when sameday(?)
-
-    } else {
-      rownr.sleep.start <- which(aaa$Time == sleep.start)[1]}
-
-
+    if (rownr.sleep.start < rownr.Bedtime) {
+      rownr.sleep.start <- which(aaa$Time == sleep.start)[2]
+    }
 
 
     ## Calculate wake up time
@@ -370,6 +370,7 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
       print(paste("Gotup:", aaa[rownr.Gotup, "Date"]))
       print(paste("Bedtime: ", aaa[rownr.Bedtime, "Date"]))
+      print(paste("Sleep start: ", aaa[rownr.sleep.start, "Date"]))
 
       print(paste("Bedtime later than Gotup:", aaa[rownr.Bedtime, "Date"] >= aaa[rownr.Gotup, "Date"]))
       print(paste("Bedtime earlier than Gotup:", aaa[rownr.Bedtime, "Date"] <= aaa[rownr.Gotup, "Date"]))
@@ -411,7 +412,15 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
       sleepend <- aaa.sleeptime[rownr.Gotup, ]
     }
     sleep.end.ando <- sleepend$Time
-    rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
+
+    # rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
+
+    rownr.sleep.end.ando <- which(aaa$Time == sleep.end.ando)[1]
+
+    if (rownr.sleep.end.ando < rownr.sleep.start) {
+      rownr.sleep.end.ando <- which(aaa$Time == sleep.end.ando)[2]
+    }
+
     # Use new method:
     sleep.end <- sleep.end.ando
     rownr.sleep.end <- rownr.sleep.end.ando
