@@ -63,7 +63,9 @@ sleeplog_from_markers <- function(workdir, i, ACTdata.files) {
   colnames(mb_data) <- c("Name/Type", "Date", "Time")
 
   ## Remove header
-  mb_data <- mb_data[((grep("^Name/Type", mb_data[, 1]) + 1):nrow(mb_data)), ]
+  if (length(grep("^Name/Type", mb_data[, 1])) != 0) {
+    mb_data <- mb_data[((grep("^Name/Type", mb_data[, 1]) + 1):nrow(mb_data)), ]
+  }
 
   ## Frequencies of marker presses per day
   mb_data_datefreq <- as.data.frame(table(unlist(mb_data$Date)))
