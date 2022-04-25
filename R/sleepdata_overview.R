@@ -224,10 +224,10 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
 
     rownr.Gotup <- which(aaa$Time == Gotup)[1] #! this might cause errors when [1]'st Gotup is before Bedtime
 
-    #! this fixes those errors
-    if (!is.na(rownr.Bedtime) && !is.na(rownr.Gotup) && rownr.Gotup < rownr.Bedtime) {
-      rownr.Gotup <- which(aaa$Time == Gotup)[2]
-    }
+    ##! this fixes those errors
+    #if (!is.na(rownr.Bedtime) && !is.na(rownr.Gotup) && rownr.Gotup < rownr.Bedtime) {
+    #  rownr.Gotup <- which(aaa$Time == Gotup)[2]
+    #}
 
     if (is.na(substr(aaa[rownr.Gotup, "Date"], 1, 10)) || is.na(substr(aaa[rownr.Bedtime, "Date"], 1, 10))) {
 
@@ -319,12 +319,13 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     sleep.start <- as.character(sleep.start.$Time[1])
     # rownr.sleep.start <- which(aaa$Time == sleep.start)[1] #! [1] causes error when sameday(?)
 
-    rownr.sleep.start <- which(aaa$Time == sleep.start)[1]
+    if (substr(aaa[rownr.Gotup, "Date"], 1, 10) == substr(aaa[rownr.Bedtime, "Date"], 1, 10)) {
 
-    if (rownr.sleep.start < rownr.Bedtime) {
-      rownr.sleep.start <- which(aaa$Time == sleep.start)[2]
+      rownr.sleep.start <- which(aaa$Time == sleep.start)[2] #! [1] causes error when sameday(?)
+
+    } else {
+      rownr.sleep.start <- which(aaa$Time == sleep.start)[1]
     }
-
 
     ## Calculate wake up time
     aaa$wakeup.chance <- (dplyr::lag(aaa$epoch.sleep.chance, n = 1L) +
@@ -413,13 +414,13 @@ sleepdata_overview <- function(workdir, actdata, i, lengthcheck, ACTdata.files) 
     }
     sleep.end.ando <- sleepend$Time
 
-    # rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
+    rownr.sleep.end.ando <- as.numeric(rownames(sleepend))
 
-    rownr.sleep.end.ando <- which(aaa$Time == sleep.end.ando)[1]
+    #rownr.sleep.end.ando <- which(aaa$Time == sleep.end.ando)[1]
 
-    if (rownr.sleep.end.ando < rownr.sleep.start) {
-      rownr.sleep.end.ando <- which(aaa$Time == sleep.end.ando)[2]
-    }
+    #if (rownr.sleep.end.ando < rownr.sleep.start) {
+    #  rownr.sleep.end.ando <- which(aaa$Time == sleep.end.ando)[2]
+    #}
 
     # Use new method:
     sleep.end <- sleep.end.ando
