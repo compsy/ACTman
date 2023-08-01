@@ -391,9 +391,10 @@ ACTman <- function(workdir = "C:/Bibliotheek/Studie/PhD/Publishing/ACTman/R-part
     dir.create(newdir, showWarnings = FALSE)
     setwd(newdir)
     ## Write managed data:
-    write.table(ACTdata.1.sub, row.names = FALSE, col.names = FALSE,
-                file = paste(gsub(pattern = ".csv", replacement = "", x = ACTdata.files[i]), "MANAGED.txt"))
-
+    ACTdata.1.sub$Date = format(ACTdata.1.sub$Date, "%Y-%m-%d %H:%M:%S")
+    write.table(ACTdata.1.sub, quote = FALSE, row.names = FALSE, 
+      col.names = FALSE, file = paste(gsub(pattern = ".csv", 
+        replacement = "", x = ACTdata.files[i]), "MANAGED.txt"))
 
     ## Step 2.4: Initialising analyses and funtionalities--------------------------------------
     ## Description: .....
